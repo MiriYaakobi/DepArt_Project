@@ -4,6 +4,12 @@ using Dal;
 
 namespace DalTest;
 
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
+
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
+
 public static class Initialization
 {
     private static ICourier? s_dalCourier;
@@ -27,20 +33,15 @@ public static class Initialization
 
     private static double getRandomMaxDistance(DeliveryType type, Random rand)
     {
-        int min, max;
-        switch (type)
+        var (min, max) = type switch
         {
-            case DeliveryType.Car:
-                min = 50; max = 350; break;
-            case DeliveryType.Motorcycle:
-                min = 2; max = 50; break;
-            case DeliveryType.Bicycle:
-                min = 1; max = 15; break;
-            case DeliveryType.ByFoot:
-                min = 1; max = 5; break;
-            default:
-                min = 1; max = 10; break;
-        }
+            DeliveryType.Car => (50, 350),
+            DeliveryType.Motorcycle => (2, 50),
+            DeliveryType.Bicycle => (1, 15),
+            DeliveryType.ByFoot => (1, 5),
+            _ => (1, 10)
+        };
+
         return rand.Next(min, max + 1);
     }
 
@@ -94,16 +95,11 @@ public static class Initialization
     {
         var addresses = new (string address, double latitude, double longitude)[]
         {
-            ("Herzl 10, Tel Aviv", 32.0675, 34.7775),
-            ("Jaffa Road 2, Jerusalem", 31.7780, 35.2345),
-            ("Ha'arbaa 14, Herzliya", 32.1632, 34.8406),
-            ("Begin 101, Petah Tikva", 32.0880, 34.8875),
-            ("Sderot Hen 5, Haifa", 32.8040, 34.9896),
-            ("Ha'atzmaut 25, Bat Yam", 32.0210, 34.7544),
-            ("Modi'in", 31.8989, 35.0078),
-            ("Ashdod", 31.8044, 34.6553),
-            ("Beersheba", 31.2518, 34.7915),
-            ("Rehovot", 31.8948, 34.8110)
+            ("Herzl 10, Tel Aviv", 32.0675, 34.7775), ("Jaffa Road 2, Jerusalem", 31.7780, 35.2345),
+            ("Ha'arbaa 14, Herzliya", 32.1632, 34.8406), ("Begin 101, Petah Tikva", 32.0880, 34.8875),
+            ("Sderot Hen 5, Haifa", 32.8040, 34.9896), ("Ha'atzmaut 25, Bat Yam", 32.0210, 34.7544),
+            ("Modi'in", 31.8989, 35.0078), ("Ashdod", 31.8044, 34.6553),
+            ("Beersheba", 31.2518, 34.7915), ("Rehovot", 31.8948, 34.8110)
         };
 
         string[] customerNames =
@@ -143,12 +139,6 @@ public static class Initialization
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
 
-            s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
-        }
-    }
-
-    private static void createDeliveries()
-    {
         var couriers = s_dalCourier!.ReadAll().Where(c => c.IsActive).ToList();
         var orders = s_dalOrder!.ReadAll().ToList();
 
@@ -170,7 +160,31 @@ public static class Initialization
                 continue;
 
             var courier = possibleCouriers[s_rand.Next(possibleCouriers.Count)];
+        
+    }
 
+    public static void Do(IConfig? dalConfig, ICourier? dalCourier, IOrder? dalOrder, IDelivery? dalDelivery)
+    {
+        s_dalConfig = dalConfig ?? throw new NullReferenceException("IConfig object cannot be null!");
+        s_dalCourier = dalCourier ?? throw new NullReferenceException("ICourier object cannot be null!");
+        s_dalOrder = dalOrder ?? throw new NullReferenceException("IOrder object cannot be null!");
+        s_dalDelivery = dalDelivery ?? throw new NullReferenceException("IDelivery object cannot be null!");
+
+        Console.WriteLine("Reset Configuration values and List values...");
+        s_dalConfig.Reset();
+        s_dalCourier.DeleteAll();
+        s_dalOrder.DeleteAll();
+        s_dalDelivery.DeleteAll();
+
+        Console.WriteLine("Initializing Couriers...");
+        createCouriers();
+
+        Console.WriteLine("Initializing Orders...");
+        createOrders();
+
+        Console.WriteLine("Initializing Deliveries...");
+        createDeliveries();
+                continue;
             DateTime startTime = order.OrderOpeningTime.AddHours(s_rand.Next(1, 48));
             bool finished = s_rand.Next(0, 100) < 70;
 
@@ -181,5 +195,17 @@ public static class Initialization
 
             s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
         }
+    }
+
+    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
+    {
+        throw new NotImplementedException();
+        Console.WriteLine("Initialization done.");
+    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
+    {
+        throw new NotImplementedException();
+    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
+    {
+        throw new NotImplementedException();
     }
 }
