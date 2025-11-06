@@ -24,7 +24,7 @@ public static class Initialization
         "Rotem Tzadok","Adi Baruch","Yonatan Amir","Michal Saban","Lior Gross","Roni Hasson","Noam Ben-David"
         };
 
-        char[] chars = { '!', '@', '#', '$', '%', '^', '&', '*', '!', '@', '#', '$', '%', '^', '&', '*', '!', '@', '#', '$' };
+        char[] chars = { '!', '@', '#', '$', '%', '^', '&', '*'};
 
         for (int i = 0; i < 20; i++)
         {
@@ -36,13 +36,13 @@ public static class Initialization
             string name = people[i];
             string phone = $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
             string email = $"{people[i]}@gmail.com";
-            string password = $"{people[i]}{s_rand.Next(100, 999):D3}{chars[i]}";
+            string password = $"{people[i]}{s_rand.Next(100, 999):D3}{chars[i] % chars.Length}";
             bool isActive = s_rand.Next(0, 100) < 80;
             DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 3);
 
             DateTime clockNow = s_dalConfig!.Clock;
             int daysBack = s_rand.Next(0, 1461);
-            int hoursOffset = s_rand.Next(-5, 6);//
+            int hoursOffset = s_rand.Next(7, 21);//
             int minutesOffset = s_rand.Next(0, 60);
             int secondsOffset = s_rand.Next(0, 60);
             DateTime startWorkTime = clockNow.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
