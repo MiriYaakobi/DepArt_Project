@@ -22,6 +22,7 @@ public class ConfigImplementation : IConfig
         get => Config.InactivityTimeRange;
         set => Config.InactivityTimeRange = value;
     }
+
     public string? CompenyAddress
     {
         get => Config.CompenyAddress;

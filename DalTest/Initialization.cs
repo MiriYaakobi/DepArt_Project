@@ -1,15 +1,6 @@
-﻿using DalApi;
+﻿namespace DalTest;using Dal;using DalApi;
 using DO;
-using Dal;
-
-namespace DalTest;
-
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
+using System;
 public static class Initialization
 {
     private static ICourier? s_dalCourier;
@@ -44,7 +35,6 @@ public static class Initialization
 
         return rand.Next(min, max + 1);
     }
-
     private static double CalculateDistanceFromCompany(double lat1, double lon1, double lat2, double lon2)
     {
         double R = 6371;
@@ -58,11 +48,7 @@ public static class Initialization
     }
 
     private static double DegreesToRadians(double deg) => deg * (Math.PI / 180);
-    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
-    {
-        throw new NotImplementedException();
-    }
-    private static void createCouriers()
+    private static void createCouriers()
     {
         string[] people =
         {
@@ -139,6 +125,7 @@ public static class Initialization
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
 
+            s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));        }    }    private static void createDeliveries()    {
         var couriers = s_dalCourier!.ReadAll().Where(c => c.IsActive).ToList();
         var orders = s_dalOrder!.ReadAll().ToList();
 
@@ -160,9 +147,18 @@ public static class Initialization
                 continue;
 
             var courier = possibleCouriers[s_rand.Next(possibleCouriers.Count)];
-        
-    }
 
+            DateTime startTime = order.OrderOpeningTime.AddHours(s_rand.Next(1, 48));
+            bool finished = s_rand.Next(0, 100) < 70;
+
+            DateTime? endTime = finished ? startTime.AddHours(s_rand.Next(1, 12)) : null;
+            OrderStatus? endStatus = finished ? (OrderStatus?)s_rand.Next(Enum.GetValues(typeof(OrderStatus)).Length) : null;
+
+            double actualDistance = distance + s_rand.NextDouble() * 0.5;
+
+            s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
+        }
+    }
     public static void Do(IConfig? dalConfig, ICourier? dalCourier, IOrder? dalOrder, IDelivery? dalDelivery)
     {
         s_dalConfig = dalConfig ?? throw new NullReferenceException("IConfig object cannot be null!");
@@ -184,28 +180,7 @@ public static class Initialization
 
         Console.WriteLine("Initializing Deliveries...");
         createDeliveries();
-                continue;
-            DateTime startTime = order.OrderOpeningTime.AddHours(s_rand.Next(1, 48));
-            bool finished = s_rand.Next(0, 100) < 70;
 
-            DateTime? endTime = finished ? startTime.AddHours(s_rand.Next(1, 12)) : null;
-            OrderStatus? endStatus = finished ? (OrderStatus?)s_rand.Next(Enum.GetValues(typeof(OrderStatus)).Length) : null;
-
-            double actualDistance = distance + s_rand.NextDouble() * 0.5;
-
-            s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
-        }
-    }
-
-    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
-    {
-        throw new NotImplementedException();
         Console.WriteLine("Initialization done.");
-    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
-    {
-        throw new NotImplementedException();
-    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
-    {
-        throw new NotImplementedException();
     }
 }
