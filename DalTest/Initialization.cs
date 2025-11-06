@@ -31,17 +31,17 @@ public static class Initialization
             string name = FirstNames[i] + " " + LastNames[i];
             string phone = $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
             string email = $"{FirstNames[i]}.{LastNames[i]}@gmail.com";
-            string password = $"{FirstNames[i]}{Chars[i]}{LastNames[i]}@gmail.com";
+            string password = $"{FirstNames[i]}{s_rand.Next(100, 999):D3}{Chars[i]}{LastNames[i]}";
             bool isActive = s_rand.Next(0, 100) < 80;
-            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4);
+            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 3);
             DateTime clockNow = s_dalConfig!.Clock;
             int daysBack = s_rand.Next(0, 1461);
-            int hoursOffset = s_rand.Next(-5, 6);
+            int hoursOffset = s_rand.Next(-5, 6);//
             int minutesOffset = s_rand.Next(0, 60);
             int secondsOffset = s_rand.Next(0, 60);
             DateTime startWorkTime = clockNow.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
             double? maxDist = GetRandomMaxDistance(deliveryType, s_rand);
-            s_dalCourier!.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
+            s_dalCourier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
         }
     }
     private static void createOrders()
