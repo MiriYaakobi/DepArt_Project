@@ -5,21 +5,21 @@ using System.Collections.Generic;
 
 public class DeliveryImplementation : IDelivery
 {
-    public void Create(Delivery item)
+    public void Create(Delivery Item)
     {
-        int id = Config.NextDeliveryId;
-        Delivery copy = item with { Id = id };
+        int IdEntity = Config.NextDeliveryId;
+        Delivery copy = Item with { Id = IdEntity };
         DataSource.Deliveries.Add(copy);
     }
 
-    public void Delete(int id)
+    public void Delete(int IdEntity)
     {
-        if (Read(id) is null)
-            throw new Exception($"Delivery with Id {id} doesn't exist.");
+        if (Read(IdEntity) is null)
+            throw new Exception($"Delivery with Id {IdEntity} doesn't exist.");
         else
         {
-            int index = DataSource.Deliveries.FindIndex(c => c.Id == id);
-            DataSource.Deliveries.RemoveAt(index);
+            int Index = DataSource.Deliveries.FindIndex(c => c.Id == IdEntity);
+            DataSource.Deliveries.RemoveAt(Index);
         }
     }
 
@@ -28,9 +28,9 @@ public class DeliveryImplementation : IDelivery
         DataSource.Deliveries.Clear();
     }
 
-    public Delivery? Read(int id)
+    public Delivery? Read(int IdEntity)
     {
-        return DataSource.Deliveries.Find(c => c.Id == id);
+        return DataSource.Deliveries.Find(c => c.Id == IdEntity);
     }
 
     public List<Delivery> ReadAll()
@@ -38,21 +38,21 @@ public class DeliveryImplementation : IDelivery
         List<Delivery> CopyList = new List<Delivery>();
         foreach (Delivery c in DataSource.Deliveries)
         {
-            Delivery newDelivery = c with { };
-            CopyList.Add(newDelivery);
+            Delivery NewDelivery = c with { };
+            CopyList.Add(NewDelivery);
         }
         return CopyList;
     }
 
-    public void Update(Delivery item)
+    public void Update(Delivery Item)
     {
-        if (Read(item.Id) is null)
-            throw new Exception($"Delivery with Id {item.Id} doesn't exist.");
+        if (Read(Item.Id) is null)
+            throw new Exception($"Delivery with Id {Item.Id} doesn't exist.");
         else
         {
-            int index = DataSource.Deliveries.FindIndex(c => c.Id == item.Id);
-            DataSource.Deliveries.RemoveAt(index);
-            DataSource.Deliveries.Add(item);
+            int Index = DataSource.Deliveries.FindIndex(c => c.Id == Item.Id);
+            DataSource.Deliveries.RemoveAt(Index);
+            DataSource.Deliveries.Add(Item);
         }
     }
 }
