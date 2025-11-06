@@ -6,6 +6,7 @@ using System;
 
 using System.Net;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
 public static class Initialization
@@ -17,6 +18,37 @@ public static class Initialization
 
     private static readonly Random s_rand = new();
 
+    private static string RandomPhoneNumber() =>  $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
+    private static string RandomEmail(string Name) => Name.Replace(" ", ".").ToLower() + "@gmail.com";
+    private static string RandomPassword(string Name) => $"{Name.Replace(" ", "#").ToLower()}{s_rand.Next(0, 21):D2}";
+    private static DateTime RandomTime(DateTime Time)
+    {
+        int daysBack = s_rand.Next(0, 1827);
+        int hoursOffset = s_rand.Next(7, 21);
+        int minutesOffset = s_rand.Next(0, 61);
+        int secondsOffset = s_rand.Next(0, 61);
+        return Time.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
+    }
+
+    private static double getRandomMaxDistance(DeliveryType type, Random rand)
+    {
+        int min, max;
+        switch (type)
+        {
+            case DeliveryType.Car:
+                min = 50; max = 350; break;
+            case DeliveryType.Motorcycle:
+                min = 2; max = 50; break;
+            case DeliveryType.Bicycle:
+                min = 1; max = 15; break;
+            case DeliveryType.ByFoot:
+                min = 1; max = 5; break;
+            default:
+                min = 1; max = 10; break;
+        }
+        return rand.Next(min, max + 1);
+    }
+
     private static void createCouriers()
     {
         string[] people =
@@ -26,8 +58,6 @@ public static class Initialization
             "Rotem Tzadok","Adi Baruch","Yonatan Amir","Michal Saban","Lior Gross","Roni Hasson","Noam Ben-David"
         };
 
-        char[] chars = { '!', '@', '#', '$', '%', '^', '&', '*'};
-
         for (int i = 0; i < 20; i++)
         {
             int id;
@@ -36,20 +66,14 @@ public static class Initialization
             while (s_dalCourier!.Read(id) != null);
 
             string name = people[i];
-            string phone = $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
-            string email = $"{people[i]}@gmail.com";
-            string password = $"{people[i]}{s_rand.Next(100, 999):D3}{chars[i] % chars.Length}";
+            string phone = RandomPhoneNumber();
+            string email = RandomEmail(name);
+            string password = RandomPassword(name);
             bool isActive = s_rand.Next(0, 100) < 80;
             DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4);
-
-            DateTime clockNow = s_dalConfig!.Clock;
-            int daysBack = s_rand.Next(0, 1461);
-            int hoursOffset = s_rand.Next(7, 21);
-            int minutesOffset = s_rand.Next(0, 60);
-            int secondsOffset = s_rand.Next(0, 60);
-            DateTime startWorkTime = clockNow.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
-
+            DateTime startWorkTime = RandomTime(s_dalConfig!.Clock);
             double? maxDist = getRandomMaxDistance(deliveryType, s_rand);
+
             s_dalCourier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
         }
     }
@@ -92,7 +116,8 @@ public static class Initialization
 
         string[] Descriptions =
         {
-            "Standard art delivery", "Handle with care - original artwork", "Urgent exhibition piece - deliver directly to gallery",
+            "Standard art delivery", "Handle with care - original artwork",
+            "Urgent exhibition piece - deliver directly to gallery",
             "Check authenticity certificate before handover", "Carefully packed for collector"
         };
 
@@ -101,15 +126,8 @@ public static class Initialization
             var (address, latitude, longitude) = addresses[i % addresses.Length];
             OrderType orderTypes = (OrderType)s_rand.Next(0, 3);
             var name = customerNames[i];
-            string phone = $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}"; //להכניס לפונקציה
-            // להכניס לפונקציה
-            DateTime clockNow = s_dalConfig!.Clock;
-            int daysBack = s_rand.Next(0, 1461);
-            int hoursOffset = s_rand.Next(7, 21);
-            int minutesOffset = s_rand.Next(0, 60);
-            int secondsOffset = s_rand.Next(0, 60);
-            DateTime OpeningTime = clockNow.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
-            //
+            string phone = RandomPhoneNumber();
+            DateTime OpeningTime = RandomTime(s_dalConfig!.Clock);
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
             
@@ -120,25 +138,6 @@ public static class Initialization
     private static void createDeliveries()
     {
 
-    }
-    
-    private static double getRandomMaxDistance(DeliveryType type, Random rand)
-    {
-        int min, max;
-        switch (type)
-        {
-            case DeliveryType.Car:
-                min = 50; max = 350; break;
-            case DeliveryType.Motorcycle:
-                min = 2; max = 50; break;
-            case DeliveryType.Bicycle:
-                min = 1; max = 15; break;
-            case DeliveryType.ByFoot:
-                min = 1; max = 5; break;
-            default:
-                min = 1; max = 10; break;
-        }
-        return rand.Next(min, max + 1);
     }
 }
 
