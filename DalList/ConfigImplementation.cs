@@ -22,6 +22,22 @@ public class ConfigImplementation : IConfig
         get => Config.InactivityTimeRange;
         set => Config.InactivityTimeRange = value;
     }
+
+    public string? CompenyAddress
+    {
+        get => Config.CompenyAddress;
+        set => Config.CompenyAddress = value;
+    }
+    public double? CompenyLatitude
+    {
+        get => Config.CompenyLatitude;
+        set => Config.CompenyLatitude = value;
+    }
+    public double? CompenyLongitude
+    {
+        get => Config.CompenyLongitude;
+        set => Config.CompenyLongitude = value;
+    }
     public void Reset()
     {
         Config.Reset();
