@@ -1,13 +1,8 @@
-﻿namespace DalTest;
-using Dal;
-using DalApi;
+﻿using DalApi;
 using DO;
-using System;
+using Dal;
 
-using System.Net;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
+namespace DalTest;
 
 public static class Initialization
 {
@@ -18,7 +13,7 @@ public static class Initialization
 
     private static readonly Random s_rand = new();
 
-    private static string RandomPhoneNumber() =>  $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
+    private static string RandomPhoneNumber() => $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
     private static string RandomEmail(string Name) => Name.Replace(" ", ".").ToLower() + "@gmail.com";
     private static string RandomPassword(string Name) => $"{Name.Replace(" ", "#").ToLower()}{s_rand.Next(0, 21):D2}";
     private static DateTime RandomTime(DateTime Time)
@@ -49,6 +44,19 @@ public static class Initialization
         return rand.Next(min, max + 1);
     }
 
+    private static double CalculateDistanceFromCompany(double lat1, double lon1, double lat2, double lon2)
+    {
+        double R = 6371;
+        double dLat = DegreesToRadians(lat2 - lat1);
+        double dLon = DegreesToRadians(lon2 - lon1);
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                   Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
+                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double DegreesToRadians(double deg) => deg * (Math.PI / 180);
     private static void createCouriers()
     {
         string[] people =
@@ -130,14 +138,50 @@ public static class Initialization
             DateTime OpeningTime = RandomTime(s_dalConfig!.Clock);
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
-            
+
             s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
         }
     }
 
     private static void createDeliveries()
     {
+        var couriers = s_dalCourier!.ReadAll().Where(c => c.IsActive).ToList();
+        var orders = s_dalOrder!.ReadAll().ToList();
 
+        foreach (var order in orders)
+        {
+
+            double distance = 0;
+            if (Config.CompenyLatitude.HasValue && Config.CompenyLongitude.HasValue)
+            {
+                distance = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
+                                                        Config.CompenyLatitude.Value, Config.CompenyLongitude.Value);
+            }
+
+            var possibleCouriers = couriers
+                .Where(c => !c.MaxDist.HasValue || c.MaxDist.Value >= distance)
+                .ToList();
+
+            if (!possibleCouriers.Any())
+                continue;
+
+            var courier = possibleCouriers[s_rand.Next(possibleCouriers.Count)];
+
+            DateTime startTime = order.OrderOpeningTime.AddHours(s_rand.Next(1, 48));
+            bool finished = s_rand.Next(0, 100) < 70;
+
+            DateTime? endTime = finished ? startTime.AddHours(s_rand.Next(1, 12)) : null;
+            OrderStatus? endStatus = finished ? (OrderStatus?)s_rand.Next(Enum.GetValues(typeof(OrderStatus)).Length) : null;
+
+            double actualDistance = distance + s_rand.NextDouble() * 0.5;
+
+            s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
+        }
+    }
+
+    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
+    {
+        throw new NotImplementedException();
     }
 }
 
