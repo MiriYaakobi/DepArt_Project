@@ -10,5 +10,8 @@ public interface IConfig
     TimeSpan MaxDeliveryRange { get; set; } // Maximum allowed delivery time range //
     TimeSpan RiskRange { get; set; } // Time range considered as high risk //
     TimeSpan InactivityTimeRange { get; set; } // Time range for inactivity monitoring //
+    string? CompenyAddress { get; set; }
+    double? CompenyLatitude { get; set; }
+    double? CompenyLongitude { get; set; }
     void Reset();
 }

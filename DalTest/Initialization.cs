@@ -57,6 +57,10 @@ public static class Initialization
     }
 
     private static double DegreesToRadians(double deg) => deg * (Math.PI / 180);
+    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
+    {
+        throw new NotImplementedException();
+    }
     private static void createCouriers()
     {
         string[] people =
@@ -152,10 +156,10 @@ public static class Initialization
         {
 
             double distance = 0;
-            if (Config.CompenyLatitude.HasValue && Config.CompenyLongitude.HasValue)
+            if (s_dalConfig!.CompenyLatitude is not null && s_dalConfig!.CompenyLongitude is not null)
             {
                 distance = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
-                                                        Config.CompenyLatitude.Value, Config.CompenyLongitude.Value);
+                                                        s_dalConfig.CompenyLatitude.Value, s_dalConfig.CompenyLongitude.Value);
             }
 
             var possibleCouriers = couriers
@@ -178,10 +182,4 @@ public static class Initialization
             s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
         }
     }
-
-    private static double CalculateDistanceFromCompany(double latitude, double longitude, object value1, object value2)
-    {
-        throw new NotImplementedException();
-    }
 }
-
