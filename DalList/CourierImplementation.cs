@@ -7,21 +7,21 @@ using System.Runtime.InteropServices;
 
 public class CourierImplementation : ICourier
 {
-    public void Create(Courier item)
+    public void Create(Courier Item)
     {
-        if (Read(item.Id) is not null)
-            throw new Exception($"Courier with Id {item.Id} already exists.");
-        DataSource.Couriers.Add(item);
+        if (Read(Item.Id) is not null)
+            throw new Exception($"Courier with Id {Item.Id} already exists.");
+        DataSource.Couriers.Add(Item);
     }
 
-    public void Delete(int id)
+    public void Delete(int IdEntity)
     {
-        if (Read(id) is null)
-            throw new Exception($"Courier with Id {id} doesn't exist.");
+        if (Read(IdEntity) is null)
+            throw new Exception($"Courier with Id {IdEntity} doesn't exist.");
         else
         {
-            int index = DataSource.Couriers.FindIndex(c => c.Id == id);
-            DataSource.Couriers.RemoveAt(index);
+            int Index = DataSource.Couriers.FindIndex(c => c.Id == IdEntity);
+            DataSource.Couriers.RemoveAt(Index);
         }
     }
 
@@ -30,9 +30,9 @@ public class CourierImplementation : ICourier
         DataSource.Couriers.Clear();
     }
 
-    public Courier? Read(int id)
+    public Courier? Read(int IdEntity)
     {
-        return DataSource.Couriers.Find(c => c.Id == id);
+        return DataSource.Couriers.Find(c => c.Id == IdEntity);
     }
 
     public List<Courier> ReadAll()
@@ -40,21 +40,21 @@ public class CourierImplementation : ICourier
         List<Courier> CopyList = new List<Courier>();
         foreach (Courier c in DataSource.Couriers)
         {
-            Courier newCourier = c with { };
-            CopyList.Add(newCourier);
+            Courier NewCourier = c with { };
+            CopyList.Add(NewCourier);
         }
         return CopyList;
     }
 
-    public void Update(Courier item)
+    public void Update(Courier Item)
     {
-        if (Read(item.Id) is null)
-            throw new Exception($"Courier with Id {item.Id} doesn't exist.");
+        if (Read(Item.Id) is null)
+            throw new Exception($"Courier with Id {Item.Id} doesn't exist.");
         else
         {
-            int index = DataSource.Couriers.FindIndex(c => c.Id == item.Id);
-            DataSource.Couriers.RemoveAt(index);
-            DataSource.Couriers.Add(item);
+            int Index = DataSource.Couriers.FindIndex(c => c.Id == Item.Id);
+            DataSource.Couriers.RemoveAt(Index);
+            DataSource.Couriers.Add(Item);
         }
     }
 }

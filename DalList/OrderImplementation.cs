@@ -2,24 +2,29 @@
 using DalApi;
 using DO;
 using System.Collections.Generic;
-
+/// <summary>
+/// Provides methods to manage orders, including creating, reading, updating, and deleting orders.
+/// </summary>
+/// <remarks>This class implements the <see cref="IOrder"/> interface and operates on a data source containing
+/// orders. It ensures that each order has a unique identifier and provides functionality to manipulate the order
+/// data.</remarks>
 public class OrderImplementation : IOrder
 {
-    public void Create(Order item)
+    public void Create(Order Item)
     {
-        int id = Config.NextOrderId;
-        Order copy = item with { Id = id };
-        DataSource.Orders.Add(copy);
+        int IdEntity = Config.NextOrderId;
+        Order Copy = Item with { Id = IdEntity };
+        DataSource.Orders.Add(Copy);
     }
 
-    public void Delete(int id)
+    public void Delete(int IdEntity)
     {
-        if (Read(id) is null)
-            throw new Exception($"Order with Id {id} doesn't exist.");
+        if (Read(IdEntity) is null)
+            throw new Exception($"Order with Id {IdEntity} doesn't exist.");
         else
         {
-            int index = DataSource.Orders.FindIndex(c => c.Id == id);
-            DataSource.Orders.RemoveAt(index);
+            int Index = DataSource.Orders.FindIndex(c => c.Id == IdEntity);
+            DataSource.Orders.RemoveAt(Index);
         }
     }
 
@@ -28,9 +33,9 @@ public class OrderImplementation : IOrder
         DataSource.Orders.Clear();
     }
 
-    public Order? Read(int id)
+    public Order? Read(int IdEntity)
     {
-        return DataSource.Orders.Find(c => c.Id == id);
+        return DataSource.Orders.Find(c => c.Id == IdEntity);
     }
 
     public List<Order> ReadAll()
@@ -38,21 +43,21 @@ public class OrderImplementation : IOrder
         List<Order> CopyList = new List<Order>();
         foreach (Order c in DataSource.Orders)
         {
-            Order newOrder = c with { };
-            CopyList.Add(newOrder);
+            Order NewOrder = c with { };
+            CopyList.Add(NewOrder);
         }
         return CopyList;
     }
 
-    public void Update(Order item)
+    public void Update(Order Item)
     {
-        if (Read(item.Id) is null)
-            throw new Exception($"Order with Id {item.Id} doesn't exist.");
+        if (Read(Item.Id) is null)
+            throw new Exception($"Order with Id {Item.Id} doesn't exist.");
         else
         {
-            int index = DataSource.Orders.FindIndex(c => c.Id == item.Id);
-            DataSource.Orders.RemoveAt(index);
-            DataSource.Orders.Add(item);
+            int Index = DataSource.Orders.FindIndex(c => c.Id == Item.Id);
+            DataSource.Orders.RemoveAt(Index);
+            DataSource.Orders.Add(Item);
         }
     }
 }
