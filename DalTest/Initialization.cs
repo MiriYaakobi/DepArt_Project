@@ -8,7 +8,6 @@ using System.Net;
 using System.Numerics;
 using System.Xml.Linq;
 
-
 public static class Initialization
 {
     private static ICourier? s_dalCourier;
@@ -21,9 +20,10 @@ public static class Initialization
     private static void createCouriers()
     {
         string[] people =
-        {"Noa Levi","Daniel Cohen","Yael Barak","Roi Avrahami","Maya Friedman","Omri Danino",
-        "Tamar Rosen","Eitan Gabai","Shira Neuman","Guy Hershkovitz","Alon Zahavi","Hila Ronen","Idan Marciano",
-        "Rotem Tzadok","Adi Baruch","Yonatan Amir","Michal Saban","Lior Gross","Roni Hasson","Noam Ben-David"
+        {
+            "Noa Levi","Daniel Cohen","Yael Barak","Roi Avrahami","Maya Friedman","Omri Danino",
+            "Tamar Rosen","Eitan Gabai","Shira Neuman","Guy Hershkovitz","Alon Zahavi","Hila Ronen","Idan Marciano",
+            "Rotem Tzadok","Adi Baruch","Yonatan Amir","Michal Saban","Lior Gross","Roni Hasson","Noam Ben-David"
         };
 
         char[] chars = { '!', '@', '#', '$', '%', '^', '&', '*'};
@@ -40,11 +40,11 @@ public static class Initialization
             string email = $"{people[i]}@gmail.com";
             string password = $"{people[i]}{s_rand.Next(100, 999):D3}{chars[i] % chars.Length}";
             bool isActive = s_rand.Next(0, 100) < 80;
-            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 3);
+            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4);
 
             DateTime clockNow = s_dalConfig!.Clock;
             int daysBack = s_rand.Next(0, 1461);
-            int hoursOffset = s_rand.Next(7, 21);//
+            int hoursOffset = s_rand.Next(7, 21);
             int minutesOffset = s_rand.Next(0, 60);
             int secondsOffset = s_rand.Next(0, 60);
             DateTime startWorkTime = clockNow.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
@@ -56,7 +56,7 @@ public static class Initialization
 
     private static void createOrders()
     {
-        var addresses = new (string Address, double Lat, double Lon)[]
+        var addresses = new (string address, double latitude, double longitude)[]
         {
             ("Herzl 10, Tel Aviv", 32.0675, 34.7775),
             ("Jaffa Road 2, Jerusalem", 31.7780, 35.2345),
@@ -96,13 +96,10 @@ public static class Initialization
             "Check authenticity certificate before handover", "Carefully packed for collector"
         };
 
-        //לוקח את כל הערכים המוגדרים ב-Enum בשם OrderTypeוממיר אותם למערך (Array) מסוג OrderType.
-        var orderTypes = Enum.GetValues(typeof(OrderType)).Cast<OrderType>().ToArray(); //להשתמש באינם עצמו?
-
         for (int i = 0; i < 50; i++)
         {
             var (address, latitude, longitude) = addresses[i % addresses.Length];
-            var type = orderTypes[s_rand.Next(orderTypes.Length)]; //קשור לאינם
+            OrderType orderTypes = (OrderType)s_rand.Next(0, 3);
             var name = customerNames[i];
             string phone = $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}"; //להכניס לפונקציה
             // להכניס לפונקציה
@@ -115,18 +112,16 @@ public static class Initialization
             //
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
-
-            s_dalOrder.Create(new Order(0, type, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
+            
+            s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
         }
-
- 
     }
 
     private static void createDeliveries()
     {
 
     }
-
+    
     private static double getRandomMaxDistance(DeliveryType type, Random rand)
     {
         int min, max;
