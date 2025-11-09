@@ -1,4 +1,5 @@
 ﻿namespace DO;
+
 /// <summary>
 /// Represents a courier responsible for delivering items.
 /// </summary>

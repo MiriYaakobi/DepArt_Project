@@ -1,4 +1,5 @@
 ﻿namespace DO;
+
 /// <summary>
 /// Represents a customer order with details such as location, customer information, and order type.
 /// </summary>

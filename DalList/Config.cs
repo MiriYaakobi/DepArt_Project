@@ -1,5 +1,8 @@
 ﻿namespace Dal;
 
+/// <summary>
+/// class to hold configuration settings and provide unique identifiers for deliveries and orders.
+/// </summary>
 static internal class Config
 {
     // Delivery
@@ -12,6 +15,7 @@ static internal class Config
     private static int nextOrderId = StartOrderId;
     internal static int NextOrderId { get => nextOrderId++; }
 
+    // Other Configurations
     internal static DateTime Clock { get; set; } = DateTime.Now;
     internal static int AdminId { get; set; } = 123456782;
     internal static string AdminPassword { get; set; } = "Deafult1234$";
@@ -26,6 +30,10 @@ static internal class Config
     internal static TimeSpan MaxDeliveryRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan RiskRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan InactivityTimeRange { get; set; } = TimeSpan.Zero;
+
+    /// <summary>
+    /// resets all configuration settings to their default values.
+    /// </summary>
     internal static void Reset()
     {
         nextDeliveryId = StartDeliveryId;

@@ -1,4 +1,5 @@
 ﻿namespace DalApi;
+
 /// <summary>
 /// Represents a configuration interface for managing time-related settings and operations.
 /// </summary>
@@ -15,7 +16,7 @@ public interface IConfig
     double? CompenyLongitude { get; set; }
     void Reset();
 
-    //הוספנו בשביל שלב 11, האם להוריד בהמשך?
+    //We added for step 11, will we use later?
     int AdminId { get; set; }
     double? DeliveryMaxDistance { get; set; }
     double AverageVehicleSpeedKmH { get; set; }
