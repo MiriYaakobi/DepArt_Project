@@ -26,6 +26,7 @@ static internal class Config
     internal static TimeSpan MaxDeliveryRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan RiskRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan InactivityTimeRange { get; set; } = TimeSpan.Zero;
+    
     internal static void Reset()
     {
         nextDeliveryId = StartDeliveryId;
