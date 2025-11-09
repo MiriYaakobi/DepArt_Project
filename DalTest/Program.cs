@@ -5,7 +5,7 @@ namespace DalTest;
 
 /// <summary>
 /// Main entry point for the application
-/// This code was written as a base by AI and rewritten and corrected by us.
+/// We used AI for the blockchain, writing and editing them ourselves.
 /// </summary>
 internal class Program
 {
