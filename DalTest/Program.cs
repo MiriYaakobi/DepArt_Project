@@ -1,4 +1,7 @@
-﻿using Dal;
+﻿/// <summary>
+/// Main entry point for the application.
+/// </summary>
+using Dal;
 using DalApi;
 using DO;
 using System;
@@ -10,11 +13,15 @@ namespace DalTest;
 
 internal class Program
 {
+    //creating the DAL objects
     private static ICourier? s_dalCourier = new CourierImplementation();
     private static IOrder? s_dalOrder = new OrderImplementation();
     private static IDelivery? s_dalDelivery = new DeliveryImplementation();
     private static IConfig? s_dalConfig = new ConfigImplementation();
 
+    /// <summary>
+    /// Enum for main menu options.
+    /// </summary>
     private enum MainMenuOptions
     {
         Exit,
@@ -27,6 +34,9 @@ internal class Program
         ListAllData
     }
 
+    /// <summary>
+    /// Enum for CRUD menu options.
+    /// </summary>
     private enum CrudMenuOptions
     {
         Exit,
@@ -38,6 +48,9 @@ internal class Program
         DeleteAll
     }
 
+    /// <summary>
+    /// Enum for configuration menu options.
+    /// </summary>
     private enum ConfigMenuOptions
     {
         Exit,
@@ -54,7 +67,7 @@ internal class Program
     }
 
     /// <summary>
-    /// מציגה את התפריט הראשי ומחזירה את בחירת המשתמש
+    /// Displays the main menu and returns the user's selection.
     /// </summary>
     private static MainMenuOptions ShowMainMenu()
     {
@@ -70,6 +83,8 @@ internal class Program
         Console.Write("Enter your choice: ");
 
         int choice;
+
+        // Validate input
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(MainMenuOptions), choice))
         {
             Console.Write("Invalid input. Please enter a number between 0 and 7: ");
@@ -78,9 +93,9 @@ internal class Program
     }
 
     /// <summary>
-    /// מציגה תפריט משנה גנרי של CRUD
+    /// Displays the CRUD menu for a specific entity.
     /// </summary>
-    /// <param name="entityName">שם הישות שתוצג בכותרת (למשל "Courier")</param>
+    /// <param name="entityName">The name of the entity to display in the title (e.g., "Courier").</param>
     private static CrudMenuOptions ShowCrudMenu(string entityName)
     {
         Console.WriteLine($"\n--- {entityName.ToUpper()} MENU ---");
@@ -94,6 +109,8 @@ internal class Program
         Console.Write("Enter your choice: ");
 
         int choice;
+
+        // Validate input
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(CrudMenuOptions), choice))
         {
             Console.Write("Invalid input. Please enter a number between 0 and 6: ");
@@ -102,7 +119,7 @@ internal class Program
     }
 
     /// <summary>
-    /// מציגה את תפריט ניהול ההגדרות (Config)
+    /// Displays the configuration menu and returns the user's selection.
     /// </summary>
     private static ConfigMenuOptions ShowConfigMenu()
     {
@@ -121,6 +138,8 @@ internal class Program
         Console.Write("Enter your choice: ");
 
         int choice;
+
+        // Validate input
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(ConfigMenuOptions), choice))
         {
             Console.Write("Invalid input. Please enter a number between 0 and 10: ");
@@ -130,7 +149,7 @@ internal class Program
 
 
     /// <summary>
-    /// פונקציית עזר להוספת שליח חדש
+    /// Helper function to add a new courier
     /// </summary>
     private static void AddCourier()
     {
@@ -162,15 +181,20 @@ internal class Program
             DO.DeliveryType typeOfDelivery;
             while (!Enum.TryParse(Console.ReadLine(), true, out typeOfDelivery))
                 Console.Write("Invalid type. Please enter (Car, Motorcycle, Bicycle, ByFoot): ");
-       
+
+            // Get the start work time from the configuration
             DateTime startWorkTime = s_dalConfig!.Clock;
 
             Console.Write("Enter Max Delivery Distance (leave empty for no limit): ");
             string? maxDistInput = Console.ReadLine();
             double? maxDist = null;
+
+            // Parse max distance if provided
             if (!string.IsNullOrEmpty(maxDistInput))
             {
                 double tempDistance;
+
+                // Validate input
                 while (!double.TryParse(maxDistInput, out tempDistance))
                 {
                     Console.Write("Invalid number. Enter Max Distance (or leave empty): ");
@@ -181,6 +205,7 @@ internal class Program
                     maxDist = tempDistance;
             }
 
+            // Create the new courier object
             DO.Courier newCourier = new DO.Courier
             (
                 Id: id,
@@ -198,6 +223,7 @@ internal class Program
 
             Console.WriteLine($"Successfully added Courier {id} - {name}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding courier: {ex.Message}");
@@ -205,7 +231,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לקבלת והצגת שליח לפי ת"ז
+    /// Retrieves and displays a courier by ID.
     /// </summary>
     private static void GetCourier()
     {
@@ -213,11 +239,15 @@ internal class Program
         {
             Console.Write("Enter Courier ID to get: ");
             int id;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
+            //call to DAL
             DO.Courier? courier = s_dalCourier!.Read(id);
 
+            // Check if courier was found
             if (courier == null)
             {
                 Console.WriteLine($"Courier with ID={id} not found.");
@@ -226,6 +256,7 @@ internal class Program
 
             Console.WriteLine(courier); 
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting courier: {ex.Message}");
@@ -233,7 +264,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר להצגת כל השליחים
+    /// Retrieves and displays all couriers.
     /// </summary>
     private static void ListAllCouriers()
     {
@@ -241,6 +272,7 @@ internal class Program
         {
             List<DO.Courier> couriers = s_dalCourier!.ReadAll();
 
+            // Check if any couriers were found
             if (couriers.Count == 0)
             {
                 Console.WriteLine("No couriers found in the database.");
@@ -252,6 +284,7 @@ internal class Program
                 Console.WriteLine(courier);
             }
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error listing couriers: {ex.Message}");
@@ -259,7 +292,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לעדכון שליח קיים
+    /// Retrieves and updates an existing courier.
     /// </summary>
     private static void UpdateCourier()
     {
@@ -267,9 +300,12 @@ internal class Program
         {
             Console.Write("Enter Courier ID to update: ");
             int id;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
+            // Read the existing courier
             DO.Courier? oldCourier = s_dalCourier!.Read(id);
             if (oldCourier == null)
             {
@@ -280,6 +316,7 @@ internal class Program
             Console.WriteLine("Current values:");
             Console.WriteLine(oldCourier);
 
+            // Read new values
             DO.Courier updatedCourier = oldCourier with { };
 
             Console.Write($"Enter new Name (current: {oldCourier.Name}): ");
@@ -304,45 +341,58 @@ internal class Program
 
             Console.Write($"Enter new IsActive (current: {oldCourier.IsActive}) (true/false): ");
             string? newIsActiveInput = Console.ReadLine();
+
+            // Validate and update IsActive
             if (!string.IsNullOrEmpty(newIsActiveInput))
             {
                 bool newIsActive;
+
+                // Validate input
                 while (!bool.TryParse(newIsActiveInput, out newIsActive))
                 {
                     Console.Write("Invalid. Enter 'true' or 'false' (or leave empty): ");
                     newIsActiveInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newIsActiveInput)) break;
                 }
+                // Update if valid
                 if (!string.IsNullOrEmpty(newIsActiveInput))
                     updatedCourier = updatedCourier with { IsActive = newIsActive };
             }
 
             Console.Write($"Enter new Delivery Type (current: {oldCourier.TypeOfDelivery}): ");
             string? newTypeInput = Console.ReadLine();
+            // Validate and update Delivery Type
             if (!string.IsNullOrEmpty(newTypeInput))
             {
                 DO.DeliveryType newType;
+                // Validate input
                 while (!Enum.TryParse(newTypeInput, true, out newType))
                 {
                     Console.Write("Invalid. Enter Type (Vehicle, Motorcycle, Bicycle, ByFoot) (or leave empty): ");
                     newTypeInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newTypeInput)) break;
                 }
+                // Update if valid
                 if (!string.IsNullOrEmpty(newTypeInput))
                     updatedCourier = updatedCourier with { TypeOfDelivery = newType };
             }
 
             Console.Write($"Enter new Max Delivery Distance (current: {oldCourier.MaxDist}): ");
             string? newMaxDistInput = Console.ReadLine();
+
+            // Validate and update Max Distance
             if (!string.IsNullOrEmpty(newMaxDistInput))
             {
                 double newMaxDist;
+
+                // Validate input
                 while (!double.TryParse(newMaxDistInput, out newMaxDist))
                 {
                     Console.Write("Invalid number. Enter Max Distance (or leave empty): ");
                     newMaxDistInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newMaxDistInput)) break;
                 }
+                // Update if valid
                 if (!string.IsNullOrEmpty(newMaxDistInput))
                     updatedCourier = updatedCourier with { MaxDist = newMaxDist };
             }
@@ -351,6 +401,7 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Courier {id}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating courier: {ex.Message}");
@@ -358,7 +409,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת שליח לפי ת"ז
+    /// Helper function to delete a courier by ID
     /// </summary>
     private static void DeleteCourier()
     {
@@ -366,14 +417,17 @@ internal class Program
         {
             Console.Write("Enter Courier ID to delete: ");
             int id;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call to DAL
             s_dalCourier!.Delete(id);
 
             Console.WriteLine($"Successfully deleted Courier {id}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex) 
         {
             Console.WriteLine($"Error deleting courier: {ex.Message}");
@@ -381,13 +435,13 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת כל השליחים
+    /// Helper function to delete all couriers
     /// </summary>
     private static void DeleteAllCouriers()
     {
         try
         {
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call to DAL
             s_dalCourier!.DeleteAll();
 
             Console.WriteLine("Successfully deleted all couriers.");
@@ -399,15 +453,18 @@ internal class Program
     }
 
     /// <summary>
-    /// מנהלת את תפריט המשנה לטיפול בשליחים (Couriers)
+    /// Helper function to display the courier management menu
     /// </summary>
     private static void CourierMenu()
     {
         bool exit = false;
+
+        // Loop until the user chooses to exit
         while (!exit)
         {
             CrudMenuOptions choice = ShowCrudMenu("Courier");
 
+            // Handle the user's choice
             switch (choice)
             {
                 case CrudMenuOptions.Exit:
@@ -437,7 +494,7 @@ internal class Program
 
 
     /// <summary>
-    /// פונקציית עזר להוספת הזמנה חדשה
+    /// Helper function to add a new order
     /// </summary>
     private static void AddOrder()
     {
@@ -445,6 +502,8 @@ internal class Program
         {
             Console.Write("Enter Order Type (Regular, Express, SameDay): ");
             DO.OrderType typeOfOrder;
+
+            // Validate input
             while (!Enum.TryParse(Console.ReadLine(), true, out typeOfOrder))
                 Console.Write("Invalid type. Please enter (Regular, Express, SameDay): ");
 
@@ -453,11 +512,15 @@ internal class Program
 
             Console.Write("Enter Latitude (Geographical coordinate): ");
             double latitude;
+
+            // Validate input
             while (!double.TryParse(Console.ReadLine(), out latitude))
                 Console.Write("Invalid input. Please enter a valid number for latitude: ");
 
             Console.Write("Enter Longitude (Geographical coordinate): ");
             double longitude;
+
+            // Validate input
             while (!double.TryParse(Console.ReadLine(), out longitude))
                 Console.Write("Invalid input. Please enter a valid number for longitude: ");
 
@@ -468,6 +531,8 @@ internal class Program
             string? customerPhone = Console.ReadLine();
 
             int id = 0;
+
+            // Get the order opening time from the configuration
             DateTime orderOpeningTime = s_dalConfig!.Clock;
 
             Console.Write("Enter Package Details (optional, press Enter to skip): ");
@@ -476,6 +541,7 @@ internal class Program
             Console.Write("Enter Description (optional, press Enter to skip): ");
             string? description = Console.ReadLine();
 
+            // Create the new order object
             DO.Order newOrder = new DO.Order
             (
                 Id: id,
@@ -494,6 +560,7 @@ internal class Program
 
             Console.WriteLine($"Successfully added new order for {customerName}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding order: {ex.Message}");
@@ -501,7 +568,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לקבלת והצגת הזמנה לפי ID
+    /// Helper function to get and display an order by ID
     /// </summary>
     private static void GetOrder()
     {
@@ -512,9 +579,10 @@ internal class Program
             while (!int.TryParse(Console.ReadLine(), out id)) 
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            // קריאה ל-DAL
+            // Call to DAL
             DO.Order? order = s_dalOrder!.Read(id);
 
+            // Check if order was found
             if (order == null)
             {
                 Console.WriteLine($"Order with ID={id} not found.");
@@ -523,6 +591,7 @@ internal class Program
 
             Console.WriteLine(order); 
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex) 
         {
             Console.WriteLine($"Error getting order: {ex.Message}");
@@ -530,26 +599,29 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר להצגת כל ההזמנות
+    /// Helper function to list all orders
     /// </summary>
     private static void ListAllOrders()
     {
         try
         {
-            //  קריאה ל-DAL
+            // Call to DAL
             List<DO.Order> orders = s_dalOrder!.ReadAll();
 
+            // Check if any orders were found
             if (orders.Count == 0)
             {
                 Console.WriteLine("No orders found in the database.");
                 return;
             }
 
+            // Display each order
             foreach (var order in orders)
             {
                 Console.WriteLine(order);
             }
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex) 
         {
             Console.WriteLine($"Error listing orders: {ex.Message}");
@@ -557,19 +629,24 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לעדכון הזמנה קיימת
+    /// Helper function to update an existing order
     /// </summary>
     private static void UpdateOrder()
     {
         try
         {
-            // קליטת ID וקריאת האובייקט
+            // Get the order ID and read the object
             Console.Write("Enter Order ID to update: ");
             int id;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
+            // Read the existing order
             DO.Order? oldOrder = s_dalOrder!.Read(id);
+
+            // Check if order was found
             if (oldOrder == null)
             {
                 Console.WriteLine($"Order with ID={id} not found.");
@@ -579,84 +656,113 @@ internal class Program
             Console.WriteLine("Current values:");
             Console.WriteLine(oldOrder);
 
-            // קליטת ערכים חדשים
+            // Read new values
             DO.Order updatedOrder = oldOrder with { };
 
             Console.Write($"Enter new Order Type (current: {oldOrder.TypeOfOrder}): ");
             string? newTypeInput = Console.ReadLine();
+
+            // Validate and update Order Type
             if (!string.IsNullOrEmpty(newTypeInput))
             {
                 DO.OrderType newType;
+
+                // Validate input
                 while (!Enum.TryParse(newTypeInput, true, out newType))
                 {
                     Console.Write("Invalid. Enter Type (Regular, Express, SameDay) (or leave empty): ");
                     newTypeInput = Console.ReadLine();
+
                     if (string.IsNullOrEmpty(newTypeInput)) break;
                 }
+                // Update if valid
                 if (!string.IsNullOrEmpty(newTypeInput))
                     updatedOrder = updatedOrder with { TypeOfOrder = newType };
             }
 
             Console.Write($"Enter new Address (current: {oldOrder.Address}): ");
             string? newAddress = Console.ReadLine();
+
+            // Update Address if provided
             if (!string.IsNullOrEmpty(newAddress))
                 updatedOrder = updatedOrder with { Address = newAddress! };
 
             Console.Write($"Enter new Latitude (current: {oldOrder.Latitude}): ");
             string? newLatInput = Console.ReadLine();
+
+            // Validate and update Latitude
             if (!string.IsNullOrEmpty(newLatInput))
             {
                 double newLat;
+
+                // Validate input
                 while (!double.TryParse(newLatInput, out newLat))
                 {
                     Console.Write("Invalid number. Enter Latitude (or leave empty): ");
                     newLatInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newLatInput)) break;
                 }
+
+                // Update if valid
                 if (!string.IsNullOrEmpty(newLatInput))
                     updatedOrder = updatedOrder with { Latitude = newLat };
             }
 
             Console.Write($"Enter new Longitude (current: {oldOrder.Longitude}): ");
             string? newLonInput = Console.ReadLine();
+
+            // Validate and update Longitude
             if (!string.IsNullOrEmpty(newLonInput))
             {
                 double newLon;
+
+                // Validate input
                 while (!double.TryParse(newLonInput, out newLon))
                 {
                     Console.Write("Invalid number. Enter Longitude (or leave empty): ");
                     newLonInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newLonInput)) break;
                 }
+
+                // Update if valid
                 if (!string.IsNullOrEmpty(newLonInput))
                     updatedOrder = updatedOrder with { Longitude = newLon };
             }
 
             Console.Write($"Enter new Customer Name (current: {oldOrder.CustomerName}): ");
             string? newName = Console.ReadLine();
+
+            // Update Customer Name if provided
             if (!string.IsNullOrEmpty(newName))
                 updatedOrder = updatedOrder with { CustomerName = newName! };
 
             Console.Write($"Enter new Customer Phone (current: {oldOrder.CustomerPhone}): ");
             string? newPhone = Console.ReadLine();
+
+            // Update Customer Phone if provided
             if (!string.IsNullOrEmpty(newPhone))
                 updatedOrder = updatedOrder with { CustomerPhone = newPhone! };
 
             Console.Write($"Enter new Package Details (current: {oldOrder.PackageDetails}): ");
             string? newDetails = Console.ReadLine();
-            if (newDetails != null) // מאפשר גם להכניס מחרוזת ריקה
+
+            // Update Package Details if provided
+            if (newDetails != null) 
                 updatedOrder = updatedOrder with { PackageDetails = newDetails };
 
             Console.Write($"Enter new Description (current: {oldOrder.Description}): ");
             string? newDesc = Console.ReadLine();
+
+            // Update Description if provided
             if (newDesc != null)
                 updatedOrder = updatedOrder with { Description = newDesc };
 
-            // קריאה ל-DAL
+            // Call to DAL to update the order
             s_dalOrder!.Update(updatedOrder);
 
             Console.WriteLine($"Successfully updated Order {id}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating order: {ex.Message}");
@@ -664,7 +770,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת הזמנה לפי ID
+    /// helper function to delete an order by ID
     /// </summary>
     private static void DeleteOrder()
     {
@@ -672,14 +778,17 @@ internal class Program
         {
             Console.Write("Enter Order ID to delete: ");
             int id;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call to DAL to delete the order
             s_dalOrder!.Delete(id);
 
             Console.WriteLine($"Successfully deleted Order {id}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex) 
         {
             Console.WriteLine($"Error deleting order: {ex.Message}");
@@ -687,13 +796,13 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת כל ההזמנות
+    /// helper function to delete all orders
     /// </summary>
     private static void DeleteAllOrders()
     {
         try
         {
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call to DAL to delete all orders
             s_dalOrder!.DeleteAll();
 
             Console.WriteLine("Successfully deleted all orders.");
@@ -705,15 +814,18 @@ internal class Program
     }
 
     /// <summary>
-    /// מנהלת את תפריט המשנה לטיפול בהזמנות (Orders)
+    /// helper function to display the order menu
     /// </summary>
     private static void OrderMenu()
     {
         bool exit = false;
+
+        // Loop until the user chooses to exit
         while (!exit)
         {
             CrudMenuOptions choice = ShowCrudMenu("Order");
 
+            // Handle the user's choice
             switch (choice)
             {
                 case CrudMenuOptions.Exit:
@@ -743,15 +855,16 @@ internal class Program
 
 
     /// <summary>
-    /// פונקציית עזר להוספת משלוח חדש (קישור הזמנה לשליח)
+    /// helper function to add a new delivery (linking order to courier)
     /// </summary>
     private static void AddDelivery()
     {
         try
         {
-            // --- קליטת נתונים מהמשתמש ---
             Console.Write("Enter Order ID to assign: ");
             int orderId;
+
+            // Validate input
             while (!int.TryParse(Console.ReadLine(), out orderId))
                 Console.Write("Invalid input. Please enter a valid number for Order ID: ");
 
@@ -765,10 +878,10 @@ internal class Program
             while (!Enum.TryParse(Console.ReadLine(), true, out typeOfOrder))
                 Console.Write("Invalid type. Please enter (Regular, Express, SameDay): ");
 
-            int id = 0; // ID הוא מספר רץ אוטומטי
-            DateTime deliveryStartTime = s_dalConfig!.Clock; // זמן תחילת משלוח
+            int id = 0; // ID will be set by DAL
+            DateTime deliveryStartTime = s_dalConfig!.Clock; // Delivery start time
 
-            // --- יצירת האובייקט ---
+            // Create the object
             DO.Delivery newDelivery = new DO.Delivery
             (
                 Id: id,
@@ -781,11 +894,12 @@ internal class Program
                 DeliveryEndTime: null  
             );
 
-            // --- קריאה ל-DAL ---
+            // Call to DAL to create the delivery
             s_dalDelivery!.Create(newDelivery);
 
             Console.WriteLine($"Successfully created new delivery, assigning Order {orderId} to Courier {courierId}");
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding delivery: {ex.Message}");
@@ -793,7 +907,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לקבלת והצגת משלוח לפי ID
+    /// helper function to get and display a delivery by ID
     /// </summary>
     private static void GetDelivery()
     {
@@ -804,9 +918,10 @@ internal class Program
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            // קריאה ל-DAL
+            // Call to DAL
             DO.Delivery? delivery = s_dalDelivery!.Read(id);
 
+            // Check if delivery was found
             if (delivery == null)
             {
                 Console.WriteLine($"Delivery with ID={id} not found.");
@@ -815,6 +930,7 @@ internal class Program
 
             Console.WriteLine(delivery);
         }
+        // Catch any exceptions that occur during the process
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting delivery: {ex.Message}");
@@ -822,7 +938,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר להצגת כל המשלוחים
+    /// helper function to list all deliveries
     /// </summary>
     private static void ListAllDeliveries()
     {
@@ -848,13 +964,13 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לעדכון משלוח קיים
+    /// helper function to update an existing delivery
     /// </summary>
     private static void UpdateDelivery()
     {
         try
         {
-            // קליטת ID וקריאת האובייקט
+            // Get ID and read the object
             Console.Write("Enter Delivery ID to update: ");
             int id;
             while (!int.TryParse(Console.ReadLine(), out id))
@@ -870,29 +986,38 @@ internal class Program
             Console.WriteLine("Current values:");
             Console.WriteLine(oldDelivery);
 
-            // קליטת ערכים חדשים
+            // Get new values
             DO.Delivery updatedDelivery = oldDelivery with { };
 
             Console.Write($"Enter new Actual Distance (current: {oldDelivery.ActualDistance}): ");
             string? newDistInput = Console.ReadLine();
+
+            // Validate and update Actual Distance
             if (!string.IsNullOrEmpty(newDistInput))
             {
                 double newDist;
+
+                // Validate input
                 while (!double.TryParse(newDistInput, out newDist))
                 {
                     Console.Write("Invalid number. Enter Distance (or leave empty): ");
                     newDistInput = Console.ReadLine();
                     if (string.IsNullOrEmpty(newDistInput)) break;
                 }
+
+                // Update if valid
                 if (!string.IsNullOrEmpty(newDistInput))
                     updatedDelivery = updatedDelivery with { ActualDistance = newDist };
             }
 
             Console.Write($"Enter new Order End Status (current: {oldDelivery.OrderEndStatus}): ");
             string? newStatusInput = Console.ReadLine();
+
+            // Validate and update Order End Status
             if (!string.IsNullOrEmpty(newStatusInput))
             {
                 DO.OrderStatus newStatus;
+                // Validate input
                 while (!Enum.TryParse(newStatusInput, true, out newStatus))
                 {
                     Console.Write("Invalid. Enter Status (Delivered, Refused, etc.) (or leave empty): ");
@@ -903,13 +1028,17 @@ internal class Program
                     updatedDelivery = updatedDelivery with { OrderEndStatus = newStatus };
             }
 
-            // קליטת זמן סיום. אנחנו לא ניקח משעון המערכת,
-            // אלא נאפשר למשתמש להזין זמן כדי לבדוק את ה-DAL.
+            // Get Delivery End Time. We're not taking from the system clock,
+            // but allowing the user to enter a time to test the DAL.
             Console.Write($"Enter new Delivery End Time (current: {oldDelivery.DeliveryEndTime}): ");
             string? newEndTimeInput = Console.ReadLine();
+
+            // Validate and update Delivery End Time
             if (!string.IsNullOrEmpty(newEndTimeInput))
             {
                 DateTime newEndTime;
+
+                // Validate input
                 while (!DateTime.TryParse(newEndTimeInput, out newEndTime))
                 {
                     Console.Write("Invalid. Enter time (e.g., 'dd/mm/yyyy hh:mm') (or leave empty): ");
@@ -920,11 +1049,12 @@ internal class Program
                     updatedDelivery = updatedDelivery with { DeliveryEndTime = newEndTime };
             }
 
-            // קריאה ל-DAL
+            // Call DAL
             s_dalDelivery!.Update(updatedDelivery);
 
             Console.WriteLine($"Successfully updated Delivery {id}");
         }
+        // Catch any exceptions
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating delivery: {ex.Message}");
@@ -932,7 +1062,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת משלוח לפי ID
+    /// helper function to delete a delivery by ID
     /// </summary>
     private static void DeleteDelivery()
     {
@@ -943,7 +1073,7 @@ internal class Program
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call the delete function from the DAL
             s_dalDelivery!.Delete(id);
 
             Console.WriteLine($"Successfully deleted Delivery {id}");
@@ -955,13 +1085,13 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר למחיקת כל המשלוחים
+    /// helper function to delete all deliveries
     /// </summary>
     private static void DeleteAllDeliveries()
     {
         try
         {
-            // קוראים לפונקציית המחיקה מה-DAL
+            // Call the delete function from the DAL
             s_dalDelivery!.DeleteAll();
 
             Console.WriteLine("Successfully deleted all deliveries.");
@@ -973,11 +1103,13 @@ internal class Program
     }
 
     /// <summary>
-    /// מנהלת את תפריט המשנה לטיפול במשלוחים (Deliveries)
+    /// helper function to manage the delivery submenu
     /// </summary>
     private static void DeliveryMenu()
     {
         bool exit = false;
+
+        // Loop until the user chooses to exit
         while (!exit)
         {
             CrudMenuOptions choice = ShowCrudMenu("Delivery");
@@ -1011,7 +1143,7 @@ internal class Program
 
 
     /// <summary>
-    /// מציגה את שעון המערכת הנוכחי
+    /// shows the current system clock
     /// </summary>
     private static void ShowClock()
     {
@@ -1019,23 +1151,23 @@ internal class Program
     }
 
     /// <summary>
-    /// מקדמת את שעון המערכת בפרק זמן נתון
+    /// Advances the system clock by a specified time span.
     /// </summary>
-    /// <param name="span">פרק הזמן להוספה (דקה, שעה, יום...)</param>
+    /// <param name="span">The time span to add (minutes, hours, days...)</param>
     private static void AdvanceClock(TimeSpan span)
     {
-        // 1. קוראים את הזמן הישן
+        // 1. Get the old time
         DateTime oldTime = s_dalConfig!.Clock;
-        // 2. מחשבים את הזמן החדש
+        // 2. Calculate the new time
         DateTime newTime = oldTime.Add(span);
-        // 3. מעדכנים את הזמן ב-DAL
+        // 3. Update the time in the DAL
         s_dalConfig.Clock = newTime;
 
         Console.WriteLine($"System clock advanced from {oldTime} to {newTime}");
     }
 
     /// <summary>
-    /// מאפסת את כל הגדרות המערכת
+    /// Resets all system settings to their default values.
     /// </summary>
     private static void ResetConfig()
     {
@@ -1044,7 +1176,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר להצגת ערך של משתנה מה-Config
+    /// helper function to show the value of a variable from the Config
     /// </summary>
     private static void ShowVariable()
     {
@@ -1066,6 +1198,8 @@ internal class Program
             string? choice = Console.ReadLine();
 
             Console.Write("Current Value: ");
+
+            // Display the selected variable
             switch (choice)
             {
                 case "1":
@@ -1110,7 +1244,7 @@ internal class Program
     }
 
     /// <summary>
-    /// פונקציית עזר לעדכון ערך של משתנה ב-Config
+    /// helper function to update the value of a variable in the Config
     /// </summary>
     private static void UpdateVariable()
     {
@@ -1132,6 +1266,7 @@ internal class Program
             string? choice = Console.ReadLine();
             string? input;
 
+            // Update the selected variable
             switch (choice)
             {
                 case "1": // Admin ID (int)
@@ -1266,7 +1401,7 @@ internal class Program
     }
 
     /// <summary>
-    /// מנהלת את תפריט המשנה לטיפול בהגדרות (Config)
+    /// helper function to manage the configuration settings menu
     /// </summary>
     private static void ConfigMenu()
     {
@@ -1277,6 +1412,7 @@ internal class Program
 
             try
             {
+                // Handle the user's choice
                 switch (choice)
                 {
                     case ConfigMenuOptions.Exit:
@@ -1321,14 +1457,17 @@ internal class Program
         }
     }
 
-
+    /// <summary>
+    /// main entry point of the program
+    /// </summary>
+    /// <param name="args"></param>
     static void Main(string[] args)
     {
-        // 1. הפעלת אתחול ראשוני (פרק 10)
+        // Activate initial setup (Chapter 10)
         try
         {
             Console.WriteLine("Initializing data...");
-            // קוראים לפונקציה מפרק 10 עם המופעים שיצרנו
+            // Call the function from Chapter 10 with the instances we created
 
             Initialization.Do(s_dalConfig, s_dalCourier, s_dalOrder, s_dalDelivery);
             Console.WriteLine("Data initialized successfully.");
@@ -1338,19 +1477,19 @@ internal class Program
             Console.WriteLine($"Critical error during initialization: {ex.Message}");
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
-            return; // יציאה מהתוכנית אם האתחול נכשל
+            return; // Exit the program if initialization fails
         }
 
-        // הלולאה הראשית של התפריט
+        // Main menu loop
         bool exit = false;
         while (!exit)
         {
-            // קריאה לפונקציית העזר שלנו
+            // Call our helper function
             MainMenuOptions choice = ShowMainMenu();
 
             try
             {
-                // טיפול בבחירה
+                // Handle the user's choice
                 switch (choice)
                 {
                     case MainMenuOptions.Exit:
@@ -1358,19 +1497,19 @@ internal class Program
                         Console.WriteLine("Exiting program. Goodbye!");
                         break;
                     case MainMenuOptions.Courier:
-                        CourierMenu(); // קריאה לפונקציית העזר של שליחים
+                        CourierMenu(); // Call the helper function for couriers
                         break;
                     case MainMenuOptions.Order:
-                        OrderMenu(); // קריאה לפונקציית העזר של הזמנות
+                        OrderMenu(); // Call the helper function for orders
                         break;
                     case MainMenuOptions.Delivery:
-                        DeliveryMenu(); // קריאה לפונקציית העזר של משלוחים
+                        DeliveryMenu(); // Call the helper function for deliveries
                         break;
                     case MainMenuOptions.Config:
-                        ConfigMenu(); // קריאה לפונקציית העזר של הגדרות
+                        ConfigMenu(); // Call the helper function for configuration
                         break;
                     case MainMenuOptions.InitializeData:
-                        // אפשרות להפעיל שוב את האתחול
+                        // Option to re-run initialization
                         Console.WriteLine("Re-initializing data (Reset + Create)...");
                         Initialization.Do(s_dalConfig, s_dalCourier, s_dalOrder, s_dalDelivery);
                         Console.WriteLine("Data re-initialized successfully.");
@@ -1384,7 +1523,7 @@ internal class Program
                         Console.WriteLine("All data reset.");
                         break;
                     case MainMenuOptions.ListAllData:
-                        // אפשרות להציג את כל הרשימות בבת אחת
+                        // Option to list all data at once
                         Console.WriteLine("\n--- LISTING ALL DATA ---");
                         Console.WriteLine("\n-- Couriers --");
                         ListAllCouriers();
@@ -1398,10 +1537,10 @@ internal class Program
             }
             catch (Exception ex)
             {
-                // תפיסת חריגות כללית מכל שכבת ה-DAL
+                // General exception handling for all DAL layers
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 Console.WriteLine("Returning to main menu. Press Enter to continue...");
-                Console.ReadLine(); // מחכים שהמשתמש יקרא את השגיאה
+                Console.ReadLine(); // Wait for the user to acknowledge the error
             }
         }
     }
