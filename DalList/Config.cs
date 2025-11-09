@@ -26,6 +26,7 @@ static internal class Config
     internal static TimeSpan MaxDeliveryRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan RiskRange { get; set; } = TimeSpan.Zero;
     internal static TimeSpan InactivityTimeRange { get; set; } = TimeSpan.Zero;
+    
     internal static void Reset()
     {
         nextDeliveryId = StartDeliveryId;
@@ -34,8 +35,8 @@ static internal class Config
         AdminId = 123456782;
         AdminPassword = "Deafult1234$";
         CompenyAddress = null;
-        CompenyLatitude = null;
-        CompenyLongitude = null;
+        CompenyLatitude = 32.0853;
+        CompenyLongitude = 34.7818;
         DeliveryMaxDistance = null;
         AverageVehicleSpeedKmH = 0.0;
         AverageMotorcycleSpeedKmH = 0.0;
