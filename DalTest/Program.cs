@@ -1,16 +1,12 @@
-﻿/// <summary>
-/// Main entry point for the application.
-/// </summary>
-using Dal;
+﻿using Dal;
 using DalApi;
-using DO;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using static DalTest.Program;
 
 namespace DalTest;
 
+/// <summary>
+/// Main entry point for the application
+/// This code was written as a base by AI and rewritten and corrected by us.
+/// </summary>
 internal class Program
 {
     //creating the DAL objects

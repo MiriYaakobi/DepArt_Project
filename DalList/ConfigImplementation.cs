@@ -1,7 +1,13 @@
 ﻿namespace Dal;
 using DalApi;
+
+/// <summary>
+/// a class that implements the IConfig interface to manage configuration settings.
+/// </summary>
 public class ConfigImplementation : IConfig
 {
+
+    //properties
     public DateTime Clock
     {
         get => Config.Clock;
@@ -38,12 +44,14 @@ public class ConfigImplementation : IConfig
         get => Config.CompenyLongitude;
         set => Config.CompenyLongitude = value;
     }
+
+    //reset method
     public void Reset()
     {
         Config.Reset();
     }
 
-    //הוספנו בשביל שלב 11, האם להוריד בהמשך?
+    //We added for step 11, will we use later?
     public int AdminId
     {
         get => Config.AdminId;

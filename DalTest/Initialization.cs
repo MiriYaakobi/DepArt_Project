@@ -1,9 +1,11 @@
 namespace DalTest;
-using Dal;
 using DalApi;
 using DO;
 using System;
 
+/// <summary>
+/// a static class for initializing the DAL with test data
+/// </summary>
 public static class Initialization
 {
     private static ICourier? s_dalCourier;
@@ -13,20 +15,50 @@ public static class Initialization
 
     private static readonly Random s_rand = new();
 
+    /// <summary>
+    /// generates a random phone number in the format 05X-XXX-XXXX
+    /// </summary>
+    /// <returns></returns>
     private static string RandomPhoneNumber() => $"05{s_rand.Next(0, 9):D1}-{s_rand.Next(100, 999):D3}-{s_rand.Next(1000, 9999):D4}";
+
+    /// <summary>
+    /// generates a random email based on the provided name
+    /// </summary>
+    /// <param name="Name"></param>
+    /// <returns></returns>
     private static string RandomEmail(string Name) => Name.Replace(" ", ".").ToLower() + "@gmail.com";
+
+    /// <summary>
+    /// generates a random password based on the provided name
+    /// </summary>
+    /// <param name="Name"></param>
+    /// <returns></returns>
     private static string RandomPassword(string Name) => $"{Name.Replace(" ", "#").ToLower()}{s_rand.Next(0, 21):D2}";
+
+    /// <summary>
+    /// generates a random DateTime within the last 5 years at a random hour between 7 AM and 9 PM
+    /// </summary>
+    /// <param name="Time"></param>
+    /// <returns></returns>
     private static DateTime RandomTime(DateTime Time)
     {
         int daysBack = s_rand.Next(0, 1827);
         int hoursOffset = s_rand.Next(7, 21);
         int minutesOffset = s_rand.Next(0, 61);
         int secondsOffset = s_rand.Next(0, 61);
+
         return Time.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
     }
 
+    /// <summary>
+    /// generates a random maximum distance based on the delivery type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="rand"></param>
+    /// <returns></returns>
     private static double getRandomMaxDistance(DeliveryType type, Random rand)
     {
+        // Define distance ranges for each delivery type
         var (min, max) = type switch
         {
             DeliveryType.Car => (50, 350),
@@ -38,6 +70,14 @@ public static class Initialization
 
         return rand.Next(min, max + 1);
     }
+    /// <summary>
+    /// haversine formula to calculate distance between two lat/lon points - written as a base by AI and rewritten and corrected by us
+    /// </summary>
+    /// <param name="lat1"></param>
+    /// <param name="lon1"></param>
+    /// <param name="lat2"></param>
+    /// <param name="lon2"></param>
+    /// <returns></returns>
     private static double CalculateDistanceFromCompany(double lat1, double lon1, double lat2, double lon2)
     {
         double R = 6371;
@@ -50,10 +90,19 @@ public static class Initialization
         return R * c;
     }
 
-    // Helper method to convert degrees to radians
+    /// <summary>
+    /// provides conversion from degrees to radians
+    /// </summary>
+    /// <param name="deg"></param>
+    /// <returns></returns>
     private static double DegreesToRadians(double deg) => deg * (Math.PI / 180);
 
-    // Function to pick a courier who can handle the given distance
+    /// <summary>
+    /// function to pick a random courier who can handle the given distance
+    /// </summary>
+    /// <param name="allCouriers"></param>
+    /// <param name="distKm"></param>
+    /// <returns></returns>
     private static Courier? PickCourierForDistance(List<Courier> allCouriers, double distKm)
     {
         // Filter couriers who can handle the distance
@@ -64,7 +113,13 @@ public static class Initialization
         return pool[s_rand.Next(pool.Count)];
     }
 
-    // Function to check if a new time segment overlaps with existing segments
+    /// <summary>
+    /// function to check if a new time segment overlaps with existing segments in the schedule
+    /// </summary>
+    /// <param name="schedule"></param>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     private static bool HasOverlap(List<(DateTime Start, DateTime? End)> schedule, DateTime start, DateTime? end)
     {
         // Check each segment in the schedule for overlap
@@ -78,7 +133,9 @@ public static class Initialization
         return false;
     }
 
-    // Create couriers
+    /// <summary>
+    /// creates 20 random couriers and adds them to the DAL
+    /// </summary>
     private static void createCouriers()
     {
         string[] people =
@@ -91,6 +148,8 @@ public static class Initialization
         for (int i = 0; i < 20; i++)
         {
             int id;
+
+            // Ensure unique ID
             do
                 id = s_rand.Next(100000000, 999999999);
             while (s_dalCourier!.Read(id) != null);
@@ -99,17 +158,22 @@ public static class Initialization
             string phone = RandomPhoneNumber();
             string email = RandomEmail(name);
             string password = RandomPassword(name);
-            bool isActive = s_rand.Next(0, 100) < 80;
-            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4);
-            DateTime startWorkTime = RandomTime(s_dalConfig!.Clock);
-            double? maxDist = getRandomMaxDistance(deliveryType, s_rand);
+            bool isActive = s_rand.Next(0, 100) < 80; // 80% chance to be active
+            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4); // Random delivery type
+            DateTime startWorkTime = RandomTime(s_dalConfig!.Clock); // Random start work time
+            double? maxDist = getRandomMaxDistance(deliveryType, s_rand); // Random max distance
 
+            // Create and add the courier to the DAL
             s_dalCourier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
         }
     }
 
+    /// <summary>
+    /// creates 50 random orders and adds them to the DAL
+    /// </summary>
     private static void createOrders()
     {
+        // Predefined addresses with latitudes and longitudes
         var addresses = new (string address, double latitude, double longitude)[]
         {
             ("Herzl 10, Tel Aviv", 32.0675, 34.7775), ("Jaffa Road 2, Jerusalem", 31.7780, 35.2345),
@@ -119,6 +183,7 @@ public static class Initialization
             ("Beersheba", 31.2518, 34.7915), ("Rehovot", 31.8948, 34.8110)
         };
 
+        // Predefined customer names
         string[] customerNames =
         {
             "Noah Cohen", "Daniel Levy", "Maya Rosen", "David Friedman",
@@ -133,12 +198,14 @@ public static class Initialization
             "Roy Shaked", "Alon Baruch", "Michal Dahan", "Yarden Golan", "Nadav Tal"
         };
 
+        // Predefined package details and descriptions
         string[] PackageDetails =
         {
             "Canvas painting - medium size", "Fragile - framed artwork", "Sculpture package - heavy",
             "Photography print envelope", "Limited edition art box"
         };
 
+        // Predefined descriptions
         string[] Descriptions =
         {
             "Standard art delivery", "Handle with care - original artwork",
@@ -166,6 +233,9 @@ public static class Initialization
         }
     }
 
+    /// <summary>
+    /// creates deliveries for some of the orders in the DAL - written as a base by AI and rewritten and corrected by us
+    /// </summary>
     private static void createDeliveries()
     {
         // Read all orders and couriers
@@ -312,15 +382,24 @@ public static class Initialization
                     break;
                 }
             }
+
             // If not placed after all attempts, continue to the next order
             if (!placed)
                 continue;
         }
     }
 
-
+    /// <summary>
+    /// initializes the DAL by resetting config and lists, and creating test data
+    /// </summary>
+    /// <param name="dalConfig"></param>
+    /// <param name="dalCourier"></param>
+    /// <param name="dalOrder"></param>
+    /// <param name="dalDelivery"></param>
+    /// <exception cref="NullReferenceException"></exception>
     public static void Do(IConfig? dalConfig, ICourier? dalCourier, IOrder? dalOrder, IDelivery? dalDelivery)
     {
+        // Assign DAL interfaces, throwing exceptions if any are null
         s_dalConfig = dalConfig ?? throw new NullReferenceException("IConfig object cannot be null!");
         s_dalCourier = dalCourier ?? throw new NullReferenceException("ICourier object cannot be null!");
         s_dalOrder = dalOrder ?? throw new NullReferenceException("IOrder object cannot be null!");

@@ -1,4 +1,5 @@
 ﻿namespace DO;
+
 /// <summary>
 /// Represents a delivery record with details about the order, courier, and delivery status.
 /// </summary>

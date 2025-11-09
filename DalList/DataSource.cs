@@ -1,4 +1,8 @@
 ﻿namespace Dal;
+
+/// <summary>
+/// local in-memory data source for storing deliveries, orders, and couriers.
+/// </summary>
 internal static class DataSource
 {
     internal static List<DO.Delivery> Deliveries { get; } = new();
