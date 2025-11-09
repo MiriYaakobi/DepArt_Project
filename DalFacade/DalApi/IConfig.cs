@@ -14,4 +14,12 @@ public interface IConfig
     double? CompenyLatitude { get; set; }
     double? CompenyLongitude { get; set; }
     void Reset();
+
+    //הוספנו בשביל שלב 11, האם להוריד בהמשך?
+    int AdminId { get; set; }
+    double? DeliveryMaxDistance { get; set; }
+    double AverageVehicleSpeedKmH { get; set; }
+    double AverageMotorcycleSpeedKmH { get; set; }
+    double AverageBicycleSpeedKmH { get; set; }
+    double AverageByFootSpeedKmH { get; set; }
 }

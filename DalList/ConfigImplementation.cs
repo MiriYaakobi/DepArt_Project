@@ -42,4 +42,36 @@ public class ConfigImplementation : IConfig
     {
         Config.Reset();
     }
+
+    //הוספנו בשביל שלב 11, האם להוריד בהמשך?
+    public int AdminId
+    {
+        get => Config.AdminId;
+        set => Config.AdminId = value;
+    }
+    public double? DeliveryMaxDistance
+    {
+        get => Config.DeliveryMaxDistance;
+        set => Config.DeliveryMaxDistance = value;
+    }
+    public double AverageVehicleSpeedKmH
+    {
+        get => Config.AverageVehicleSpeedKmH;
+        set => Config.AverageVehicleSpeedKmH = value;
+    }
+    public double AverageMotorcycleSpeedKmH
+    {
+        get => Config.AverageMotorcycleSpeedKmH;
+        set => Config.AverageMotorcycleSpeedKmH = value;
+    }
+    public double AverageBicycleSpeedKmH
+    {
+        get => Config.AverageBicycleSpeedKmH;
+        set => Config.AverageBicycleSpeedKmH = value;
+    }
+    public double AverageByFootSpeedKmH
+    {
+        get => Config.AverageByFootSpeedKmH;
+        set => Config.AverageByFootSpeedKmH = value;
+    }
 }

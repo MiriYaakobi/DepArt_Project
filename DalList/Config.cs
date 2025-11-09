@@ -34,8 +34,8 @@ static internal class Config
         AdminId = 123456782;
         AdminPassword = "Deafult1234$";
         CompenyAddress = null;
-        CompenyLatitude = null;
-        CompenyLongitude = null;
+        CompenyLatitude = 32.0853;
+        CompenyLongitude = 34.7818;
         DeliveryMaxDistance = null;
         AverageVehicleSpeedKmH = 0.0;
         AverageMotorcycleSpeedKmH = 0.0;
