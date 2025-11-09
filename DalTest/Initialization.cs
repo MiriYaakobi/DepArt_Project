@@ -1,6 +1,9 @@
-namespace DalTest;using Dal;using DalApi;
+namespace DalTest;
+using Dal;
+using DalApi;
 using DO;
-using System;
+using System;
+
 public static class Initialization
 {
    
