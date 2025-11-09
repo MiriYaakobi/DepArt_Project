@@ -9,7 +9,7 @@ using System.Collections.Generic;
 /// <remarks>This class implements the <see cref="IOrder"/> interface and operates on a data source containing
 /// orders. It ensures that each order has a unique identifier and provides functionality to manipulate the order
 /// data.</remarks>
-public class OrderImplementation : IOrder
+internal class OrderImplementation : IOrder
 {
     /// <summary>
     /// creates a new order and adds it to the data source.

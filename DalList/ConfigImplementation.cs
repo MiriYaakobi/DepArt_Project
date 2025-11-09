@@ -4,7 +4,7 @@ using DalApi;
 /// <summary>
 /// a class that implements the IConfig interface to manage configuration settings.
 /// </summary>
-public class ConfigImplementation : IConfig
+internal class ConfigImplementation : IConfig
 {
 
     //properties
