@@ -4,19 +4,19 @@ using DO;
 
 sealed public class DalList : IDal
 {
-    public ICourier Couriers { get; } = new CourierImplementation();
+    public ICourier Courier { get; } = new CourierImplementation();
 
-    public IOrder Orders { get; } = new OrderImplementation();
+    public IOrder Order { get; } = new OrderImplementation();
 
-    public IDelivery Deliveries { get; } = new DeliveryImplementation();
+    public IDelivery Delivery { get; } = new DeliveryImplementation();
 
     public IConfig Config { get; } = new ConfigImplementation();
 
     public void ResetDB()
     {
-        Couriers.DeleteAll();
-        Orders.DeleteAll();
-        Deliveries.DeleteAll();
+        Courier.DeleteAll();
+        Order.DeleteAll();
+        Delivery.DeleteAll();
         Config.Reset();
     }
 }
