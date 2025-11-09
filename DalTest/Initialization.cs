@@ -1,9 +1,7 @@
-namespace DalTest;
-using Dal;
-using DalApi;
-using DO;
-using System;
 
+namespace DalTest;using Dal;using DalApi;
+using DO;
+using System;
 public static class Initialization
 {
     private static ICourier? s_dalCourier;
@@ -51,8 +49,7 @@ public static class Initialization
     }
 
     private static double DegreesToRadians(double deg) => deg * (Math.PI / 180);
-
-    private static void createCouriers()
+    private static void createCouriers()
     {
         string[] people =
         {
@@ -129,12 +126,7 @@ public static class Initialization
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
 
-            s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
-        }
-    }
-
-    private static void createDeliveries()
-    {
+            s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));        }    }    private static void createDeliveries()    {
         //var couriers = s_dalCourier!.ReadAll().Where(c => c.IsActive).ToList();
         //var orders = s_dalOrder!.ReadAll().ToList();
 
@@ -147,6 +139,9 @@ public static class Initialization
         //    }
 
         //    var possibleCouriers = couriers.Where(c => !c.MaxDist.HasValue || c.MaxDist.Value >= distance).ToList();
+        //    var possibleCouriers = couriers
+        //        .Where(c => !c.MaxDist.HasValue || c.MaxDist.Value >= distance)
+        //        .ToList();
 
         //    if (!possibleCouriers.Any())
         //        continue;
@@ -163,8 +158,7 @@ public static class Initialization
 
         //    s_dalDelivery!.Create(new(0, order.Id, courier.Id, order.TypeOfOrder, startTime, actualDistance, endStatus, endTime));
         //}
-    }
-
+    }
     public static void Do(IConfig? dalConfig, ICourier? dalCourier, IOrder? dalOrder, IDelivery? dalDelivery)
     {
         s_dalConfig = dalConfig ?? throw new NullReferenceException("IConfig object cannot be null!");

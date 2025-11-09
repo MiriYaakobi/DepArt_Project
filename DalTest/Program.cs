@@ -899,4 +899,17 @@ internal class Program
     //        catch (Exception ex) { Console.WriteLine(ex); }
     //    }
 
+    //    private static void resetConfigAndData()
+    //    {
+    //        try
+    //        {
+    //            s_dalOrder!.DeleteAll();
+    //            s_dalCourier!.DeleteAll();
+    //            s_dalDelivery!.DeleteAll();
+    //            s_dalConfig!.Reset();
+    //            Console.WriteLine("All data & config have been reset.");
+    //        }
+    //        catch (Exception ex) { Console.WriteLine(ex); }
+    //    }
+
 }
