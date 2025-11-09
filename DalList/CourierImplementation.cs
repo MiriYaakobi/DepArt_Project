@@ -3,7 +3,6 @@ using DalApi;
 using DO;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 /// <summary>
 /// a class that implements the ICourier interface to manage Courier entities in the data source.
@@ -18,7 +17,7 @@ internal class CourierImplementation : ICourier
     public void Create(Courier Item)
     {
         if (Read(Item.Id) is not null)
-            throw new DalAlreadyExistsException($"Courier with Id {Item.Id} already exists.");
+            throw new Exception($"Courier with Id {Item.Id} already exists.");
         DataSource.Couriers.Add(Item);
     }
 
@@ -30,7 +29,7 @@ internal class CourierImplementation : ICourier
     public void Delete(int IdEntity)
     {
         if (Read(IdEntity) is null)
-            throw new DalDoesNotExistException($"Courier with Id {IdEntity} doesn't exist.");
+            throw new Exception($"Courier with Id {IdEntity} doesn't exist.");
         else
         {
             int Index = DataSource.Couriers.FindIndex(c => c.Id == IdEntity);
@@ -53,26 +52,23 @@ internal class CourierImplementation : ICourier
     /// <returns></returns>
     public Courier? Read(int IdEntity)
     {
-        return DataSource.Couriers.FirstOrDefault(c => c.Id == IdEntity);
+        return DataSource.Couriers.Find(c => c.Id == IdEntity);
     }
-
-
-    /// <summary>
-    /// retrieves a courier from the data source based on a filter.
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public DO.Courier? Read(Func<DO.Courier, bool> filter)
-        => DataSource.Couriers.FirstOrDefault(filter);
 
     /// <summary>
     /// retrieves all couriers from the data source.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Courier> ReadAll(Func<Courier, bool>? filter = null)
-        => filter == null
-          ? DataSource.Couriers.Select(c => c)
-          : DataSource.Couriers.Where(filter);
+    public List<Courier> ReadAll()
+    {
+        List<Courier> CopyList = new List<Courier>();
+        foreach (Courier c in DataSource.Couriers)
+        {
+            Courier NewCourier = c with { }; // create a copy of the courier
+            CopyList.Add(NewCourier);
+        }
+        return CopyList;
+    }
 
     /// <summary>
     /// updates an existing courier in the data source.
@@ -82,7 +78,7 @@ internal class CourierImplementation : ICourier
     public void Update(Courier Item)
     {
         if (Read(Item.Id) is null)
-            throw new DalDoesNotExistException($"Courier with Id {Item.Id} doesn't exist.");
+            throw new Exception($"Courier with Id {Item.Id} doesn't exist.");
         else
         {
             int Index = DataSource.Couriers.FindIndex(c => c.Id == Item.Id); // find the index of the courier to update
