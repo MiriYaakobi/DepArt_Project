@@ -148,6 +148,9 @@ public static class Initialization
         //    }
 
         //    var possibleCouriers = couriers.Where(c => !c.MaxDist.HasValue || c.MaxDist.Value >= distance).ToList();
+        //    var possibleCouriers = couriers
+        //        .Where(c => !c.MaxDist.HasValue || c.MaxDist.Value >= distance)
+        //        .ToList();
 
         //    if (!possibleCouriers.Any())
         //        continue;
