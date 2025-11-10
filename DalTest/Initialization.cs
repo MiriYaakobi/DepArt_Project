@@ -8,10 +8,7 @@ using System;
 /// </summary>
 public static class Initialization
 {
-    private static ICourier? s_dalCourier;
-    private static IOrder? s_dalOrder;
-    private static IDelivery? s_dalDelivery;
-    private static IConfig? s_dalConfig;
+    private static IDal? s_dal;
 
     private static readonly Random s_rand = new();
 
@@ -152,7 +149,7 @@ public static class Initialization
             // Ensure unique ID
             do
                 id = s_rand.Next(100000000, 999999999);
-            while (s_dalCourier!.Read(id) != null);
+            while (s_dal!.Courier.Read(id) != null);
 
             string name = people[i];
             string phone = RandomPhoneNumber();
@@ -160,11 +157,11 @@ public static class Initialization
             string password = RandomPassword(name);
             bool isActive = s_rand.Next(0, 100) < 80; // 80% chance to be active
             DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4); // Random delivery type
-            DateTime startWorkTime = RandomTime(s_dalConfig!.Clock); // Random start work time
+            DateTime startWorkTime = RandomTime(s_dal!.Config.Clock); // Random start work time
             double? maxDist = getRandomMaxDistance(deliveryType, s_rand); // Random max distance
 
             // Create and add the courier to the DAL
-            s_dalCourier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
+            s_dal!.Courier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));
         }
     }
 
@@ -220,16 +217,16 @@ public static class Initialization
             OrderType orderTypes = (OrderType)s_rand.Next(0, 3);
             var name = customerNames[i];
             string phone = RandomPhoneNumber();
-            DateTime OpeningTime = RandomTime(s_dalConfig!.Clock);
+            DateTime OpeningTime = RandomTime(s_dal!.Config.Clock);
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
 
             // Ensure uniqueness
-            var exists = s_dalOrder!.ReadAll().Any(o => o.Address == address && o.CustomerName == name && o.CustomerPhone == phone);
+            var exists = s_dal!.Order.ReadAll().Any(o => o.Address == address && o.CustomerName == name && o.CustomerPhone == phone);
 
             // Only create the order if it doesn't already exist
             if (!exists)
-                s_dalOrder!.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
+                s_dal!.Order.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
         }
     }
 
@@ -239,8 +236,8 @@ public static class Initialization
     private static void createDeliveries()
     {
         // Read all orders and couriers
-        var allOrders = s_dalOrder!.ReadAll().ToList();
-        var allCouriers = s_dalCourier!.ReadAll().ToList();
+        var allOrders = s_dal!.Order.ReadAll().ToList();
+        var allCouriers = s_dal!.Courier.ReadAll().ToList();
 
         // If no orders or couriers, exit
         if (allOrders.Count == 0 || allCouriers.Count == 0)
@@ -265,14 +262,14 @@ public static class Initialization
         var finished = shuffledOrders.Take(finishedTarget).ToList();
         var running = shuffledOrders.Skip(finishedTarget).Take(runningTarget).ToList();
 
-        DateTime now = s_dalConfig!.Clock;
+        DateTime now = s_dal!.Config.Clock;
 
         // Process finished orders
         foreach (var order in finished.ToList())
         {
             // Calculate distance from company to order location
             double dist = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
-                    s_dalConfig!.CompenyLatitude!.Value, s_dalConfig.CompenyLongitude!.Value);
+                    s_dal!.Config.CompenyLatitude!.Value, s_dal!.Config.CompenyLongitude!.Value);
             var courier = PickCourierForDistance(allCouriers, dist);
 
             // If no suitable courier found, skip this order
@@ -323,7 +320,7 @@ public static class Initialization
                     var endStatus = closedStatuses[s_rand.Next(closedStatuses.Length)];
 
                     // Create the delivery record
-                    s_dalDelivery!.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, endStatus, end));
+                    s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, endStatus, end));
                     availableOrders.RemoveAll(o => o.Id == order.Id);
 
                     // Mark as placed and exit the loop
@@ -342,7 +339,7 @@ public static class Initialization
         {
             // Calculate distance from company to order location
             double dist = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
-                    s_dalConfig!.CompenyLatitude!.Value, s_dalConfig.CompenyLongitude!.Value);
+                    s_dal!.Config.CompenyLatitude!.Value, s_dal!.Config.CompenyLongitude!.Value);
 
             var courier = PickCourierForDistance(allCouriers, dist);
 
@@ -375,7 +372,7 @@ public static class Initialization
                     courierSchedule[courier.Id].Add((start, null));
 
                     // Create the delivery record
-                    s_dalDelivery!.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, null, null));
+                    s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, null, null));
 
                     availableOrders.RemoveAll(o => o.Id == order.Id);
                     placed = true;
@@ -397,19 +394,13 @@ public static class Initialization
     /// <param name="dalOrder"></param>
     /// <param name="dalDelivery"></param>
     /// <exception cref="NullReferenceException"></exception>
-    public static void Do(IConfig? dalConfig, ICourier? dalCourier, IOrder? dalOrder, IDelivery? dalDelivery)
+    public static void Do(IDal dal)
     {
         // Assign DAL interfaces, throwing exceptions if any are null
-        s_dalConfig = dalConfig ?? throw new NullReferenceException("IConfig object cannot be null!");
-        s_dalCourier = dalCourier ?? throw new NullReferenceException("ICourier object cannot be null!");
-        s_dalOrder = dalOrder ?? throw new NullReferenceException("IOrder object cannot be null!");
-        s_dalDelivery = dalDelivery ?? throw new NullReferenceException("IDelivery object cannot be null!");
+        s_dal = dal ?? throw new NullReferenceException("DAL object can not be null!");
 
         Console.WriteLine("Reset Configuration values and List values...");
-        s_dalConfig.Reset();
-        s_dalCourier.DeleteAll();
-        s_dalOrder.DeleteAll();
-        s_dalDelivery.DeleteAll();
+        s_dal.ResetDB();
 
         Console.WriteLine("Initializing Couriers...");
         createCouriers();

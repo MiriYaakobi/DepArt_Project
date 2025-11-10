@@ -1,19 +1,16 @@
 ﻿using Dal;
 using DalApi;
-
+using DO;
 namespace DalTest;
 
 /// <summary>
 /// Main entry point for the application
-/// This code was written as a base by AI and rewritten and corrected by us.
+/// We used AI for the blockchain, writing and editing them ourselves.
 /// </summary>
 internal class Program
 {
-    //creating the DAL objects
-    private static ICourier? s_dalCourier = new CourierImplementation();
-    private static IOrder? s_dalOrder = new OrderImplementation();
-    private static IDelivery? s_dalDelivery = new DeliveryImplementation();
-    private static IConfig? s_dalConfig = new ConfigImplementation();
+    //create DAL instances for each entity
+    static readonly IDal s_dal = new Dal.DalList(); // is that ok?
 
     /// <summary>
     /// Enum for main menu options.
@@ -179,7 +176,7 @@ internal class Program
                 Console.Write("Invalid type. Please enter (Car, Motorcycle, Bicycle, ByFoot): ");
 
             // Get the start work time from the configuration
-            DateTime startWorkTime = s_dalConfig!.Clock;
+            DateTime startWorkTime = s_dal!.Config.Clock;
 
             Console.Write("Enter Max Delivery Distance (leave empty for no limit): ");
             string? maxDistInput = Console.ReadLine();
@@ -202,25 +199,21 @@ internal class Program
             }
 
             // Create the new courier object
-            DO.Courier newCourier = new DO.Courier
-            (
-                Id: id,
-                Name: name!,
-                Phone: phone!,
-                Email: email!,
-                Password: password!,
-                IsActive: isActive,
-                TypeOfDelivery: typeOfDelivery,
-                StartWorkTime: startWorkTime,
-                MaxDist: maxDist
-            );
-
-            s_dalCourier!.Create(newCourier);
+            s_dal!.Courier.Create(new(id, name!, phone!, email!, password!, isActive, typeOfDelivery, startWorkTime, maxDist));
 
             Console.WriteLine($"Successfully added Courier {id} - {name}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        
+
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error adding courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error adding courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error adding courier: {ex.Message}");
         }
@@ -241,7 +234,7 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             //call to DAL
-            DO.Courier? courier = s_dalCourier!.Read(id);
+            DO.Courier? courier = s_dal!.Courier.Read(id);
 
             // Check if courier was found
             if (courier == null)
@@ -252,8 +245,15 @@ internal class Program
 
             Console.WriteLine(courier); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error getting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting courier: {ex.Message}");
         }
@@ -266,7 +266,9 @@ internal class Program
     {
         try
         {
-            List<DO.Courier> couriers = s_dalCourier!.ReadAll();
+            //IEnumerable<DO.Courier> couriers = s_dal.Courier.ReadAll();
+
+            List<DO.Courier> couriers = s_dal!.Courier.ReadAll().ToList();
 
             // Check if any couriers were found
             if (couriers.Count == 0)
@@ -280,8 +282,16 @@ internal class Program
                 Console.WriteLine(courier);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        //
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing couriers: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error listing couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing couriers: {ex.Message}");
         }
@@ -302,7 +312,7 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Read the existing courier
-            DO.Courier? oldCourier = s_dalCourier!.Read(id);
+            DO.Courier? oldCourier = s_dal!.Courier.Read(id);
             if (oldCourier == null)
             {
                 Console.WriteLine($"Courier with ID={id} not found.");
@@ -393,12 +403,20 @@ internal class Program
                     updatedCourier = updatedCourier with { MaxDist = newMaxDist };
             }
 
-            s_dalCourier!.Update(updatedCourier);
+            s_dal!.Courier.Update(updatedCourier);
 
             Console.WriteLine($"Successfully updated Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+       
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating courier: {ex.Message}");
         }
@@ -419,12 +437,15 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Call to DAL
-            s_dalCourier!.Delete(id);
+            s_dal!.Courier.Delete(id);
 
             Console.WriteLine($"Successfully deleted Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting courier: {ex.Message}");
         }
@@ -438,11 +459,15 @@ internal class Program
         try
         {
             // Call to DAL
-            s_dalCourier!.DeleteAll();
+            s_dal!.Courier.DeleteAll();
 
             Console.WriteLine("Successfully deleted all couriers.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all couriers: {ex.Message}");
         }
@@ -529,7 +554,7 @@ internal class Program
             int id = 0;
 
             // Get the order opening time from the configuration
-            DateTime orderOpeningTime = s_dalConfig!.Clock;
+            DateTime orderOpeningTime = s_dal!.Config.Clock;
 
             Console.Write("Enter Package Details (optional, press Enter to skip): ");
             string? packageDetails = Console.ReadLine();
@@ -538,26 +563,11 @@ internal class Program
             string? description = Console.ReadLine();
 
             // Create the new order object
-            DO.Order newOrder = new DO.Order
-            (
-                Id: id,
-                TypeOfOrder: typeOfOrder,
-                Address: address!,
-                Latitude: latitude,
-                Longitude: longitude,
-                CustomerName: customerName!,
-                CustomerPhone: customerPhone!,
-                OrderOpeningTime: orderOpeningTime,
-                PackageDetails: packageDetails,
-                Description: description
-            );
-
-            s_dalOrder!.Create(newOrder);
+            s_dal!.Order!.Create(new(id, typeOfOrder, address!, latitude, longitude, customerName!, customerPhone!, orderOpeningTime, packageDetails, description));
 
             Console.WriteLine($"Successfully added new order for {customerName}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding order: {ex.Message}");
         }
@@ -576,7 +586,7 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Call to DAL
-            DO.Order? order = s_dalOrder!.Read(id);
+            DO.Order? order = s_dal!.Order.Read(id);
 
             // Check if order was found
             if (order == null)
@@ -587,8 +597,11 @@ internal class Program
 
             Console.WriteLine(order); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting order: {ex.Message}");
         }
@@ -602,7 +615,7 @@ internal class Program
         try
         {
             // Call to DAL
-            List<DO.Order> orders = s_dalOrder!.ReadAll();
+            List<DO.Order> orders = s_dal!.Order.ReadAll().ToList();
 
             // Check if any orders were found
             if (orders.Count == 0)
@@ -617,8 +630,11 @@ internal class Program
                 Console.WriteLine(order);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing orders: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing orders: {ex.Message}");
         }
@@ -640,7 +656,7 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Read the existing order
-            DO.Order? oldOrder = s_dalOrder!.Read(id);
+            DO.Order? oldOrder = s_dal!.Order.Read(id);
 
             // Check if order was found
             if (oldOrder == null)
@@ -754,12 +770,15 @@ internal class Program
                 updatedOrder = updatedOrder with { Description = newDesc };
 
             // Call to DAL to update the order
-            s_dalOrder!.Update(updatedOrder);
+            s_dal!.Order.Update(updatedOrder);
 
             Console.WriteLine($"Successfully updated Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating order: {ex.Message}");
         }
@@ -780,12 +799,15 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Call to DAL to delete the order
-            s_dalOrder!.Delete(id);
+            s_dal!.Order.Delete(id);
 
             Console.WriteLine($"Successfully deleted Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting order: {ex.Message}");
         }
@@ -799,14 +821,16 @@ internal class Program
         try
         {
             // Call to DAL to delete all orders
-            s_dalOrder!.DeleteAll();
+            s_dal!.Order.DeleteAll();
 
             Console.WriteLine("Successfully deleted all orders.");
         }
-        catch (Exception ex)
+
+        catch (DalDoesNotExistException ex)
         {
-            Console.WriteLine($"Error deleting all orders: {ex.Message}");
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
+
     }
 
     /// <summary>
@@ -875,28 +899,14 @@ internal class Program
                 Console.Write("Invalid type. Please enter (Regular, Express, SameDay): ");
 
             int id = 0; // ID will be set by DAL
-            DateTime deliveryStartTime = s_dalConfig!.Clock; // Delivery start time
-
-            // Create the object
-            DO.Delivery newDelivery = new DO.Delivery
-            (
-                Id: id,
-                OrderId: orderId,
-                CourierId: courierId,
-                TypeOfOrder: typeOfOrder,
-                DeliveryStartTime: deliveryStartTime,
-                ActualDistance: null, 
-                OrderEndStatus: null, 
-                DeliveryEndTime: null  
-            );
+            DateTime deliveryStartTime = s_dal!.Config.Clock; // Delivery start time
 
             // Call to DAL to create the delivery
-            s_dalDelivery!.Create(newDelivery);
+            s_dal!.Delivery.Create(new(id, orderId, courierId, typeOfOrder, deliveryStartTime, null, null, null));
 
             Console.WriteLine($"Successfully created new delivery, assigning Order {orderId} to Courier {courierId}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding delivery: {ex.Message}");
         }
@@ -915,7 +925,7 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Call to DAL
-            DO.Delivery? delivery = s_dalDelivery!.Read(id);
+            DO.Delivery? delivery = s_dal!.Delivery.Read(id);
 
             // Check if delivery was found
             if (delivery == null)
@@ -926,8 +936,11 @@ internal class Program
 
             Console.WriteLine(delivery);
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting delivery: {ex.Message}");
         }
@@ -940,7 +953,7 @@ internal class Program
     {
         try
         {
-            List<DO.Delivery> deliveries = s_dalDelivery!.ReadAll();
+            List<DO.Delivery> deliveries = s_dal!.Delivery.ReadAll().ToList();
 
             if (deliveries.Count == 0)
             {
@@ -953,10 +966,15 @@ internal class Program
                 Console.WriteLine(delivery);
             }
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error listing deliveries: {ex.Message}");
         }
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error listing deliveries: {ex.Message}");
+        }
+
     }
 
     /// <summary>
@@ -972,7 +990,7 @@ internal class Program
             while (!int.TryParse(Console.ReadLine(), out id))
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
-            DO.Delivery? oldDelivery = s_dalDelivery!.Read(id);
+            DO.Delivery? oldDelivery = s_dal!.Delivery.Read(id);
             if (oldDelivery == null)
             {
                 Console.WriteLine($"Delivery with ID={id} not found.");
@@ -1046,12 +1064,15 @@ internal class Program
             }
 
             // Call DAL
-            s_dalDelivery!.Update(updatedDelivery);
+            s_dal!.Delivery.Update(updatedDelivery);
 
             Console.WriteLine($"Successfully updated Delivery {id}");
         }
-        // Catch any exceptions
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating delivery: {ex.Message}");
         }
@@ -1070,11 +1091,15 @@ internal class Program
                 Console.Write("Invalid input. Please enter a valid number for ID: ");
 
             // Call the delete function from the DAL
-            s_dalDelivery!.Delete(id);
+            s_dal!.Delivery.Delete(id);
 
             Console.WriteLine($"Successfully deleted Delivery {id}");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting delivery: {ex.Message}");
         }
@@ -1088,11 +1113,15 @@ internal class Program
         try
         {
             // Call the delete function from the DAL
-            s_dalDelivery!.DeleteAll();
+            s_dal!.Delivery.DeleteAll();
 
             Console.WriteLine("Successfully deleted all deliveries.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
@@ -1143,7 +1172,7 @@ internal class Program
     /// </summary>
     private static void ShowClock()
     {
-        Console.WriteLine($"Current System Clock: {s_dalConfig!.Clock}");
+        Console.WriteLine($"Current System Clock: {s_dal!.Config.Clock}");
     }
 
     /// <summary>
@@ -1153,11 +1182,11 @@ internal class Program
     private static void AdvanceClock(TimeSpan span)
     {
         // 1. Get the old time
-        DateTime oldTime = s_dalConfig!.Clock;
+        DateTime oldTime = s_dal!.Config.Clock;
         // 2. Calculate the new time
         DateTime newTime = oldTime.Add(span);
         // 3. Update the time in the DAL
-        s_dalConfig.Clock = newTime;
+        s_dal!.Config.Clock = newTime;
 
         Console.WriteLine($"System clock advanced from {oldTime} to {newTime}");
     }
@@ -1167,7 +1196,7 @@ internal class Program
     /// </summary>
     private static void ResetConfig()
     {
-        s_dalConfig!.Reset();
+        s_dal!.Config.Reset();
         Console.WriteLine("Configuration has been reset to default values.");
     }
 
@@ -1199,41 +1228,45 @@ internal class Program
             switch (choice)
             {
                 case "1":
-                    Console.WriteLine(s_dalConfig!.AdminId);
+                    Console.WriteLine(s_dal!.Config.AdminId);
                     break;
                 case "2":
-                    Console.WriteLine(s_dalConfig!.CompenyAddress ?? "null");
+                    Console.WriteLine(s_dal!.Config.CompenyAddress ?? "null");
                     break;
                 case "3":
-                    Console.WriteLine(s_dalConfig!.DeliveryMaxDistance?.ToString() ?? "null");
+                    Console.WriteLine(s_dal!.Config.DeliveryMaxDistance?.ToString() ?? "null");
                     break;
                 case "4":
-                    Console.WriteLine(s_dalConfig!.AverageVehicleSpeedKmH);
+                    Console.WriteLine(s_dal!.Config.AverageVehicleSpeedKmH);
                     break;
                 case "5":
-                    Console.WriteLine(s_dalConfig!.AverageMotorcycleSpeedKmH);
+                    Console.WriteLine(s_dal!.Config.AverageMotorcycleSpeedKmH);
                     break;
                 case "6":
-                    Console.WriteLine(s_dalConfig!.AverageBicycleSpeedKmH);
+                    Console.WriteLine(s_dal!.Config.AverageBicycleSpeedKmH);
                     break;
                 case "7":
-                    Console.WriteLine(s_dalConfig!.AverageByFootSpeedKmH);
+                    Console.WriteLine(s_dal!.Config.AverageByFootSpeedKmH);
                     break;
                 case "8":
-                    Console.WriteLine(s_dalConfig!.MaxDeliveryRange);
+                    Console.WriteLine(s_dal!.Config.MaxDeliveryRange);
                     break;
                 case "9":
-                    Console.WriteLine(s_dalConfig!.RiskRange);
+                    Console.WriteLine(s_dal!.Config.RiskRange);
                     break;
                 case "10":
-                    Console.WriteLine(s_dalConfig!.InactivityTimeRange);
+                    Console.WriteLine(s_dal!.Config!.InactivityTimeRange);
                     break;
                 default:
                     Console.WriteLine("Invalid choice.");
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error showing variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error showing variable: {ex.Message}");
         }
@@ -1266,11 +1299,11 @@ internal class Program
             switch (choice)
             {
                 case "1": // Admin ID (int)
-                    Console.Write($"Enter new Admin ID (current: {s_dalConfig!.AdminId}): ");
+                    Console.Write($"Enter new Admin ID (current: {s_dal!.Config.AdminId}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && int.TryParse(input, out int newAdminId))
                     {
-                        s_dalConfig!.AdminId = newAdminId;
+                        s_dal!.Config.AdminId = newAdminId;
                         Console.WriteLine("Admin ID updated.");
                     }
                     else if (!string.IsNullOrEmpty(input))
@@ -1280,26 +1313,26 @@ internal class Program
                     break;
 
                 case "2": // Company Address (string)
-                    Console.Write($"Enter new Company Address (current: {s_dalConfig!.CompenyAddress ?? "null"}): ");
+                    Console.Write($"Enter new Company Address (current: {s_dal!.Config.CompenyAddress ?? "null"}): ");
                     input = Console.ReadLine();
                     if (input != null)
                     {
-                        s_dalConfig!.CompenyAddress = input;
+                        s_dal!.Config.CompenyAddress = input;
                         Console.WriteLine("Company Address updated.");
                     }
                     break;
 
                 case "3": // Max Delivery Distance (double?)
-                    Console.Write($"Enter new Max Distance (current: {s_dalConfig!.DeliveryMaxDistance?.ToString() ?? "null"}): ");
+                    Console.Write($"Enter new Max Distance (current: {s_dal!.Config.DeliveryMaxDistance?.ToString() ?? "null"}): ");
                     input = Console.ReadLine();
                     if (string.IsNullOrEmpty(input))
                     {
-                        s_dalConfig!.DeliveryMaxDistance = null;
+                        s_dal!.Config.DeliveryMaxDistance = null;
                         Console.WriteLine("Max Distance set to null.");
                     }
                     else if (double.TryParse(input, out double newMaxDist))
                     {
-                        s_dalConfig!.DeliveryMaxDistance = newMaxDist;
+                        s_dal!.Config.DeliveryMaxDistance = newMaxDist;
                         Console.WriteLine("Max Distance updated.");
                     }
                     else
@@ -1309,77 +1342,77 @@ internal class Program
                     break;
 
                 case "4": // Vehicle Speed (double)
-                    Console.Write($"Enter new Vehicle Speed (current: {s_dalConfig!.AverageVehicleSpeedKmH}): ");
+                    Console.Write($"Enter new Vehicle Speed (current: {s_dal!.Config.AverageVehicleSpeedKmH}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newSpeedV))
                     {
-                        s_dalConfig!.AverageVehicleSpeedKmH = newSpeedV;
+                        s_dal!.Config.AverageVehicleSpeedKmH = newSpeedV;
                         Console.WriteLine("Vehicle Speed updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "5": // Motorcycle Speed (double)
-                    Console.Write($"Enter new Motorcycle Speed (current: {s_dalConfig!.AverageMotorcycleSpeedKmH}): ");
+                    Console.Write($"Enter new Motorcycle Speed (current: {s_dal!.Config.AverageMotorcycleSpeedKmH}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newSpeedM))
                     {
-                        s_dalConfig!.AverageMotorcycleSpeedKmH = newSpeedM;
+                        s_dal!.Config.AverageMotorcycleSpeedKmH = newSpeedM;
                         Console.WriteLine("Motorcycle Speed updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "6": // Bicycle Speed (double)
-                    Console.Write($"Enter new Bicycle Speed (current: {s_dalConfig!.AverageBicycleSpeedKmH}): ");
+                    Console.Write($"Enter new Bicycle Speed (current: {s_dal!.Config.AverageBicycleSpeedKmH}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newSpeedB))
                     {
-                        s_dalConfig!.AverageBicycleSpeedKmH = newSpeedB;
+                        s_dal!.Config.AverageBicycleSpeedKmH = newSpeedB;
                         Console.WriteLine("Bicycle Speed updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "7": // By-Foot Speed (double)
-                    Console.Write($"Enter new By-Foot Speed (current: {s_dalConfig!.AverageByFootSpeedKmH}): ");
+                    Console.Write($"Enter new By-Foot Speed (current: {s_dal!.Config.AverageByFootSpeedKmH}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newSpeedF))
                     {
-                        s_dalConfig!.AverageByFootSpeedKmH = newSpeedF;
+                        s_dal!.Config.AverageByFootSpeedKmH = newSpeedF;
                         Console.WriteLine("By-Foot Speed updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "8": // Max Delivery Time Range (TimeSpan)
-                    Console.Write($"Enter new Max Delivery Range (in minutes) (current: {s_dalConfig!.MaxDeliveryRange.TotalMinutes}): ");
+                    Console.Write($"Enter new Max Delivery Range (in minutes) (current: {s_dal!.Config.MaxDeliveryRange.TotalMinutes}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newMinutesM))
                     {
-                        s_dalConfig!.MaxDeliveryRange = TimeSpan.FromMinutes(newMinutesM);
+                        s_dal!.Config.MaxDeliveryRange = TimeSpan.FromMinutes(newMinutesM);
                         Console.WriteLine("Max Delivery Range updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "9": // Risk Time Range (TimeSpan)
-                    Console.Write($"Enter new Risk Range (in minutes) (current: {s_dalConfig!.RiskRange.TotalMinutes}): ");
+                    Console.Write($"Enter new Risk Range (in minutes) (current: {s_dal!.Config.RiskRange.TotalMinutes}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newMinutesR))
                     {
-                        s_dalConfig!.RiskRange = TimeSpan.FromMinutes(newMinutesR);
+                        s_dal!.Config.RiskRange = TimeSpan.FromMinutes(newMinutesR);
                         Console.WriteLine("Risk Range updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
                     break;
 
                 case "10": // Inactivity Time Range (TimeSpan)
-                    Console.Write($"Enter new Inactivity Range (in minutes) (current: {s_dalConfig!.InactivityTimeRange.TotalMinutes}): ");
+                    Console.Write($"Enter new Inactivity Range (in minutes) (current: {s_dal!.Config.InactivityTimeRange.TotalMinutes}): ");
                     input = Console.ReadLine();
                     if (!string.IsNullOrEmpty(input) && double.TryParse(input, out double newMinutesI))
                     {
-                        s_dalConfig!.InactivityTimeRange = TimeSpan.FromMinutes(newMinutesI);
+                        s_dal!.Config.InactivityTimeRange = TimeSpan.FromMinutes(newMinutesI);
                         Console.WriteLine("Inactivity Range updated.");
                     }
                     else if (!string.IsNullOrEmpty(input)) { Console.WriteLine("Invalid number."); }
@@ -1390,7 +1423,11 @@ internal class Program
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error updating variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error updating variable: {ex.Message}");
         }
@@ -1446,7 +1483,11 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
+            {
+                Console.WriteLine($"Error in config menu: {ex.Message}");
+            }
+            catch (DalDoesNotExistException ex)
             {
                 Console.WriteLine($"Error in config menu: {ex.Message}");
             }
@@ -1465,10 +1506,10 @@ internal class Program
             Console.WriteLine("Initializing data...");
             // Call the function from Chapter 10 with the instances we created
 
-            Initialization.Do(s_dalConfig, s_dalCourier, s_dalOrder, s_dalDelivery);
+            Initialization.Do(s_dal);
             Console.WriteLine("Data initialized successfully.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Critical error during initialization: {ex.Message}");
             Console.WriteLine("Press Enter to exit.");
@@ -1507,15 +1548,15 @@ internal class Program
                     case MainMenuOptions.InitializeData:
                         // Option to re-run initialization
                         Console.WriteLine("Re-initializing data (Reset + Create)...");
-                        Initialization.Do(s_dalConfig, s_dalCourier, s_dalOrder, s_dalDelivery);
+                        Initialization.Do(s_dal);
                         Console.WriteLine("Data re-initialized successfully.");
                         break;
                     case MainMenuOptions.ResetData:
                         Console.WriteLine("Resetting all data...");
-                        s_dalCourier!.DeleteAll();
-                        s_dalOrder!.DeleteAll();
-                        s_dalDelivery!.DeleteAll();
-                        s_dalConfig!.Reset();
+                        s_dal!.Courier.DeleteAll();
+                        s_dal!.Order.DeleteAll();
+                        s_dal!.Delivery.DeleteAll();
+                        s_dal!.Config.Reset();
                         Console.WriteLine("All data reset.");
                         break;
                     case MainMenuOptions.ListAllData:
@@ -1531,7 +1572,7 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
             {
                 // General exception handling for all DAL layers
                 Console.WriteLine($"An error occurred: {ex.Message}");

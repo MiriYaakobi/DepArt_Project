@@ -2,11 +2,12 @@
 using DalApi;
 using DO;
 using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// a class that implements the IDelivery interface to manage Delivery entities in the data source.
 /// </summary>
-public class DeliveryImplementation : IDelivery
+internal class DeliveryImplementation : IDelivery
 {
     /// <summary>
     /// creates a new delivery and adds it to the data source.
@@ -27,7 +28,7 @@ public class DeliveryImplementation : IDelivery
     public void Delete(int IdEntity)
     {
         if (Read(IdEntity) is null)
-            throw new Exception($"Delivery with Id {IdEntity} doesn't exist.");
+            throw new DalDoesNotExistException($"Delivery with Id {IdEntity} doesn't exist.");
         else
         {
             int Index = DataSource.Deliveries.FindIndex(c => c.Id == IdEntity);
@@ -50,23 +51,25 @@ public class DeliveryImplementation : IDelivery
     /// <returns></returns>
     public Delivery? Read(int IdEntity)
     {
-        return DataSource.Deliveries.Find(c => c.Id == IdEntity);
+        return DataSource.Deliveries.FirstOrDefault(c => c.Id == IdEntity);
     }
+
+    /// <summary>
+    /// retrieves a delivery from the data source based on a filter.
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    public DO.Delivery? Read(Func<DO.Delivery, bool> filter)
+    => DataSource.Deliveries.FirstOrDefault(filter);
 
     /// <summary>
     /// retrieves all deliveries from the data source.
     /// </summary>
     /// <returns></returns>
-    public List<Delivery> ReadAll()
-    {
-        List<Delivery> CopyList = new List<Delivery>();
-        foreach (Delivery c in DataSource.Deliveries)
-        {
-            Delivery NewDelivery = c with { }; // create a copy of the delivery
-            CopyList.Add(NewDelivery);
-        }
-        return CopyList;
-    }
+    public IEnumerable<Delivery> ReadAll(Func<Delivery, bool>? filter = null)
+        => filter == null
+       ? DataSource.Deliveries.Select(c => c)
+       : DataSource.Deliveries.Where(filter);
 
     /// <summary>
     /// updates an existing delivery in the data source.
@@ -76,7 +79,7 @@ public class DeliveryImplementation : IDelivery
     public void Update(Delivery Item)
     {
         if (Read(Item.Id) is null)
-            throw new Exception($"Delivery with Id {Item.Id} doesn't exist.");
+            throw new DalDoesNotExistException($"Delivery with Id {Item.Id} doesn't exist.");
         else
         {
             int Index = DataSource.Deliveries.FindIndex(c => c.Id == Item.Id); // find the index of the delivery to update
