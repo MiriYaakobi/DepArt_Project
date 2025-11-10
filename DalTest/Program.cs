@@ -1,5 +1,6 @@
 ﻿using Dal;
 using DalApi;
+using DO;
 namespace DalTest;
 
 /// <summary>
@@ -202,8 +203,17 @@ internal class Program
 
             Console.WriteLine($"Successfully added Courier {id} - {name}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        
+
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error adding courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error adding courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error adding courier: {ex.Message}");
         }
@@ -235,8 +245,15 @@ internal class Program
 
             Console.WriteLine(courier); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error getting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting courier: {ex.Message}");
         }
@@ -249,7 +266,9 @@ internal class Program
     {
         try
         {
-            List<DO.Courier> couriers = s_dal!.Courier.ReadAll();
+            //IEnumerable<DO.Courier> couriers = s_dal.Courier.ReadAll();
+
+            List<DO.Courier> couriers = s_dal!.Courier.ReadAll().ToList();
 
             // Check if any couriers were found
             if (couriers.Count == 0)
@@ -263,8 +282,16 @@ internal class Program
                 Console.WriteLine(courier);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        //
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing couriers: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error listing couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing couriers: {ex.Message}");
         }
@@ -380,8 +407,16 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+       
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating courier: {ex.Message}");
         }
@@ -406,8 +441,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting courier: {ex.Message}");
         }
@@ -425,7 +463,11 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all couriers.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all couriers: {ex.Message}");
         }
@@ -525,8 +567,7 @@ internal class Program
 
             Console.WriteLine($"Successfully added new order for {customerName}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding order: {ex.Message}");
         }
@@ -556,8 +597,11 @@ internal class Program
 
             Console.WriteLine(order); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting order: {ex.Message}");
         }
@@ -571,7 +615,7 @@ internal class Program
         try
         {
             // Call to DAL
-            List<DO.Order> orders = s_dal!.Order.ReadAll();
+            List<DO.Order> orders = s_dal!.Order.ReadAll().ToList();
 
             // Check if any orders were found
             if (orders.Count == 0)
@@ -586,8 +630,11 @@ internal class Program
                 Console.WriteLine(order);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing orders: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing orders: {ex.Message}");
         }
@@ -727,8 +774,11 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating order: {ex.Message}");
         }
@@ -753,8 +803,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting order: {ex.Message}");
         }
@@ -772,10 +825,12 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all orders.");
         }
-        catch (Exception ex)
+
+        catch (DalDoesNotExistException ex)
         {
-            Console.WriteLine($"Error deleting all orders: {ex.Message}");
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
+
     }
 
     /// <summary>
@@ -851,8 +906,7 @@ internal class Program
 
             Console.WriteLine($"Successfully created new delivery, assigning Order {orderId} to Courier {courierId}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding delivery: {ex.Message}");
         }
@@ -882,8 +936,11 @@ internal class Program
 
             Console.WriteLine(delivery);
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting delivery: {ex.Message}");
         }
@@ -896,7 +953,7 @@ internal class Program
     {
         try
         {
-            List<DO.Delivery> deliveries = s_dal!.Delivery.ReadAll();
+            List<DO.Delivery> deliveries = s_dal!.Delivery.ReadAll().ToList();
 
             if (deliveries.Count == 0)
             {
@@ -909,10 +966,15 @@ internal class Program
                 Console.WriteLine(delivery);
             }
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error listing deliveries: {ex.Message}");
         }
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error listing deliveries: {ex.Message}");
+        }
+
     }
 
     /// <summary>
@@ -1006,8 +1068,11 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Delivery {id}");
         }
-        // Catch any exceptions
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating delivery: {ex.Message}");
         }
@@ -1030,7 +1095,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Delivery {id}");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting delivery: {ex.Message}");
         }
@@ -1048,7 +1117,11 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all deliveries.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
@@ -1189,7 +1262,11 @@ internal class Program
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error showing variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error showing variable: {ex.Message}");
         }
@@ -1346,7 +1423,11 @@ internal class Program
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error updating variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error updating variable: {ex.Message}");
         }
@@ -1402,7 +1483,11 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
+            {
+                Console.WriteLine($"Error in config menu: {ex.Message}");
+            }
+            catch (DalDoesNotExistException ex)
             {
                 Console.WriteLine($"Error in config menu: {ex.Message}");
             }
@@ -1424,7 +1509,7 @@ internal class Program
             Initialization.Do(s_dal);
             Console.WriteLine("Data initialized successfully.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Critical error during initialization: {ex.Message}");
             Console.WriteLine("Press Enter to exit.");
@@ -1487,7 +1572,7 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
             {
                 // General exception handling for all DAL layers
                 Console.WriteLine($"An error occurred: {ex.Message}");
