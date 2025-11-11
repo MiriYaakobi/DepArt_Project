@@ -104,7 +104,7 @@ public static class Initialization
     {
         // Filter couriers who can handle the distance
         var pool = allCouriers
-            .Where(c => c.MaxDist == null || c.MaxDist.Value >= distKm)
+            .Where(c => c.MaxDistance == null || c.MaxDistance.Value >= distKm)
             .ToList();
         if (pool.Count == 0) return null;
         return pool[s_rand.Next(pool.Count)];

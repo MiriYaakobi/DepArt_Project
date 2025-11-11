@@ -1,5 +1,6 @@
 ﻿using Dal;
 using DalApi;
+using DO;
 namespace DalTest;
 
 /// <summary>
@@ -202,8 +203,8 @@ internal class Program
 
             Console.WriteLine($"Successfully added Courier {id} - {name}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding courier: {ex.Message}");
         }
@@ -235,8 +236,11 @@ internal class Program
 
             Console.WriteLine(courier); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting courier: {ex.Message}");
         }
@@ -249,7 +253,9 @@ internal class Program
     {
         try
         {
-            List<DO.Courier> couriers = s_dal!.Courier.ReadAll();
+            //IEnumerable<DO.Courier> couriers = s_dal.Courier.ReadAll();
+
+            List<DO.Courier> couriers = s_dal!.Courier.ReadAll().ToList();
 
             // Check if any couriers were found
             if (couriers.Count == 0)
@@ -263,8 +269,12 @@ internal class Program
                 Console.WriteLine(courier);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+       
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing couriers: {ex.Message}");
         }
@@ -356,7 +366,7 @@ internal class Program
                     updatedCourier = updatedCourier with { TypeOfDelivery = newType };
             }
 
-            Console.Write($"Enter new Max Delivery Distance (current: {oldCourier.MaxDist}): ");
+            Console.Write($"Enter new Max Delivery Distance (current: {oldCourier.MaxDistance}): ");
             string? newMaxDistInput = Console.ReadLine();
 
             // Validate and update Max Distance
@@ -373,15 +383,22 @@ internal class Program
                 }
                 // Update if valid
                 if (!string.IsNullOrEmpty(newMaxDistInput))
-                    updatedCourier = updatedCourier with { MaxDist = newMaxDist };
+                    updatedCourier = updatedCourier with { MaxDistance = newMaxDist };
             }
 
             s_dal!.Courier.Update(updatedCourier);
 
             Console.WriteLine($"Successfully updated Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalAlreadyExistsException ex)
+        {
+            Console.WriteLine($"Error updating courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating courier: {ex.Message}");
         }
@@ -406,8 +423,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Courier {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting courier: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting courier: {ex.Message}");
         }
@@ -425,7 +445,11 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all couriers.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all couriers: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all couriers: {ex.Message}");
         }
@@ -525,8 +549,7 @@ internal class Program
 
             Console.WriteLine($"Successfully added new order for {customerName}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding order: {ex.Message}");
         }
@@ -556,8 +579,11 @@ internal class Program
 
             Console.WriteLine(order); 
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting order: {ex.Message}");
         }
@@ -571,7 +597,7 @@ internal class Program
         try
         {
             // Call to DAL
-            List<DO.Order> orders = s_dal!.Order.ReadAll();
+            List<DO.Order> orders = s_dal!.Order.ReadAll().ToList();
 
             // Check if any orders were found
             if (orders.Count == 0)
@@ -586,8 +612,11 @@ internal class Program
                 Console.WriteLine(order);
             }
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error listing orders: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error listing orders: {ex.Message}");
         }
@@ -727,8 +756,11 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating order: {ex.Message}");
         }
@@ -753,8 +785,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Order {id}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex) 
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting order: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting order: {ex.Message}");
         }
@@ -772,10 +807,12 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all orders.");
         }
-        catch (Exception ex)
+
+        catch (DalDoesNotExistException ex)
         {
-            Console.WriteLine($"Error deleting all orders: {ex.Message}");
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
+
     }
 
     /// <summary>
@@ -851,8 +888,7 @@ internal class Program
 
             Console.WriteLine($"Successfully created new delivery, assigning Order {orderId} to Courier {courierId}");
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalAlreadyExistsException ex)
         {
             Console.WriteLine($"Error adding delivery: {ex.Message}");
         }
@@ -882,8 +918,11 @@ internal class Program
 
             Console.WriteLine(delivery);
         }
-        // Catch any exceptions that occur during the process
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error getting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error getting delivery: {ex.Message}");
         }
@@ -896,7 +935,7 @@ internal class Program
     {
         try
         {
-            List<DO.Delivery> deliveries = s_dal!.Delivery.ReadAll();
+            List<DO.Delivery> deliveries = s_dal!.Delivery.ReadAll().ToList();
 
             if (deliveries.Count == 0)
             {
@@ -909,10 +948,15 @@ internal class Program
                 Console.WriteLine(delivery);
             }
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error listing deliveries: {ex.Message}");
         }
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error listing deliveries: {ex.Message}");
+        }
+
     }
 
     /// <summary>
@@ -1006,8 +1050,11 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Delivery {id}");
         }
-        // Catch any exceptions
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error updating delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error updating delivery: {ex.Message}");
         }
@@ -1030,7 +1077,11 @@ internal class Program
 
             Console.WriteLine($"Successfully deleted Delivery {id}");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting delivery: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting delivery: {ex.Message}");
         }
@@ -1048,7 +1099,11 @@ internal class Program
 
             Console.WriteLine("Successfully deleted all deliveries.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
+        {
+            Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
+        }
+        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error deleting all deliveries: {ex.Message}");
         }
@@ -1189,7 +1244,11 @@ internal class Program
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error showing variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error showing variable: {ex.Message}");
         }
@@ -1346,7 +1405,11 @@ internal class Program
                     break;
             }
         }
-        catch (Exception ex)
+        catch (DalDoesNotExistException ex)
+        {
+            Console.WriteLine($"Error updating variable: {ex.Message}");
+        }
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error updating variable: {ex.Message}");
         }
@@ -1402,7 +1465,11 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
+            {
+                Console.WriteLine($"Error in config menu: {ex.Message}");
+            }
+            catch (DalDoesNotExistException ex)
             {
                 Console.WriteLine($"Error in config menu: {ex.Message}");
             }
@@ -1424,7 +1491,7 @@ internal class Program
             Initialization.Do(s_dal);
             Console.WriteLine("Data initialized successfully.");
         }
-        catch (Exception ex)
+        catch (DalNullValueException ex)
         {
             Console.WriteLine($"Critical error during initialization: {ex.Message}");
             Console.WriteLine("Press Enter to exit.");
@@ -1487,7 +1554,7 @@ internal class Program
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (DalNullValueException ex)
             {
                 // General exception handling for all DAL layers
                 Console.WriteLine($"An error occurred: {ex.Message}");
@@ -1523,26 +1590,26 @@ Enter your choice: 7
 --- LISTING ALL DATA ---
 
 -- Couriers --
-Courier { Id = 850665684, Name = Noa Levi, Phone = 058-793-6600, Email = noa.levi@gmail.com, Password = noa#levi19, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2023 03:29:42, MaxDist = 4 }
-Courier { Id = 460694135, Name = Daniel Cohen, Phone = 052-981-5362, Email = daniel.cohen@gmail.com, Password = daniel#cohen07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 12/01/2025 02:25:34, MaxDist = 2 }
-Courier { Id = 216276324, Name = Yael Barak, Phone = 053-895-4896, Email = yael.barak@gmail.com, Password = yael#barak00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 24/09/2021 05:55:00, MaxDist = 34 }
-Courier { Id = 964395664, Name = Roi Avrahami, Phone = 056-192-4981, Email = roi.avrahami@gmail.com, Password = roi#avrahami15, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 20/07/2021 02:58:06, MaxDist = 44 }
-Courier { Id = 650604000, Name = Maya Friedman, Phone = 055-789-9199, Email = maya.friedman@gmail.com, Password = maya#friedman02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 12/08/2022 04:54:53, MaxDist = 35 }
-Courier { Id = 961718182, Name = Omri Danino, Phone = 058-426-1492, Email = omri.danino@gmail.com, Password = omri#danino03, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 09/11/2021 13:47:05, MaxDist = 36 }
-Courier { Id = 537015669, Name = Tamar Rosen, Phone = 058-186-5302, Email = tamar.rosen@gmail.com, Password = tamar#rosen02, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 28/12/2020 11:30:45, MaxDist = 8 }
-Courier { Id = 615022745, Name = Eitan Gabai, Phone = 057-116-4220, Email = eitan.gabai@gmail.com, Password = eitan#gabai12, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 01/04/2024 07:59:10, MaxDist = 30 }
-Courier { Id = 123711248, Name = Shira Neuman, Phone = 054-910-8630, Email = shira.neuman@gmail.com, Password = shira#neuman06, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2025 13:21:50, MaxDist = 2 }
-Courier { Id = 534280374, Name = Guy Hershkovitz, Phone = 055-181-3193, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 16/12/2023 01:45:08, MaxDist = 1 }
-Courier { Id = 729177417, Name = Alon Zahavi, Phone = 053-389-4064, Email = alon.zahavi@gmail.com, Password = alon#zahavi04, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 26/11/2021 04:18:05, MaxDist = 3 }
-Courier { Id = 379579023, Name = Hila Ronen, Phone = 053-986-2956, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/10/2022 09:07:38, MaxDist = 10 }
-Courier { Id = 914548717, Name = Idan Marciano, Phone = 052-293-9108, Email = idan.marciano@gmail.com, Password = idan#marciano00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 21/06/2024 10:33:34, MaxDist = 15 }
-Courier { Id = 192256906, Name = Rotem Tzadok, Phone = 054-135-1775, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok20, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 31/05/2021 03:39:16, MaxDist = 8 }
-Courier { Id = 825755264, Name = Adi Baruch, Phone = 053-173-6027, Email = adi.baruch@gmail.com, Password = adi#baruch20, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 03/11/2022 11:50:08, MaxDist = 248 }
-Courier { Id = 381437312, Name = Yonatan Amir, Phone = 057-824-6247, Email = yonatan.amir@gmail.com, Password = yonatan#amir17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 27/08/2022 02:34:49, MaxDist = 85 }
-Courier { Id = 900239429, Name = Michal Saban, Phone = 055-464-7900, Email = michal.saban@gmail.com, Password = michal#saban17, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 12/04/2024 03:12:26, MaxDist = 12 }
-Courier { Id = 453641474, Name = Lior Gross, Phone = 051-876-7600, Email = lior.gross@gmail.com, Password = lior#gross04, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/11/2023 02:22:26, MaxDist = 11 }
-Courier { Id = 337373253, Name = Roni Hasson, Phone = 057-139-3601, Email = roni.hasson@gmail.com, Password = roni#hasson02, IsActive = False, TypeOfDelivery = Car, StartWorkTime = 23/07/2025 05:54:22, MaxDist = 326 }
-Courier { Id = 120917696, Name = Noam Ben-David, Phone = 051-684-2448, Email = noam.ben-david@gmail.com, Password = noam#ben-david09, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/04/2021 03:33:15, MaxDist = 5 }
+Courier { Id = 850665684, Name = Noa Levi, Phone = 058-793-6600, Email = noa.levi@gmail.com, Password = noa#levi19, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2023 03:29:42, MaxDistance = 4 }
+Courier { Id = 460694135, Name = Daniel Cohen, Phone = 052-981-5362, Email = daniel.cohen@gmail.com, Password = daniel#cohen07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 12/01/2025 02:25:34, MaxDistance = 2 }
+Courier { Id = 216276324, Name = Yael Barak, Phone = 053-895-4896, Email = yael.barak@gmail.com, Password = yael#barak00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 24/09/2021 05:55:00, MaxDistance = 34 }
+Courier { Id = 964395664, Name = Roi Avrahami, Phone = 056-192-4981, Email = roi.avrahami@gmail.com, Password = roi#avrahami15, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 20/07/2021 02:58:06, MaxDistance = 44 }
+Courier { Id = 650604000, Name = Maya Friedman, Phone = 055-789-9199, Email = maya.friedman@gmail.com, Password = maya#friedman02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 12/08/2022 04:54:53, MaxDistance = 35 }
+Courier { Id = 961718182, Name = Omri Danino, Phone = 058-426-1492, Email = omri.danino@gmail.com, Password = omri#danino03, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 09/11/2021 13:47:05, MaxDistance = 36 }
+Courier { Id = 537015669, Name = Tamar Rosen, Phone = 058-186-5302, Email = tamar.rosen@gmail.com, Password = tamar#rosen02, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 28/12/2020 11:30:45, MaxDistance = 8 }
+Courier { Id = 615022745, Name = Eitan Gabai, Phone = 057-116-4220, Email = eitan.gabai@gmail.com, Password = eitan#gabai12, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 01/04/2024 07:59:10, MaxDistance = 30 }
+Courier { Id = 123711248, Name = Shira Neuman, Phone = 054-910-8630, Email = shira.neuman@gmail.com, Password = shira#neuman06, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2025 13:21:50, MaxDistance = 2 }
+Courier { Id = 534280374, Name = Guy Hershkovitz, Phone = 055-181-3193, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 16/12/2023 01:45:08, MaxDistance = 1 }
+Courier { Id = 729177417, Name = Alon Zahavi, Phone = 053-389-4064, Email = alon.zahavi@gmail.com, Password = alon#zahavi04, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 26/11/2021 04:18:05, MaxDistance = 3 }
+Courier { Id = 379579023, Name = Hila Ronen, Phone = 053-986-2956, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/10/2022 09:07:38, MaxDistance = 10 }
+Courier { Id = 914548717, Name = Idan Marciano, Phone = 052-293-9108, Email = idan.marciano@gmail.com, Password = idan#marciano00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 21/06/2024 10:33:34, MaxDistance = 15 }
+Courier { Id = 192256906, Name = Rotem Tzadok, Phone = 054-135-1775, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok20, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 31/05/2021 03:39:16, MaxDistance = 8 }
+Courier { Id = 825755264, Name = Adi Baruch, Phone = 053-173-6027, Email = adi.baruch@gmail.com, Password = adi#baruch20, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 03/11/2022 11:50:08, MaxDistance = 248 }
+Courier { Id = 381437312, Name = Yonatan Amir, Phone = 057-824-6247, Email = yonatan.amir@gmail.com, Password = yonatan#amir17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 27/08/2022 02:34:49, MaxDistance = 85 }
+Courier { Id = 900239429, Name = Michal Saban, Phone = 055-464-7900, Email = michal.saban@gmail.com, Password = michal#saban17, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 12/04/2024 03:12:26, MaxDistance = 12 }
+Courier { Id = 453641474, Name = Lior Gross, Phone = 051-876-7600, Email = lior.gross@gmail.com, Password = lior#gross04, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/11/2023 02:22:26, MaxDistance = 11 }
+Courier { Id = 337373253, Name = Roni Hasson, Phone = 057-139-3601, Email = roni.hasson@gmail.com, Password = roni#hasson02, IsActive = False, TypeOfDelivery = Car, StartWorkTime = 23/07/2025 05:54:22, MaxDistance = 326 }
+Courier { Id = 120917696, Name = Noam Ben-David, Phone = 051-684-2448, Email = noam.ben-david@gmail.com, Password = noam#ben-david09, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/04/2021 03:33:15, MaxDistance = 5 }
 
 -- Orders --
 Order { Id = 1000, TypeOfOrder = Express, Address = Herzl 10, Tel Aviv, Latitude = 32.0675, Longitude = 34.7775, CustomerName = Noah Cohen, CustomerPhone = 053-747-2600, OrderOpeningTime = 27/09/2024 10:11:00, PackageDetails = Canvas painting - medium size, Description = Standard art delivery }
@@ -1667,7 +1734,7 @@ Successfully added Courier 999999999 - Test Courier
 6: DeleteAll (Clear list)
 Enter your choice: 2
 Enter Courier ID to get: 999999999
-Courier { Id = 999999999, Name = Test Courier, Phone = 0501234567, Email = test@gmail.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDist = 50 }
+Courier { Id = 999999999, Name = Test Courier, Phone = 0501234567, Email = test@gmail.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDistance = 50 }
 
 --- COURIER MENU ---
 0: Back to Main Menu
@@ -1680,7 +1747,7 @@ Courier { Id = 999999999, Name = Test Courier, Phone = 0501234567, Email = test@
 Enter your choice: 4
 Enter Courier ID to update: 999999999
 Current values:
-Courier { Id = 999999999, Name = Test Courier, Phone = 0501234567, Email = test@gmail.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDist = 50 }
+Courier { Id = 999999999, Name = Test Courier, Phone = 0501234567, Email = test@gmail.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDistance = 50 }
 Enter new Name (current: Test Courier): Updated Name
 Enter new Phone (current: 0501234567):
 Enter new Email (current: test@gmail.com): new@email.com
@@ -1700,7 +1767,7 @@ Successfully updated Courier 999999999
 6: DeleteAll (Clear list)
 Enter your choice: 2
 Enter Courier ID to get: 999999999
-Courier { Id = 999999999, Name = Updated Name, Phone = 0501234567, Email = new@email.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDist = 50 }
+Courier { Id = 999999999, Name = Updated Name, Phone = 0501234567, Email = new@email.com, Password = test123, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 09/11/2025 18:33:22, MaxDistance = 50 }
 
 --- COURIER MENU ---
 0: Back to Main Menu
@@ -1735,26 +1802,26 @@ Courier with ID=999999999 not found.
 5: Delete (By ID)
 6: DeleteAll (Clear list)
 Enter your choice: 3
-Courier { Id = 850665684, Name = Noa Levi, Phone = 058-793-6600, Email = noa.levi@gmail.com, Password = noa#levi19, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2023 03:29:42, MaxDist = 4 }
-Courier { Id = 460694135, Name = Daniel Cohen, Phone = 052-981-5362, Email = daniel.cohen@gmail.com, Password = daniel#cohen07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 12/01/2025 02:25:34, MaxDist = 2 }
-Courier { Id = 216276324, Name = Yael Barak, Phone = 053-895-4896, Email = yael.barak@gmail.com, Password = yael#barak00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 24/09/2021 05:55:00, MaxDist = 34 }
-Courier { Id = 964395664, Name = Roi Avrahami, Phone = 056-192-4981, Email = roi.avrahami@gmail.com, Password = roi#avrahami15, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 20/07/2021 02:58:06, MaxDist = 44 }
-Courier { Id = 650604000, Name = Maya Friedman, Phone = 055-789-9199, Email = maya.friedman@gmail.com, Password = maya#friedman02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 12/08/2022 04:54:53, MaxDist = 35 }
-Courier { Id = 961718182, Name = Omri Danino, Phone = 058-426-1492, Email = omri.danino@gmail.com, Password = omri#danino03, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 09/11/2021 13:47:05, MaxDist = 36 }
-Courier { Id = 537015669, Name = Tamar Rosen, Phone = 058-186-5302, Email = tamar.rosen@gmail.com, Password = tamar#rosen02, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 28/12/2020 11:30:45, MaxDist = 8 }
-Courier { Id = 615022745, Name = Eitan Gabai, Phone = 057-116-4220, Email = eitan.gabai@gmail.com, Password = eitan#gabai12, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 01/04/2024 07:59:10, MaxDist = 30 }
-Courier { Id = 123711248, Name = Shira Neuman, Phone = 054-910-8630, Email = shira.neuman@gmail.com, Password = shira#neuman06, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2025 13:21:50, MaxDist = 2 }
-Courier { Id = 534280374, Name = Guy Hershkovitz, Phone = 055-181-3193, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 16/12/2023 01:45:08, MaxDist = 1 }
-Courier { Id = 729177417, Name = Alon Zahavi, Phone = 053-389-4064, Email = alon.zahavi@gmail.com, Password = alon#zahavi04, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 26/11/2021 04:18:05, MaxDist = 3 }
-Courier { Id = 379579023, Name = Hila Ronen, Phone = 053-986-2956, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/10/2022 09:07:38, MaxDist = 10 }
-Courier { Id = 914548717, Name = Idan Marciano, Phone = 052-293-9108, Email = idan.marciano@gmail.com, Password = idan#marciano00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 21/06/2024 10:33:34, MaxDist = 15 }
-Courier { Id = 192256906, Name = Rotem Tzadok, Phone = 054-135-1775, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok20, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 31/05/2021 03:39:16, MaxDist = 8 }
-Courier { Id = 825755264, Name = Adi Baruch, Phone = 053-173-6027, Email = adi.baruch@gmail.com, Password = adi#baruch20, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 03/11/2022 11:50:08, MaxDist = 248 }
-Courier { Id = 381437312, Name = Yonatan Amir, Phone = 057-824-6247, Email = yonatan.amir@gmail.com, Password = yonatan#amir17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 27/08/2022 02:34:49, MaxDist = 85 }
-Courier { Id = 900239429, Name = Michal Saban, Phone = 055-464-7900, Email = michal.saban@gmail.com, Password = michal#saban17, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 12/04/2024 03:12:26, MaxDist = 12 }
-Courier { Id = 453641474, Name = Lior Gross, Phone = 051-876-7600, Email = lior.gross@gmail.com, Password = lior#gross04, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/11/2023 02:22:26, MaxDist = 11 }
-Courier { Id = 337373253, Name = Roni Hasson, Phone = 057-139-3601, Email = roni.hasson@gmail.com, Password = roni#hasson02, IsActive = False, TypeOfDelivery = Car, StartWorkTime = 23/07/2025 05:54:22, MaxDist = 326 }
-Courier { Id = 120917696, Name = Noam Ben-David, Phone = 051-684-2448, Email = noam.ben-david@gmail.com, Password = noam#ben-david09, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/04/2021 03:33:15, MaxDist = 5 }
+Courier { Id = 850665684, Name = Noa Levi, Phone = 058-793-6600, Email = noa.levi@gmail.com, Password = noa#levi19, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2023 03:29:42, MaxDistance = 4 }
+Courier { Id = 460694135, Name = Daniel Cohen, Phone = 052-981-5362, Email = daniel.cohen@gmail.com, Password = daniel#cohen07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 12/01/2025 02:25:34, MaxDistance = 2 }
+Courier { Id = 216276324, Name = Yael Barak, Phone = 053-895-4896, Email = yael.barak@gmail.com, Password = yael#barak00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 24/09/2021 05:55:00, MaxDistance = 34 }
+Courier { Id = 964395664, Name = Roi Avrahami, Phone = 056-192-4981, Email = roi.avrahami@gmail.com, Password = roi#avrahami15, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 20/07/2021 02:58:06, MaxDistance = 44 }
+Courier { Id = 650604000, Name = Maya Friedman, Phone = 055-789-9199, Email = maya.friedman@gmail.com, Password = maya#friedman02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 12/08/2022 04:54:53, MaxDistance = 35 }
+Courier { Id = 961718182, Name = Omri Danino, Phone = 058-426-1492, Email = omri.danino@gmail.com, Password = omri#danino03, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 09/11/2021 13:47:05, MaxDistance = 36 }
+Courier { Id = 537015669, Name = Tamar Rosen, Phone = 058-186-5302, Email = tamar.rosen@gmail.com, Password = tamar#rosen02, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 28/12/2020 11:30:45, MaxDistance = 8 }
+Courier { Id = 615022745, Name = Eitan Gabai, Phone = 057-116-4220, Email = eitan.gabai@gmail.com, Password = eitan#gabai12, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 01/04/2024 07:59:10, MaxDistance = 30 }
+Courier { Id = 123711248, Name = Shira Neuman, Phone = 054-910-8630, Email = shira.neuman@gmail.com, Password = shira#neuman06, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/05/2025 13:21:50, MaxDistance = 2 }
+Courier { Id = 534280374, Name = Guy Hershkovitz, Phone = 055-181-3193, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz07, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 16/12/2023 01:45:08, MaxDistance = 1 }
+Courier { Id = 729177417, Name = Alon Zahavi, Phone = 053-389-4064, Email = alon.zahavi@gmail.com, Password = alon#zahavi04, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 26/11/2021 04:18:05, MaxDistance = 3 }
+Courier { Id = 379579023, Name = Hila Ronen, Phone = 053-986-2956, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/10/2022 09:07:38, MaxDistance = 10 }
+Courier { Id = 914548717, Name = Idan Marciano, Phone = 052-293-9108, Email = idan.marciano@gmail.com, Password = idan#marciano00, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 21/06/2024 10:33:34, MaxDistance = 15 }
+Courier { Id = 192256906, Name = Rotem Tzadok, Phone = 054-135-1775, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok20, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 31/05/2021 03:39:16, MaxDistance = 8 }
+Courier { Id = 825755264, Name = Adi Baruch, Phone = 053-173-6027, Email = adi.baruch@gmail.com, Password = adi#baruch20, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 03/11/2022 11:50:08, MaxDistance = 248 }
+Courier { Id = 381437312, Name = Yonatan Amir, Phone = 057-824-6247, Email = yonatan.amir@gmail.com, Password = yonatan#amir17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 27/08/2022 02:34:49, MaxDistance = 85 }
+Courier { Id = 900239429, Name = Michal Saban, Phone = 055-464-7900, Email = michal.saban@gmail.com, Password = michal#saban17, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 12/04/2024 03:12:26, MaxDistance = 12 }
+Courier { Id = 453641474, Name = Lior Gross, Phone = 051-876-7600, Email = lior.gross@gmail.com, Password = lior#gross04, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 23/11/2023 02:22:26, MaxDistance = 11 }
+Courier { Id = 337373253, Name = Roni Hasson, Phone = 057-139-3601, Email = roni.hasson@gmail.com, Password = roni#hasson02, IsActive = False, TypeOfDelivery = Car, StartWorkTime = 23/07/2025 05:54:22, MaxDistance = 326 }
+Courier { Id = 120917696, Name = Noam Ben-David, Phone = 051-684-2448, Email = noam.ben-david@gmail.com, Password = noam#ben-david09, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 05/04/2021 03:33:15, MaxDistance = 5 }
 
 --- COURIER MENU ---
 0: Back to Main Menu
@@ -2185,26 +2252,26 @@ Enter your choice: 7
 --- LISTING ALL DATA ---
 
 -- Couriers --
-Courier { Id = 344926647, Name = Noa Levi, Phone = 052-811-9273, Email = noa.levi@gmail.com, Password = noa#levi11, IsActive = False, TypeOfDelivery = Motorcycle, StartWorkTime = 06/05/2024 03:35:37, MaxDist = 37 }
-Courier { Id = 323019443, Name = Daniel Cohen, Phone = 056-655-8089, Email = daniel.cohen@gmail.com, Password = daniel#cohen10, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 17/10/2021 11:02:05, MaxDist = 14 }
-Courier { Id = 212208485, Name = Yael Barak, Phone = 053-180-4488, Email = yael.barak@gmail.com, Password = yael#barak02, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 19/02/2023 13:33:30, MaxDist = 1 }
-Courier { Id = 468490549, Name = Roi Avrahami, Phone = 055-470-9818, Email = roi.avrahami@gmail.com, Password = roi#avrahami09, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 22/10/2022 15:37:44, MaxDist = 2 }
-Courier { Id = 853928876, Name = Maya Friedman, Phone = 058-577-3510, Email = maya.friedman@gmail.com, Password = maya#friedman18, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 02/02/2022 04:24:41, MaxDist = 16 }
-Courier { Id = 545826872, Name = Omri Danino, Phone = 054-635-2603, Email = omri.danino@gmail.com, Password = omri#danino09, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 23/09/2021 05:58:28, MaxDist = 45 }
-Courier { Id = 141244895, Name = Tamar Rosen, Phone = 055-474-1437, Email = tamar.rosen@gmail.com, Password = tamar#rosen06, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 06/05/2022 06:41:02, MaxDist = 30 }
-Courier { Id = 262581120, Name = Eitan Gabai, Phone = 051-945-9086, Email = eitan.gabai@gmail.com, Password = eitan#gabai17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 07/08/2022 05:48:16, MaxDist = 230 }
-Courier { Id = 455753034, Name = Shira Neuman, Phone = 057-319-2645, Email = shira.neuman@gmail.com, Password = shira#neuman14, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 15/08/2021 04:32:10, MaxDist = 4 }
-Courier { Id = 642880051, Name = Guy Hershkovitz, Phone = 050-941-7964, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz12, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 31/08/2021 04:13:51, MaxDist = 3 }
-Courier { Id = 483649597, Name = Alon Zahavi, Phone = 055-532-1777, Email = alon.zahavi@gmail.com, Password = alon#zahavi01, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 18/12/2024 06:29:04, MaxDist = 144 }
-Courier { Id = 443443968, Name = Hila Ronen, Phone = 058-151-4267, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 18/06/2022 04:30:28, MaxDist = 2 }
-Courier { Id = 543020197, Name = Idan Marciano, Phone = 051-130-4594, Email = idan.marciano@gmail.com, Password = idan#marciano02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 10/10/2025 07:13:04, MaxDist = 31 }
-Courier { Id = 340696032, Name = Rotem Tzadok, Phone = 056-544-7236, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok05, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 05/10/2024 10:26:26, MaxDist = 3 }
-Courier { Id = 956087862, Name = Adi Baruch, Phone = 051-302-4178, Email = adi.baruch@gmail.com, Password = adi#baruch08, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 05/12/2021 04:57:44, MaxDist = 265 }
-Courier { Id = 391874673, Name = Yonatan Amir, Phone = 055-772-2489, Email = yonatan.amir@gmail.com, Password = yonatan#amir09, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 31/10/2025 11:01:24, MaxDist = 8 }
-Courier { Id = 452657218, Name = Michal Saban, Phone = 054-533-8688, Email = michal.saban@gmail.com, Password = michal#saban02, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 22/07/2022 06:29:10, MaxDist = 4 }
-Courier { Id = 852499651, Name = Lior Gross, Phone = 056-848-6668, Email = lior.gross@gmail.com, Password = lior#gross07, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 17/01/2022 07:49:21, MaxDist = 2 }
-Courier { Id = 694180588, Name = Roni Hasson, Phone = 051-795-7167, Email = roni.hasson@gmail.com, Password = roni#hasson06, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 19/02/2021 08:09:06, MaxDist = 46 }
-Courier { Id = 590118231, Name = Noam Ben-David, Phone = 050-259-9548, Email = noam.ben-david@gmail.com, Password = noam#ben-david00, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 29/05/2021 14:15:40, MaxDist = 2 }
+Courier { Id = 344926647, Name = Noa Levi, Phone = 052-811-9273, Email = noa.levi@gmail.com, Password = noa#levi11, IsActive = False, TypeOfDelivery = Motorcycle, StartWorkTime = 06/05/2024 03:35:37, MaxDistance = 37 }
+Courier { Id = 323019443, Name = Daniel Cohen, Phone = 056-655-8089, Email = daniel.cohen@gmail.com, Password = daniel#cohen10, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 17/10/2021 11:02:05, MaxDistance = 14 }
+Courier { Id = 212208485, Name = Yael Barak, Phone = 053-180-4488, Email = yael.barak@gmail.com, Password = yael#barak02, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 19/02/2023 13:33:30, MaxDistance = 1 }
+Courier { Id = 468490549, Name = Roi Avrahami, Phone = 055-470-9818, Email = roi.avrahami@gmail.com, Password = roi#avrahami09, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 22/10/2022 15:37:44, MaxDistance = 2 }
+Courier { Id = 853928876, Name = Maya Friedman, Phone = 058-577-3510, Email = maya.friedman@gmail.com, Password = maya#friedman18, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 02/02/2022 04:24:41, MaxDistance = 16 }
+Courier { Id = 545826872, Name = Omri Danino, Phone = 054-635-2603, Email = omri.danino@gmail.com, Password = omri#danino09, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 23/09/2021 05:58:28, MaxDistance = 45 }
+Courier { Id = 141244895, Name = Tamar Rosen, Phone = 055-474-1437, Email = tamar.rosen@gmail.com, Password = tamar#rosen06, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 06/05/2022 06:41:02, MaxDistance = 30 }
+Courier { Id = 262581120, Name = Eitan Gabai, Phone = 051-945-9086, Email = eitan.gabai@gmail.com, Password = eitan#gabai17, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 07/08/2022 05:48:16, MaxDistance = 230 }
+Courier { Id = 455753034, Name = Shira Neuman, Phone = 057-319-2645, Email = shira.neuman@gmail.com, Password = shira#neuman14, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 15/08/2021 04:32:10, MaxDistance = 4 }
+Courier { Id = 642880051, Name = Guy Hershkovitz, Phone = 050-941-7964, Email = guy.hershkovitz@gmail.com, Password = guy#hershkovitz12, IsActive = True, TypeOfDelivery = ByFoot, StartWorkTime = 31/08/2021 04:13:51, MaxDistance = 3 }
+Courier { Id = 483649597, Name = Alon Zahavi, Phone = 055-532-1777, Email = alon.zahavi@gmail.com, Password = alon#zahavi01, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 18/12/2024 06:29:04, MaxDistance = 144 }
+Courier { Id = 443443968, Name = Hila Ronen, Phone = 058-151-4267, Email = hila.ronen@gmail.com, Password = hila#ronen07, IsActive = False, TypeOfDelivery = Bicycle, StartWorkTime = 18/06/2022 04:30:28, MaxDistance = 2 }
+Courier { Id = 543020197, Name = Idan Marciano, Phone = 051-130-4594, Email = idan.marciano@gmail.com, Password = idan#marciano02, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 10/10/2025 07:13:04, MaxDistance = 31 }
+Courier { Id = 340696032, Name = Rotem Tzadok, Phone = 056-544-7236, Email = rotem.tzadok@gmail.com, Password = rotem#tzadok05, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 05/10/2024 10:26:26, MaxDistance = 3 }
+Courier { Id = 956087862, Name = Adi Baruch, Phone = 051-302-4178, Email = adi.baruch@gmail.com, Password = adi#baruch08, IsActive = True, TypeOfDelivery = Car, StartWorkTime = 05/12/2021 04:57:44, MaxDistance = 265 }
+Courier { Id = 391874673, Name = Yonatan Amir, Phone = 055-772-2489, Email = yonatan.amir@gmail.com, Password = yonatan#amir09, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 31/10/2025 11:01:24, MaxDistance = 8 }
+Courier { Id = 452657218, Name = Michal Saban, Phone = 054-533-8688, Email = michal.saban@gmail.com, Password = michal#saban02, IsActive = True, TypeOfDelivery = Bicycle, StartWorkTime = 22/07/2022 06:29:10, MaxDistance = 4 }
+Courier { Id = 852499651, Name = Lior Gross, Phone = 056-848-6668, Email = lior.gross@gmail.com, Password = lior#gross07, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 17/01/2022 07:49:21, MaxDistance = 2 }
+Courier { Id = 694180588, Name = Roni Hasson, Phone = 051-795-7167, Email = roni.hasson@gmail.com, Password = roni#hasson06, IsActive = True, TypeOfDelivery = Motorcycle, StartWorkTime = 19/02/2021 08:09:06, MaxDistance = 46 }
+Courier { Id = 590118231, Name = Noam Ben-David, Phone = 050-259-9548, Email = noam.ben-david@gmail.com, Password = noam#ben-david00, IsActive = False, TypeOfDelivery = ByFoot, StartWorkTime = 29/05/2021 14:15:40, MaxDistance = 2 }
 
 -- Orders --
 Order { Id = 1000, TypeOfOrder = Express, Address = Herzl 10, Tel Aviv, Latitude = 32.0675, Longitude = 34.7775, CustomerName = Noah Cohen, CustomerPhone = 052-570-1389, OrderOpeningTime = 16/12/2022 13:39:28, PackageDetails = Canvas painting - medium size, Description = Standard art delivery }

@@ -2,6 +2,7 @@
 using DalApi;
 using DO;
 using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Provides methods to manage orders, including creating, reading, updating, and deleting orders.
@@ -30,7 +31,7 @@ internal class OrderImplementation : IOrder
     public void Delete(int IdEntity)
     {
         if (Read(IdEntity) is null)
-            throw new Exception($"Order with Id {IdEntity} doesn't exist.");
+            throw new DalDoesNotExistException($"Order with Id {IdEntity} doesn't exist.");
         else
         {
             int Index = DataSource.Orders.FindIndex(c => c.Id == IdEntity);
@@ -53,23 +54,25 @@ internal class OrderImplementation : IOrder
     /// <returns></returns>
     public Order? Read(int IdEntity)
     {
-        return DataSource.Orders.Find(c => c.Id == IdEntity); // find the order by its Id
+        return DataSource.Orders.FirstOrDefault(c => c.Id == IdEntity); // find the order by its Id
     }
+
+    /// <summary>
+    /// retrieves an order from the data source based on a filter.
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    public DO.Order? Read(Func<DO.Order, bool> filter)
+        => DataSource.Orders.FirstOrDefault(filter);
 
     /// <summary>
     /// retrieves all orders from the data source.
     /// </summary>
     /// <returns></returns>
-    public List<Order> ReadAll()
-    {
-        List<Order> CopyList = new List<Order>();
-        foreach (Order c in DataSource.Orders)
-        {
-            Order NewOrder = c with { }; // create a copy of the order
-            CopyList.Add(NewOrder);
-        }
-        return CopyList;
-    }
+    public IEnumerable<Order> ReadAll(Func<Order, bool>? filter = null)
+        => filter == null
+            ? DataSource.Orders.Select(c => c)
+            : DataSource.Orders.Where(filter);
 
     /// <summary>
     /// updates an existing order in the data source.
@@ -79,7 +82,7 @@ internal class OrderImplementation : IOrder
     public void Update(Order Item)
     {
         if (Read(Item.Id) is null)
-            throw new Exception($"Order with Id {Item.Id} doesn't exist.");
+            throw new DalDoesNotExistException($"Order with Id {Item.Id} doesn't exist.");
         else
         {
             int Index = DataSource.Orders.FindIndex(c => c.Id == Item.Id); // find the index of the order to update

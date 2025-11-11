@@ -14,7 +14,7 @@
 /// langword="false"/>.</param>
 /// <param name="TypeOfDelivery">The type of delivery the courier performs, such as by foot or vehicle.</param>
 /// <param name="StartWorkTime">The time when the courier starts their workday.</param>
-/// <param name="MaxDist">The maximum distance, in kilometers, that the courier is willing to travel for deliveries. If <see
+/// <param name="MaxDistance">The maximum distance, in kilometers, that the courier is willing to travel for deliveries. If <see
 /// langword="null"/>, there is no set limit.</param>
 public record Courier
 (
@@ -26,7 +26,7 @@ public record Courier
     bool IsActive, //is the courier active?//
     DeliveryType TypeOfDelivery,
     DateTime StartWorkTime,
-    double? MaxDist = null //in kilometers//
+    double? MaxDistance = null //in kilometers//
 )
 {
     public Courier() : this(0, " ", " ", " ", " ", true, DeliveryType.ByFoot, DateTime.MinValue, null) { } //Default constructor//
