@@ -26,3 +26,12 @@ public class DalNullValueException : Exception
 {
     public DalNullValueException(string? message) : base(message) { }
 }
+
+/// <summary>
+/// exception thrown when there is an error loading or creating the XML file.
+/// </summary>
+[Serializable]
+public class DalXMLFileLoadCreateException : Exception
+{
+    public DalXMLFileLoadCreateException(string? message) : base(message) { }
+}
