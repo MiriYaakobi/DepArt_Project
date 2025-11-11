@@ -203,17 +203,8 @@ internal class Program
 
             Console.WriteLine($"Successfully added Courier {id} - {name}");
         }
-        
 
-        catch (DalNullValueException ex)
-        {
-            Console.WriteLine($"Error adding courier: {ex.Message}");
-        }
         catch (DalAlreadyExistsException ex)
-        {
-            Console.WriteLine($"Error adding courier: {ex.Message}");
-        }
-        catch (DalDoesNotExistException ex)
         {
             Console.WriteLine($"Error adding courier: {ex.Message}");
         }
