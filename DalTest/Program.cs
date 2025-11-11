@@ -390,7 +390,6 @@ internal class Program
 
             Console.WriteLine($"Successfully updated Courier {id}");
         }
-       
         catch (DalNullValueException ex)
         {
             Console.WriteLine($"Error updating courier: {ex.Message}");
