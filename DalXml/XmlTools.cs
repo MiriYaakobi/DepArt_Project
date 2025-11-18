@@ -81,6 +81,13 @@ static class XMLTools
     #endregion
 
     #region XmlConfig
+    /// <summary>
+    /// get the int value from the config xml file and increase it by 1
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatException"></exception>
     public static int GetAndIncreaseConfigIntVal(string xmlFileName, string elemName)
     {
         XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
@@ -101,6 +108,76 @@ static class XMLTools
         DateTime dt = root.ToDateTimeNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
         return dt;
     }
+
+    /// <summary>
+    /// get the string value from the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatException"></exception>
+    public static string GetConfigStringVal(string xmlFileName, string elemName)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        string? str = (string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+        return str;
+    }
+
+    /// <summary>
+    /// get the nullable string value from the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    public static string? GetConfigNullableStringVal(string xmlFileName, string elemName)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        string? str = (string?)root.Element(elemName);
+        return str;
+    }
+
+    /// <summary>
+    /// get the double value from the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatException"></exception>
+    public static double GetConfigDoubleVal(string xmlFileName, string elemName)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+        return num;
+    }
+
+    /// <summary>
+    /// get the nullable double value from the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatException"></exception>
+    public static double? GetConfigNullableDoubleVal(string xmlFileName, string elemName)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+        return num;
+    }
+
+    /// <summary>
+    /// get the TimeSpan value from the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatException"></exception>
+    public static TimeSpan GetConfigTimeSpanVal(string xmlFileName, string elemName)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        TimeSpan ts = TimeSpan.Parse((string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}"));
+        return ts;
+    }
+
     public static void SetConfigIntVal(string xmlFileName, string elemName, int elemVal)
     {
         XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
@@ -112,6 +189,92 @@ static class XMLTools
         XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
         root.Element(elemName)?.SetValue((elemVal).ToString());
         XMLTools.SaveListToXMLElement(root, xmlFileName);
+    }
+
+    /// <summary>
+    /// set the string value in the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <param name="elemVal"></param>
+    public static void SetConfigStringVal(string xmlFileName, string elemName, string elemVal)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        root.Element(elemName)?.SetValue(elemVal);
+        XMLTools.SaveListToXMLElement(root, xmlFileName);
+    }
+
+    /// <summary>
+    /// set the nullable string value in the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <param name="elemVal"></param>
+    public static void SetConfigNullableStringVal(string xmlFileName, string elemName, string? elemVal)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        XElement? element = root.Element(elemName);
+
+        if (element != null && elemVal == null)
+            element.Remove();
+
+        else if (element != null && elemVal != null)
+            element.SetValue(elemVal);
+
+        XMLTools.SaveListToXMLElement(root, xmlFileName);
+    }
+
+    /// <summary>
+    /// set the double value in the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <param name="elemVal"></param>
+    public static void SetConfigDoubleVal(string xmlFileName, string elemName, double elemVal)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        root.Element(elemName)?.SetValue((elemVal).ToString());
+        XMLTools.SaveListToXMLElement(root, xmlFileName);
+    }
+
+    /// <summary>
+    /// set the TimeSpan value in the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <param name="elemVal"></param>
+    public static void SetConfigTimeSpanVal(string xmlFileName, string elemName, TimeSpan elemVal)
+    {
+        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+        root.Element(elemName)?.SetValue((elemVal).ToString());
+        XMLTools.SaveListToXMLElement(root, xmlFileName);
+    }
+
+    /// <summary>
+    /// set the nullable double value in the config xml file
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <param name="elemName"></param>
+    /// <param name="elemVal"></param>
+    public static void SetConfigNullableDoubleVal(string xmlFileName, string elemName, double? elemVal)
+    {
+        XElement root = LoadListFromXMLElement(xmlFileName);
+        XElement? element = root.Element(elemName);
+
+        // if elemVal has value, set it; else remove the element
+        if (elemVal.HasValue)
+        {
+            if (element != null)
+                element.SetValue(elemVal.Value.ToString());
+
+            else
+                root.Add(new XElement(elemName, elemVal.Value.ToString()));
+        }
+
+        else if (element != null)
+            element.Remove();
+
+        SaveListToXMLElement(root, xmlFileName);
     }
     #endregion
 
