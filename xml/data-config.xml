@@ -1,3 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
+	<nextDeliveryId> 1000 </nextDeliveryId>
+	<nextOrderId> 1000 </nextOrderId>
+	
+	<Clock> 2025-11-18T08:00:00 </Clock>
+	
+	<AdminId> 123456782 </AdminId>
+	<AsminPassword> Deafult1234$ </AsminPassword>
+	<CompanyAddress> Ahad Ha'am St 9 Tel-Aviv </CompanyAddress>
+	<CompanyLatitude> 32.0641632 </CompanyLatitude>
+	<CompanyLongitude> 34.7692375 </CompanyLongitude>
+	<DeliveryMaxDistance> 286 </DeliveryMaxDistance>
+	
+	<AverageVehicleSpeedKmH>0.0</AverageVehicleSpeedKmH>
+	<AverageMotorcycleSpeedKmH> 0.0 </AverageMotorcycleSpeedKmH>
+	<AverageBicycleSpeedKmH> 0.0 </AverageBicycleSpeedKmH>
+	<AverageByFootSpeedKmH> 0.0 </AverageByFootSpeedKmH>
+
+	<MaxDeliveryRange> 00:00:00 </MaxDeliveryRange>
+	<RiskRange> 00:00:00 </RiskRange>
+	<InactivityTimeRange> 00:00:00 </InactivityTimeRange>
 </config>
