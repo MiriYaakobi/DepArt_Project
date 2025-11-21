@@ -10,7 +10,8 @@ namespace DalTest;
 internal class Program
 {
     //create DAL instances for each entity
-    static readonly IDal s_dal = new Dal.DalList(); // is that ok?
+    //static readonly IDal s_dal = new Dal.DalList(); // from stage 2
+    static readonly IDal s_dal = new Dal.DalXml();
 
     /// <summary>
     /// Enum for main menu options.

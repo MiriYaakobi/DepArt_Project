@@ -1,23 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-	<nextDeliveryId> 1000 </nextDeliveryId>
-	<nextOrderId> 1000 </nextOrderId>
-	
-	<Clock> 2025-11-18T08:00:00 </Clock>
-	
-	<AdminId> 123456782 </AdminId>
-	<AsminPassword> Deafult1234$ </AsminPassword>
-	<CompanyAddress> Ahad Ha'am St 9 Tel-Aviv </CompanyAddress>
-	<CompanyLatitude> 32.0641632 </CompanyLatitude>
-	<CompanyLongitude> 34.7692375 </CompanyLongitude>
-	<DeliveryMaxDistance> 286 </DeliveryMaxDistance>
-	
-	<AverageVehicleSpeedKmH>0.0</AverageVehicleSpeedKmH>
-	<AverageMotorcycleSpeedKmH> 0.0 </AverageMotorcycleSpeedKmH>
-	<AverageBicycleSpeedKmH> 0.0 </AverageBicycleSpeedKmH>
-	<AverageByFootSpeedKmH> 0.0 </AverageByFootSpeedKmH>
-
-	<MaxDeliveryRange> 00:00:00 </MaxDeliveryRange>
-	<RiskRange> 00:00:00 </RiskRange>
-	<InactivityTimeRange> 00:00:00 </InactivityTimeRange>
+  <NextDeliveryId>1226</NextDeliveryId>
+  <NextOrderId>1050</NextOrderId>
+  <Clock>2025-11-21T15:07:01.6724857+02:00</Clock>
+  <AdminId>123456782</AdminId>
+  <AdminPassword>Deafult1234$</AdminPassword>
+  <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>
+  <CompenyLatitude>32.0641632</CompenyLatitude>
+  <CompenyLongitude>34.7692375</CompenyLongitude>
+  <DeliveryMaxDistance>286</DeliveryMaxDistance>
+  <AverageVehicleSpeedKmH>0</AverageVehicleSpeedKmH>
+  <AverageMotorcycleSpeedKmH>0</AverageMotorcycleSpeedKmH>
+  <AverageBicycleSpeedKmH>0</AverageBicycleSpeedKmH>
+  <AverageByFootSpeedKmH>0</AverageByFootSpeedKmH>
+  <MaxDeliveryRange>00:00:00</MaxDeliveryRange>
+  <RiskRange>00:00:00</RiskRange>
+  <InactivityTimeRange>00:00:00</InactivityTimeRange>
 </config>
