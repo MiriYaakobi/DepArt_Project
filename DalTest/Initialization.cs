@@ -226,7 +226,10 @@ public static class Initialization
 
             // Only create the order if it doesn't already exist
             if (!exists)
-                s_dal!.Order.Create(new Order(0, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
+            {
+                int nextOrder = s_dal!.Config.NextOrderId;
+                s_dal!.Order.Create(new Order(nextOrder, orderTypes, address, latitude, longitude, name, phone, OpeningTime, details, descrip));
+            }
         }
     }
 
@@ -293,6 +296,8 @@ public static class Initialization
                 int addMinutes = (maxMinutesWindow == 0) ? 0 : s_rand.Next(0, maxMinutesWindow);
                 start = earliestStart.AddMinutes(addMinutes);
 
+                int nextDelivery = s_dal!.Config.NextDeliveryId;
+
                 // Randomly determine a delivery duration between 20 and 180 minutes
                 int durationMinutes = s_rand.Next(20, 180);
                 DateTime end = start.AddMinutes(durationMinutes);
@@ -320,7 +325,7 @@ public static class Initialization
                     var endStatus = closedStatuses[s_rand.Next(closedStatuses.Length)];
 
                     // Create the delivery record
-                    s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, endStatus, end));
+                    s_dal!.Delivery.Create(new DO.Delivery(nextDelivery, order.Id, courier.Id, order.TypeOfOrder, start, dist, endStatus, end));
                     availableOrders.RemoveAll(o => o.Id == order.Id);
 
                     // Mark as placed and exit the loop
@@ -365,6 +370,7 @@ public static class Initialization
                 int addMinutes = (maxMinutesWindow == 0) ? 0 : s_rand.Next(0, maxMinutesWindow);
                 start = earliestStart.AddMinutes(addMinutes);
                 DateTime? end = null;
+                int nextDelivery = s_dal!.Config.NextDeliveryId;
 
                 // Check for schedule overlap
                 if (!HasOverlap(courierSchedule[courier.Id], start, end))
@@ -372,7 +378,7 @@ public static class Initialization
                     courierSchedule[courier.Id].Add((start, null));
 
                     // Create the delivery record
-                    s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, null, null));
+                    s_dal!.Delivery.Create(new DO.Delivery(nextDelivery, order.Id, courier.Id, order.TypeOfOrder, start, dist, null, null));
 
                     availableOrders.RemoveAll(o => o.Id == order.Id);
                     placed = true;

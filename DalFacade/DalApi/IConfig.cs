@@ -17,6 +17,8 @@ public interface IConfig
     void Reset();
 
     //We added for step 11, will we use later?
+    int NextDeliveryId { get; }
+    int NextOrderId { get; }
     int AdminId { get; set; }
     double? DeliveryMaxDistance { get; set; }
     double AverageVehicleSpeedKmH { get; set; }

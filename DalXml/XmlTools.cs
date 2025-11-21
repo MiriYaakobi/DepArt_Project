@@ -1,7 +1,6 @@
 ﻿namespace Dal;
 
 using DO;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -47,35 +46,62 @@ static class XMLTools
     }
     #endregion
 
+    /// <summary>
+    /// We upgraded the original functions because we encountered
+    /// an error while running locked files. The upgrade was done
+    /// with the help of AI when we turned to it in an attempt to
+    /// understand the problem and how to solve it effectively.
+    /// </summary>
+    /// <param name="rootElem"></param>
+    /// <param name="xmlFileName"></param>
+    /// <exception cref="DalXMLFileLoadCreateException"></exception>
     #region SaveLoadWithXElement
     public static void SaveListToXMLElement(XElement rootElem, string xmlFileName)
     {
         string xmlFilePath = s_xmlDir + xmlFileName;
-
         try
         {
-            rootElem.Save(xmlFilePath);
+            using (FileStream fs = new FileStream(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                rootElem.Save(fs);
+            }
         }
         catch (Exception ex)
         {
-            throw new DalXMLFileLoadCreateException($"fail to create xml file: {s_xmlDir + xmlFilePath}, {ex.Message}");
+            throw new DalXMLFileLoadCreateException($"fail to create xml file: {xmlFilePath}, {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// We upgraded the original functions because we encountered
+    /// an error while running locked files. The upgrade was done
+    /// with the help of AI when we turned to it in an attempt to
+    /// understand the problem and how to solve it effectively.
+    /// </summary>
+    /// <param name="xmlFileName"></param>
+    /// <returns></returns>
+    /// <exception cref="DalXMLFileLoadCreateException"></exception>
     public static XElement LoadListFromXMLElement(string xmlFileName)
     {
         string xmlFilePath = s_xmlDir + xmlFileName;
-
         try
         {
             if (File.Exists(xmlFilePath))
-                return XElement.Load(xmlFilePath);
+            {
+                XElement root;
+                using (FileStream fs = new FileStream(xmlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    root = XElement.Load(fs);
+                }
+                return root;
+            }
             XElement rootElem = new(xmlFileName);
             rootElem.Save(xmlFilePath);
             return rootElem;
         }
         catch (Exception ex)
         {
-            throw new DalXMLFileLoadCreateException($"fail to load xml file: {s_xmlDir + xmlFilePath}, {ex.Message}");
+            throw new DalXMLFileLoadCreateException($"fail to load xml file: {xmlFilePath}, {ex.Message}");
         }
     }
     #endregion
@@ -182,12 +208,21 @@ static class XMLTools
     {
         XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
         root.Element(elemName)?.SetValue((elemVal).ToString());
+        XElement? element = root.Element(elemName);
+        
+        if (element == null)
+        {
+            element = new XElement(elemName);
+            root.Add(element);
+        }
+        // עכשיו האלמנט קיים, ויש להכריח פורמט בינלאומי לכתיבה
+        element.SetValue(elemVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
         XMLTools.SaveListToXMLElement(root, xmlFileName);
     }
     public static void SetConfigDateVal(string xmlFileName, string elemName, DateTime elemVal)
     {
         XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue((elemVal).ToString());
+        root.Element(elemName)?.SetValue(elemVal.ToString("o"));
         XMLTools.SaveListToXMLElement(root, xmlFileName);
     }
 
