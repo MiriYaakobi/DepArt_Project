@@ -36,7 +36,7 @@ internal static class Config
         set => XMLTools.SetConfigStringVal(s_data_config_xml, "adminPassword", value);
     }
     internal static string? CompenyAddress
-    { 
+    {
         get => XMLTools.GetConfigNullableStringVal(s_data_config_xml, "compenyAddress");
         set => XMLTools.SetConfigNullableStringVal(s_data_config_xml, "compenyAddress", value);
     }
@@ -66,7 +66,7 @@ internal static class Config
         set => XMLTools.SetConfigDoubleVal(s_data_config_xml, "averageMotorcycleSpeedKmH", value);
     }
     internal static double AverageBicycleSpeedKmH
-    { 
+    {
         get => XMLTools.GetConfigDoubleVal(s_data_config_xml, "averageBicycleSpeedKmH");
         set => XMLTools.SetConfigDoubleVal(s_data_config_xml, "averageBicycleSpeedKmH", value);
     }
@@ -86,7 +86,7 @@ internal static class Config
         set => XMLTools.SetConfigTimeSpanVal(s_data_config_xml, "riskRange", value);
     }
     internal static TimeSpan InactivityTimeRange
-    { 
+    {
         get => XMLTools.GetConfigTimeSpanVal(s_data_config_xml, "inactivityTimeRange");
         set => XMLTools.SetConfigTimeSpanVal(s_data_config_xml, "inactivityTimeRange", value);
     }

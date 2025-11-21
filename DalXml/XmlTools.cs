@@ -288,6 +288,27 @@ static class XMLTools
         double.TryParse((string?)element.Element(name), out var result) ? (double?)result : null;
     public static int? ToIntNullable(this XElement element, string name) =>
         int.TryParse((string?)element.Element(name), out var result) ? (int?)result : null;
+
+    /// <summary>
+    /// Retrieves the string value of the specified child element, or <see langword="null"/> if the element does not
+    /// exist or has no value.
+    /// </summary>
+    /// <param name="element">The parent <see cref="XElement"/> to search within.</param>
+    /// <param name="name">The name of the child element to retrieve the value from.</param>
+    /// <returns>The string value of the specified child element, or <see langword="null"/> if the child element is not found or
+    /// its value is <see langword="null"/>.</returns>
+    public static string? ToStringNullable(this XElement element, string name) =>
+        (string?)element.Element(name);
+
+    /// <summary>
+    /// Retrieves the string value of the specified child element, or <see langword="null"/> if the element does not
+    /// exist or has no value.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static bool? ToBoolNullable(this XElement element, string name) =>
+        bool.TryParse((string?)element.Element(name), out var result) ? (bool?)result : null;
     #endregion
 
 }

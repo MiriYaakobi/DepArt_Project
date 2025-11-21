@@ -30,5 +30,4 @@ public record Courier
 )
 {
     public Courier() : this(0, " ", " ", " ", " ", true, DeliveryType.ByFoot, DateTime.MinValue, null) { } //Default constructor//
-
 }
