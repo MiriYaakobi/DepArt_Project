@@ -400,10 +400,10 @@ public static class Initialization
     /// <param name="dalOrder"></param>
     /// <param name="dalDelivery"></param>
     /// <exception cref="NullReferenceException"></exception>
-    public static void Do(IDal dal)
+    public static void Do()
     {
         // Assign DAL interfaces, throwing exceptions if any are null
-        s_dal = dal ?? throw new NullReferenceException("DAL object can not be null!");
+        s_dal = DalApi.Factory.Get;
 
         Console.WriteLine("Reset Configuration values and List values...");
         s_dal.ResetDB();
