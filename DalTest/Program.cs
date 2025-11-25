@@ -11,7 +11,8 @@ internal class Program
 {
     //create DAL instances for each entity
     //static readonly IDal s_dal = new Dal.DalList(); // from stage 2
-    static readonly IDal s_dal = new Dal.DalXml();
+    //static readonly IDal s_dal = new Dal.DalXml(); // from stage 3
+    static readonly IDal s_dal = Factory.Get;
 
     /// <summary>
     /// Enum for main menu options.
@@ -1489,7 +1490,7 @@ internal class Program
             Console.WriteLine("Initializing data...");
             // Call the function from Chapter 10 with the instances we created
 
-            Initialization.Do(s_dal);
+            Initialization.Do();
             Console.WriteLine("Data initialized successfully.");
         }
         catch (DalNullValueException ex)
@@ -1531,7 +1532,7 @@ internal class Program
                     case MainMenuOptions.InitializeData:
                         // Option to re-run initialization
                         Console.WriteLine("Re-initializing data (Reset + Create)...");
-                        Initialization.Do(s_dal);
+                        Initialization.Do();
                         Console.WriteLine("Data re-initialized successfully.");
                         break;
                     case MainMenuOptions.ResetData:
