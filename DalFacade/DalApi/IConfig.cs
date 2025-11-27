@@ -14,9 +14,6 @@ public interface IConfig
     string? CompenyAddress { get; set; }
     double? CompenyLatitude { get; set; }
     double? CompenyLongitude { get; set; }
-    void Reset();
-
-    //We added for step 11, will we use later?
     int NextDeliveryId { get; }
     int NextOrderId { get; }
     int AdminId { get; set; }
@@ -25,4 +22,5 @@ public interface IConfig
     double AverageMotorcycleSpeedKmH { get; set; }
     double AverageBicycleSpeedKmH { get; set; }
     double AverageByFootSpeedKmH { get; set; }
+    void Reset();
 }

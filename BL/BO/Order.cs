@@ -1,5 +1,12 @@
-﻿namespace BO;
+﻿using Helpers;
+namespace BO;
 
+/// <summary>
+/// Represents an order with details such as customer information, delivery address, and timing constraints.
+/// </summary>
+/// <remarks>This class encapsulates the essential information for processing and tracking an order, including
+/// customer details, order type, and delivery specifics. It provides properties to access the order's geographical
+/// location and timing constraints, which are crucial for logistics and scheduling.</remarks>
 internal class Order
 {
     int Id { get; init; }
@@ -18,5 +25,6 @@ internal class Order
     OrderEndStatus StatusOfOrder { get; init; }
     SchedualeStatus TimeLinessStatus { get; init; }
     TimeSpan RemainingDeliveryTime { get; init; }
-    DeliveryPerOrderInList DeliveryList { get; init; } 
+    DeliveryPerOrderInList DeliveryList { get; init; }
+    public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
