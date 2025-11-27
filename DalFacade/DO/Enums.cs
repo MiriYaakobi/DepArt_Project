@@ -1,9 +1,5 @@
 ﻿namespace DO;
 
-internal class Enums
-{
-
-}
 /// <summary>
 /// Specifies the available types of delivery methods.
 /// </summary>
