@@ -15,9 +15,8 @@ internal class Order
     DateTime OrderOpeningTime { get; init; }
     DateTime? ExpectedDeliveryTime { get; init; }
     DateTime MaxDeliveryTime { get; init; }
-    OrderStatus StatusOfOrder { get; init; }
+    OrderEndStatus StatusOfOrder { get; init; }
     SchedualeStatus TimeLinessStatus { get; init; }
     TimeSpan RemainingDeliveryTime { get; init; }
-    //DeliveryPerOrderInList CurrentOrder { get; init; } //?
-
+    DeliveryPerOrderInList DeliveryList { get; init; } 
 }

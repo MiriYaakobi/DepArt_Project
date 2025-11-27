@@ -12,7 +12,7 @@
 /// <param name="DeliveryStartTime">The date and time when the delivery process started.</param>
 /// <param name="ActualDistance">The actual distance covered during the delivery, in kilometers. This value is optional and may be null if not
 /// applicable.</param>
-/// <param name="OrderEndStatus">The status of the order at the end of the delivery. This value is optional and may be null if the delivery is not
+/// <param name="OrderClosedStatus">The status of the order at the end of the delivery. This value is optional and may be null if the delivery is not
 /// yet completed.</param>
 /// <param name="DeliveryEndTime">The date and time when the delivery process ended. This value is optional and may be null if the delivery is not yet
 /// completed.</param>
@@ -24,7 +24,7 @@ public record Delivery
     OrderType TypeOfOrder, //Regular or other//
     DateTime DeliveryStartTime, //When the delivery started//
     double? ActualDistance = null,
-    OrderStatus? OrderEndStatus = null, //Status when delivery ended//
+    OrderEndStatus? OrderClosedStatus = null, //Status when delivery ended//
     DateTime? DeliveryEndTime = null //When the delivery ended//
 )
 {

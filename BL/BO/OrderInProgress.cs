@@ -15,7 +15,7 @@ public class OrderInProgress
     DateTime DeliveryStartTime { get; init; }
     DateTime ExpectedDeliveryTime { get; init; }
     DateTime MaxDeliveryTime { get; init; }
-    OrderStatus StatusOfOrder { get; init; }
+    OrderEndStatus StatusOfOrder { get; init; }
     SchedualeStatus TimeLinessStatus { get; init; }
     TimeSpan RemainingDeliveryTime { get; init; }
 }

@@ -15,13 +15,22 @@ public enum OrderType
     SameDay
 }
 
-public enum OrderStatus
+public enum OrderEndStatus
 {
     Delivered,
     Refused,
     Cancelled,
     Failed,
     InviterNotFound
+}
+
+public enum OrderStatus
+{
+    Open,
+    InProgress,
+    Delivered,
+    Refused,
+    Cancelled,
 }
 
 public enum SchedualeStatus
