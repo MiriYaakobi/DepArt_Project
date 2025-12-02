@@ -1416,7 +1416,7 @@ internal class Program
             Console.WriteLine($"Error updating variable: {ex.Message}");
         }
     }
-
+    
     /// <summary>
     /// helper function to manage the configuration settings menu
     /// </summary>

@@ -14,8 +14,6 @@ public interface IConfig
     string? CompenyAddress { get; set; }
     double? CompenyLatitude { get; set; }
     double? CompenyLongitude { get; set; }
-    int NextDeliveryId { get; }
-    int NextOrderId { get; }
     int AdminId { get; set; }
     double? DeliveryMaxDistance { get; set; }
     double AverageVehicleSpeedKmH { get; set; }
