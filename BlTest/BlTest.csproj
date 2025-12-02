@@ -15,10 +15,4 @@
   <ItemGroup>
     <ProjectReference Include="..\BL\BL.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="BLApi\" />
-    <Folder Include="BlImplementation\" />
-    <Folder Include="Helpers\" />
-  </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ public enum OrderType
 /// could not be delivered due to a failure in the process.</description> </item> <item> <description><see
 /// cref="InviterNotFound"/>: The order could not be processed because the inviter was not found.</description> </item>
 /// </list></remarks>
-public enum OrderStatus
+public enum OrderEndStatus
 {
     Delivered,
     Refused,

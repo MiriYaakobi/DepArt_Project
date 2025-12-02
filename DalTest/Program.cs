@@ -1008,13 +1008,13 @@ internal class Program
                     updatedDelivery = updatedDelivery with { ActualDistance = newDist };
             }
 
-            Console.Write($"Enter new Order End Status (current: {oldDelivery.OrderEndStatus}): ");
+            Console.Write($"Enter new Order End Status (current: {oldDelivery.OrderClosedStatus}): ");
             string? newStatusInput = Console.ReadLine();
 
             // Validate and update Order End Status
             if (!string.IsNullOrEmpty(newStatusInput))
             {
-                DO.OrderStatus newStatus;
+                DO.OrderEndStatus newStatus;
                 // Validate input
                 while (!Enum.TryParse(newStatusInput, true, out newStatus))
                 {
@@ -1023,7 +1023,7 @@ internal class Program
                     if (string.IsNullOrEmpty(newStatusInput)) break;
                 }
                 if (!string.IsNullOrEmpty(newStatusInput))
-                    updatedDelivery = updatedDelivery with { OrderEndStatus = newStatus };
+                    updatedDelivery = updatedDelivery with { OrderClosedStatus = newStatus };
             }
 
             // Get Delivery End Time. We're not taking from the system clock,
@@ -1416,7 +1416,7 @@ internal class Program
             Console.WriteLine($"Error updating variable: {ex.Message}");
         }
     }
-
+    
     /// <summary>
     /// helper function to manage the configuration settings menu
     /// </summary>
@@ -1666,33 +1666,33 @@ Order { Id = 1048, TypeOfOrder = SameDay, Address = Beersheba, Latitude = 31.251
 Order { Id = 1049, TypeOfOrder = Regular, Address = Rehovot, Latitude = 31.8948, Longitude = 34.811, CustomerName = Nadav Tal, CustomerPhone = 051-189-5258, OrderOpeningTime = 06/05/2022 13:52:07, PackageDetails = Limited edition art box, Description = Carefully packed for collector }
 
 -- Deliveries --
-Delivery { Id = 1000, OrderId = 1037, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 23/05/2024 04:50:10, ActualDistance = 33.437552023096465, OrderEndStatus = Cancelled, DeliveryEndTime = 23/05/2024 06:35:10 }
-Delivery { Id = 1001, OrderId = 1047, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 09/11/2022 18:13:16, ActualDistance = 33.437552023096465, OrderEndStatus = Refused, DeliveryEndTime = 09/11/2022 19:31:16 }
-Delivery { Id = 1002, OrderId = 1007, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 28/04/2025 17:05:53, ActualDistance = 33.437552023096465, OrderEndStatus = Refused, DeliveryEndTime = 28/04/2025 18:14:53 }
-Delivery { Id = 1003, OrderId = 1019, CourierId = 964395664, TypeOfOrder = Express, DeliveryStartTime = 02/03/2023 17:56:10, ActualDistance = 21.36088640832011, OrderEndStatus = Delivered, DeliveryEndTime = 02/03/2023 19:58:10 }
-Delivery { Id = 1004, OrderId = 1035, CourierId = 961718182, TypeOfOrder = Express, DeliveryStartTime = 04/10/2025 16:17:24, ActualDistance = 7.601862445755016, OrderEndStatus = Failed, DeliveryEndTime = 04/10/2025 17:24:24 }
-Delivery { Id = 1005, OrderId = 1030, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 09/07/2023 14:13:48, ActualDistance = 2.0203098197726845, OrderEndStatus = Refused, DeliveryEndTime = 09/07/2023 17:08:48 }
-Delivery { Id = 1006, OrderId = 1049, CourierId = 961718182, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2022 06:22:07, ActualDistance = 21.36088640832011, OrderEndStatus = Refused, DeliveryEndTime = 11/10/2022 07:26:07 }
-Delivery { Id = 1007, OrderId = 1018, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2023 11:27:23, ActualDistance = 92.6855173262227, OrderEndStatus = Cancelled, DeliveryEndTime = 11/10/2023 12:37:23 }
-Delivery { Id = 1008, OrderId = 1042, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 15/08/2025 19:49:23, ActualDistance = 10.28069354356626, OrderEndStatus = Failed, DeliveryEndTime = 15/08/2025 20:29:23 }
-Delivery { Id = 1009, OrderId = 1045, CourierId = 900239429, TypeOfOrder = Express, DeliveryStartTime = 09/09/2025 23:17:55, ActualDistance = 7.601862445755016, OrderEndStatus = Delivered, DeliveryEndTime = 10/09/2025 01:21:55 }
-Delivery { Id = 1010, OrderId = 1017, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2025 12:54:55, ActualDistance = 33.437552023096465, OrderEndStatus = Delivered, DeliveryEndTime = 27/09/2025 15:28:55 }
-Delivery { Id = 1011, OrderId = 1044, CourierId = 825755264, TypeOfOrder = Express, DeliveryStartTime = 13/01/2025 09:34:39, ActualDistance = 82.26031301295912, OrderEndStatus = Failed, DeliveryEndTime = 13/01/2025 10:19:39 }
-Delivery { Id = 1012, OrderId = 1008, CourierId = 337373253, TypeOfOrder = SameDay, DeliveryStartTime = 30/11/2024 20:01:53, ActualDistance = 92.6855173262227, OrderEndStatus = InviterNotFound, DeliveryEndTime = 30/11/2024 22:55:53 }
-Delivery { Id = 1013, OrderId = 1024, CourierId = 381437312, TypeOfOrder = Express, DeliveryStartTime = 10/03/2024 20:10:45, ActualDistance = 82.26031301295912, OrderEndStatus = InviterNotFound, DeliveryEndTime = 10/03/2024 20:53:45 }
-Delivery { Id = 1014, OrderId = 1041, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2025 02:28:56, ActualDistance = 54.705175646146685, OrderEndStatus = Cancelled, DeliveryEndTime = 08/05/2025 03:11:56 }
-Delivery { Id = 1015, OrderId = 1029, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 28/12/2024 20:26:39, ActualDistance = 21.36088640832011, OrderEndStatus = Cancelled, DeliveryEndTime = 28/12/2024 21:58:39 }
-Delivery { Id = 1016, OrderId = 1023, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/12/2024 07:01:56, ActualDistance = 9.9624606371655, OrderEndStatus = Delivered, DeliveryEndTime = 26/12/2024 07:23:56 }
-Delivery { Id = 1017, OrderId = 1010, CourierId = 729177417, TypeOfOrder = Regular, DeliveryStartTime = 27/01/2023 10:08:31, ActualDistance = 2.0203098197726845, OrderEndStatus = Failed, DeliveryEndTime = 27/01/2023 11:39:31 }
-Delivery { Id = 1018, OrderId = 1001, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 01/11/2023 04:33:57, ActualDistance = 54.705175646146685, OrderEndStatus = Delivered, DeliveryEndTime = 01/11/2023 07:24:57 }
-Delivery { Id = 1019, OrderId = 1034, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 27/06/2023 21:02:24, ActualDistance = 82.26031301295912, OrderEndStatus = Cancelled, DeliveryEndTime = 27/06/2023 21:30:24 }
-Delivery { Id = 1020, OrderId = 1031, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 31/10/2025 08:14:56, ActualDistance = 54.705175646146685, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1021, OrderId = 1027, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/10/2025 19:12:06, ActualDistance = 33.437552023096465, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1022, OrderId = 1046, CourierId = 650604000, TypeOfOrder = Express, DeliveryStartTime = 22/06/2025 21:50:55, ActualDistance = 29.729690756933437, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1023, OrderId = 1015, CourierId = 192256906, TypeOfOrder = Express, DeliveryStartTime = 08/03/2024 10:37:57, ActualDistance = 7.601862445755016, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1024, OrderId = 1006, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 01/11/2025 16:02:37, ActualDistance = 29.729690756933437, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1025, OrderId = 1021, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 03/10/2025 22:54:17, ActualDistance = 54.705175646146685, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1026, OrderId = 1022, CourierId = 453641474, TypeOfOrder = SameDay, DeliveryStartTime = 22/04/2024 06:18:57, ActualDistance = 10.28069354356626, OrderEndStatus = , DeliveryEndTime =  }
+Delivery { Id = 1000, OrderId = 1037, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 23/05/2024 04:50:10, ActualDistance = 33.437552023096465, OrderClosedStatus = Cancelled, DeliveryEndTime = 23/05/2024 06:35:10 }
+Delivery { Id = 1001, OrderId = 1047, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 09/11/2022 18:13:16, ActualDistance = 33.437552023096465, OrderClosedStatus = Refused, DeliveryEndTime = 09/11/2022 19:31:16 }
+Delivery { Id = 1002, OrderId = 1007, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 28/04/2025 17:05:53, ActualDistance = 33.437552023096465, OrderClosedStatus = Refused, DeliveryEndTime = 28/04/2025 18:14:53 }
+Delivery { Id = 1003, OrderId = 1019, CourierId = 964395664, TypeOfOrder = Express, DeliveryStartTime = 02/03/2023 17:56:10, ActualDistance = 21.36088640832011, OrderClosedStatus = Delivered, DeliveryEndTime = 02/03/2023 19:58:10 }
+Delivery { Id = 1004, OrderId = 1035, CourierId = 961718182, TypeOfOrder = Express, DeliveryStartTime = 04/10/2025 16:17:24, ActualDistance = 7.601862445755016, OrderClosedStatus = Failed, DeliveryEndTime = 04/10/2025 17:24:24 }
+Delivery { Id = 1005, OrderId = 1030, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 09/07/2023 14:13:48, ActualDistance = 2.0203098197726845, OrderClosedStatus = Refused, DeliveryEndTime = 09/07/2023 17:08:48 }
+Delivery { Id = 1006, OrderId = 1049, CourierId = 961718182, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2022 06:22:07, ActualDistance = 21.36088640832011, OrderClosedStatus = Refused, DeliveryEndTime = 11/10/2022 07:26:07 }
+Delivery { Id = 1007, OrderId = 1018, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2023 11:27:23, ActualDistance = 92.6855173262227, OrderClosedStatus = Cancelled, DeliveryEndTime = 11/10/2023 12:37:23 }
+Delivery { Id = 1008, OrderId = 1042, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 15/08/2025 19:49:23, ActualDistance = 10.28069354356626, OrderClosedStatus = Failed, DeliveryEndTime = 15/08/2025 20:29:23 }
+Delivery { Id = 1009, OrderId = 1045, CourierId = 900239429, TypeOfOrder = Express, DeliveryStartTime = 09/09/2025 23:17:55, ActualDistance = 7.601862445755016, OrderClosedStatus = Delivered, DeliveryEndTime = 10/09/2025 01:21:55 }
+Delivery { Id = 1010, OrderId = 1017, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2025 12:54:55, ActualDistance = 33.437552023096465, OrderClosedStatus = Delivered, DeliveryEndTime = 27/09/2025 15:28:55 }
+Delivery { Id = 1011, OrderId = 1044, CourierId = 825755264, TypeOfOrder = Express, DeliveryStartTime = 13/01/2025 09:34:39, ActualDistance = 82.26031301295912, OrderClosedStatus = Failed, DeliveryEndTime = 13/01/2025 10:19:39 }
+Delivery { Id = 1012, OrderId = 1008, CourierId = 337373253, TypeOfOrder = SameDay, DeliveryStartTime = 30/11/2024 20:01:53, ActualDistance = 92.6855173262227, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 30/11/2024 22:55:53 }
+Delivery { Id = 1013, OrderId = 1024, CourierId = 381437312, TypeOfOrder = Express, DeliveryStartTime = 10/03/2024 20:10:45, ActualDistance = 82.26031301295912, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 10/03/2024 20:53:45 }
+Delivery { Id = 1014, OrderId = 1041, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2025 02:28:56, ActualDistance = 54.705175646146685, OrderClosedStatus = Cancelled, DeliveryEndTime = 08/05/2025 03:11:56 }
+Delivery { Id = 1015, OrderId = 1029, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 28/12/2024 20:26:39, ActualDistance = 21.36088640832011, OrderClosedStatus = Cancelled, DeliveryEndTime = 28/12/2024 21:58:39 }
+Delivery { Id = 1016, OrderId = 1023, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/12/2024 07:01:56, ActualDistance = 9.9624606371655, OrderClosedStatus = Delivered, DeliveryEndTime = 26/12/2024 07:23:56 }
+Delivery { Id = 1017, OrderId = 1010, CourierId = 729177417, TypeOfOrder = Regular, DeliveryStartTime = 27/01/2023 10:08:31, ActualDistance = 2.0203098197726845, OrderClosedStatus = Failed, DeliveryEndTime = 27/01/2023 11:39:31 }
+Delivery { Id = 1018, OrderId = 1001, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 01/11/2023 04:33:57, ActualDistance = 54.705175646146685, OrderClosedStatus = Delivered, DeliveryEndTime = 01/11/2023 07:24:57 }
+Delivery { Id = 1019, OrderId = 1034, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 27/06/2023 21:02:24, ActualDistance = 82.26031301295912, OrderClosedStatus = Cancelled, DeliveryEndTime = 27/06/2023 21:30:24 }
+Delivery { Id = 1020, OrderId = 1031, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 31/10/2025 08:14:56, ActualDistance = 54.705175646146685, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1021, OrderId = 1027, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/10/2025 19:12:06, ActualDistance = 33.437552023096465, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1022, OrderId = 1046, CourierId = 650604000, TypeOfOrder = Express, DeliveryStartTime = 22/06/2025 21:50:55, ActualDistance = 29.729690756933437, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1023, OrderId = 1015, CourierId = 192256906, TypeOfOrder = Express, DeliveryStartTime = 08/03/2024 10:37:57, ActualDistance = 7.601862445755016, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1024, OrderId = 1006, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 01/11/2025 16:02:37, ActualDistance = 29.729690756933437, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1025, OrderId = 1021, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 03/10/2025 22:54:17, ActualDistance = 54.705175646146685, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1026, OrderId = 1022, CourierId = 453641474, TypeOfOrder = SameDay, DeliveryStartTime = 22/04/2024 06:18:57, ActualDistance = 10.28069354356626, OrderClosedStatus = , DeliveryEndTime =  }
 
 --- END OF LIST ---
 
@@ -2035,34 +2035,34 @@ Successfully created new delivery, assigning Order 8065 to Courier 329232540
 5: Delete (By ID)
 6: DeleteAll (Clear list)
 Enter your choice: 3
-Delivery { Id = 1000, OrderId = 1037, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 23/05/2024 04:50:10, ActualDistance = 33.437552023096465, OrderEndStatus = Cancelled, DeliveryEndTime = 23/05/2024 06:35:10 }
-Delivery { Id = 1001, OrderId = 1047, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 09/11/2022 18:13:16, ActualDistance = 33.437552023096465, OrderEndStatus = Refused, DeliveryEndTime = 09/11/2022 19:31:16 }
-Delivery { Id = 1002, OrderId = 1007, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 28/04/2025 17:05:53, ActualDistance = 33.437552023096465, OrderEndStatus = Refused, DeliveryEndTime = 28/04/2025 18:14:53 }
-Delivery { Id = 1003, OrderId = 1019, CourierId = 964395664, TypeOfOrder = Express, DeliveryStartTime = 02/03/2023 17:56:10, ActualDistance = 21.36088640832011, OrderEndStatus = Delivered, DeliveryEndTime = 02/03/2023 19:58:10 }
-Delivery { Id = 1004, OrderId = 1035, CourierId = 961718182, TypeOfOrder = Express, DeliveryStartTime = 04/10/2025 16:17:24, ActualDistance = 7.601862445755016, OrderEndStatus = Failed, DeliveryEndTime = 04/10/2025 17:24:24 }
-Delivery { Id = 1005, OrderId = 1030, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 09/07/2023 14:13:48, ActualDistance = 2.0203098197726845, OrderEndStatus = Refused, DeliveryEndTime = 09/07/2023 17:08:48 }
-Delivery { Id = 1006, OrderId = 1049, CourierId = 961718182, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2022 06:22:07, ActualDistance = 21.36088640832011, OrderEndStatus = Refused, DeliveryEndTime = 11/10/2022 07:26:07 }
-Delivery { Id = 1007, OrderId = 1018, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2023 11:27:23, ActualDistance = 92.6855173262227, OrderEndStatus = Cancelled, DeliveryEndTime = 11/10/2023 12:37:23 }
-Delivery { Id = 1008, OrderId = 1042, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 15/08/2025 19:49:23, ActualDistance = 10.28069354356626, OrderEndStatus = Failed, DeliveryEndTime = 15/08/2025 20:29:23 }
-Delivery { Id = 1009, OrderId = 1045, CourierId = 900239429, TypeOfOrder = Express, DeliveryStartTime = 09/09/2025 23:17:55, ActualDistance = 7.601862445755016, OrderEndStatus = Delivered, DeliveryEndTime = 10/09/2025 01:21:55 }
-Delivery { Id = 1010, OrderId = 1017, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2025 12:54:55, ActualDistance = 33.437552023096465, OrderEndStatus = Delivered, DeliveryEndTime = 27/09/2025 15:28:55 }
-Delivery { Id = 1011, OrderId = 1044, CourierId = 825755264, TypeOfOrder = Express, DeliveryStartTime = 13/01/2025 09:34:39, ActualDistance = 82.26031301295912, OrderEndStatus = Failed, DeliveryEndTime = 13/01/2025 10:19:39 }
-Delivery { Id = 1012, OrderId = 1008, CourierId = 337373253, TypeOfOrder = SameDay, DeliveryStartTime = 30/11/2024 20:01:53, ActualDistance = 92.6855173262227, OrderEndStatus = InviterNotFound, DeliveryEndTime = 30/11/2024 22:55:53 }
-Delivery { Id = 1013, OrderId = 1024, CourierId = 381437312, TypeOfOrder = Express, DeliveryStartTime = 10/03/2024 20:10:45, ActualDistance = 82.26031301295912, OrderEndStatus = InviterNotFound, DeliveryEndTime = 10/03/2024 20:53:45 }
-Delivery { Id = 1014, OrderId = 1041, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2025 02:28:56, ActualDistance = 54.705175646146685, OrderEndStatus = Cancelled, DeliveryEndTime = 08/05/2025 03:11:56 }
-Delivery { Id = 1015, OrderId = 1029, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 28/12/2024 20:26:39, ActualDistance = 21.36088640832011, OrderEndStatus = Cancelled, DeliveryEndTime = 28/12/2024 21:58:39 }
-Delivery { Id = 1016, OrderId = 1023, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/12/2024 07:01:56, ActualDistance = 9.9624606371655, OrderEndStatus = Delivered, DeliveryEndTime = 26/12/2024 07:23:56 }
-Delivery { Id = 1017, OrderId = 1010, CourierId = 729177417, TypeOfOrder = Regular, DeliveryStartTime = 27/01/2023 10:08:31, ActualDistance = 2.0203098197726845, OrderEndStatus = Failed, DeliveryEndTime = 27/01/2023 11:39:31 }
-Delivery { Id = 1018, OrderId = 1001, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 01/11/2023 04:33:57, ActualDistance = 54.705175646146685, OrderEndStatus = Delivered, DeliveryEndTime = 01/11/2023 07:24:57 }
-Delivery { Id = 1019, OrderId = 1034, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 27/06/2023 21:02:24, ActualDistance = 82.26031301295912, OrderEndStatus = Cancelled, DeliveryEndTime = 27/06/2023 21:30:24 }
-Delivery { Id = 1020, OrderId = 1031, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 31/10/2025 08:14:56, ActualDistance = 54.705175646146685, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1021, OrderId = 1027, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/10/2025 19:12:06, ActualDistance = 33.437552023096465, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1022, OrderId = 1046, CourierId = 650604000, TypeOfOrder = Express, DeliveryStartTime = 22/06/2025 21:50:55, ActualDistance = 29.729690756933437, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1023, OrderId = 1015, CourierId = 192256906, TypeOfOrder = Express, DeliveryStartTime = 08/03/2024 10:37:57, ActualDistance = 7.601862445755016, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1024, OrderId = 1006, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 01/11/2025 16:02:37, ActualDistance = 29.729690756933437, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1025, OrderId = 1021, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 03/10/2025 22:54:17, ActualDistance = 54.705175646146685, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1026, OrderId = 1022, CourierId = 453641474, TypeOfOrder = SameDay, DeliveryStartTime = 22/04/2024 06:18:57, ActualDistance = 10.28069354356626, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = , OrderEndStatus = , DeliveryEndTime =  }
+Delivery { Id = 1000, OrderId = 1037, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 23/05/2024 04:50:10, ActualDistance = 33.437552023096465, OrderClosedStatus = Cancelled, DeliveryEndTime = 23/05/2024 06:35:10 }
+Delivery { Id = 1001, OrderId = 1047, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 09/11/2022 18:13:16, ActualDistance = 33.437552023096465, OrderClosedStatus = Refused, DeliveryEndTime = 09/11/2022 19:31:16 }
+Delivery { Id = 1002, OrderId = 1007, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 28/04/2025 17:05:53, ActualDistance = 33.437552023096465, OrderClosedStatus = Refused, DeliveryEndTime = 28/04/2025 18:14:53 }
+Delivery { Id = 1003, OrderId = 1019, CourierId = 964395664, TypeOfOrder = Express, DeliveryStartTime = 02/03/2023 17:56:10, ActualDistance = 21.36088640832011, OrderClosedStatus = Delivered, DeliveryEndTime = 02/03/2023 19:58:10 }
+Delivery { Id = 1004, OrderId = 1035, CourierId = 961718182, TypeOfOrder = Express, DeliveryStartTime = 04/10/2025 16:17:24, ActualDistance = 7.601862445755016, OrderClosedStatus = Failed, DeliveryEndTime = 04/10/2025 17:24:24 }
+Delivery { Id = 1005, OrderId = 1030, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 09/07/2023 14:13:48, ActualDistance = 2.0203098197726845, OrderClosedStatus = Refused, DeliveryEndTime = 09/07/2023 17:08:48 }
+Delivery { Id = 1006, OrderId = 1049, CourierId = 961718182, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2022 06:22:07, ActualDistance = 21.36088640832011, OrderClosedStatus = Refused, DeliveryEndTime = 11/10/2022 07:26:07 }
+Delivery { Id = 1007, OrderId = 1018, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 11/10/2023 11:27:23, ActualDistance = 92.6855173262227, OrderClosedStatus = Cancelled, DeliveryEndTime = 11/10/2023 12:37:23 }
+Delivery { Id = 1008, OrderId = 1042, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 15/08/2025 19:49:23, ActualDistance = 10.28069354356626, OrderClosedStatus = Failed, DeliveryEndTime = 15/08/2025 20:29:23 }
+Delivery { Id = 1009, OrderId = 1045, CourierId = 900239429, TypeOfOrder = Express, DeliveryStartTime = 09/09/2025 23:17:55, ActualDistance = 7.601862445755016, OrderClosedStatus = Delivered, DeliveryEndTime = 10/09/2025 01:21:55 }
+Delivery { Id = 1010, OrderId = 1017, CourierId = 216276324, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2025 12:54:55, ActualDistance = 33.437552023096465, OrderClosedStatus = Delivered, DeliveryEndTime = 27/09/2025 15:28:55 }
+Delivery { Id = 1011, OrderId = 1044, CourierId = 825755264, TypeOfOrder = Express, DeliveryStartTime = 13/01/2025 09:34:39, ActualDistance = 82.26031301295912, OrderClosedStatus = Failed, DeliveryEndTime = 13/01/2025 10:19:39 }
+Delivery { Id = 1012, OrderId = 1008, CourierId = 337373253, TypeOfOrder = SameDay, DeliveryStartTime = 30/11/2024 20:01:53, ActualDistance = 92.6855173262227, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 30/11/2024 22:55:53 }
+Delivery { Id = 1013, OrderId = 1024, CourierId = 381437312, TypeOfOrder = Express, DeliveryStartTime = 10/03/2024 20:10:45, ActualDistance = 82.26031301295912, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 10/03/2024 20:53:45 }
+Delivery { Id = 1014, OrderId = 1041, CourierId = 381437312, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2025 02:28:56, ActualDistance = 54.705175646146685, OrderClosedStatus = Cancelled, DeliveryEndTime = 08/05/2025 03:11:56 }
+Delivery { Id = 1015, OrderId = 1029, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 28/12/2024 20:26:39, ActualDistance = 21.36088640832011, OrderClosedStatus = Cancelled, DeliveryEndTime = 28/12/2024 21:58:39 }
+Delivery { Id = 1016, OrderId = 1023, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/12/2024 07:01:56, ActualDistance = 9.9624606371655, OrderClosedStatus = Delivered, DeliveryEndTime = 26/12/2024 07:23:56 }
+Delivery { Id = 1017, OrderId = 1010, CourierId = 729177417, TypeOfOrder = Regular, DeliveryStartTime = 27/01/2023 10:08:31, ActualDistance = 2.0203098197726845, OrderClosedStatus = Failed, DeliveryEndTime = 27/01/2023 11:39:31 }
+Delivery { Id = 1018, OrderId = 1001, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 01/11/2023 04:33:57, ActualDistance = 54.705175646146685, OrderClosedStatus = Delivered, DeliveryEndTime = 01/11/2023 07:24:57 }
+Delivery { Id = 1019, OrderId = 1034, CourierId = 337373253, TypeOfOrder = Regular, DeliveryStartTime = 27/06/2023 21:02:24, ActualDistance = 82.26031301295912, OrderClosedStatus = Cancelled, DeliveryEndTime = 27/06/2023 21:30:24 }
+Delivery { Id = 1020, OrderId = 1031, CourierId = 825755264, TypeOfOrder = Regular, DeliveryStartTime = 31/10/2025 08:14:56, ActualDistance = 54.705175646146685, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1021, OrderId = 1027, CourierId = 961718182, TypeOfOrder = SameDay, DeliveryStartTime = 26/10/2025 19:12:06, ActualDistance = 33.437552023096465, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1022, OrderId = 1046, CourierId = 650604000, TypeOfOrder = Express, DeliveryStartTime = 22/06/2025 21:50:55, ActualDistance = 29.729690756933437, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1023, OrderId = 1015, CourierId = 192256906, TypeOfOrder = Express, DeliveryStartTime = 08/03/2024 10:37:57, ActualDistance = 7.601862445755016, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1024, OrderId = 1006, CourierId = 216276324, TypeOfOrder = Express, DeliveryStartTime = 01/11/2025 16:02:37, ActualDistance = 29.729690756933437, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1025, OrderId = 1021, CourierId = 381437312, TypeOfOrder = SameDay, DeliveryStartTime = 03/10/2025 22:54:17, ActualDistance = 54.705175646146685, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1026, OrderId = 1022, CourierId = 453641474, TypeOfOrder = SameDay, DeliveryStartTime = 22/04/2024 06:18:57, ActualDistance = 10.28069354356626, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = , OrderClosedStatus = , DeliveryEndTime =  }
 
 --- DELIVERY MENU ---
 0: Back to Main Menu
@@ -2075,7 +2075,7 @@ Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regul
 Enter your choice: 4
 Enter Delivery ID to update: 1027
 Current values:
-Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = , OrderEndStatus = , DeliveryEndTime =  }
+Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = , OrderClosedStatus = , DeliveryEndTime =  }
 Enter new Actual Distance (current: ): 356
 Enter new Order End Status (current: ): 456
 Enter new Delivery End Time (current: ): 10:55
@@ -2091,7 +2091,7 @@ Successfully updated Delivery 1027
 6: DeleteAll (Clear list)
 Enter your choice: 2
 Enter Delivery ID to get: 1027
-Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = 356, OrderEndStatus = 456, DeliveryEndTime = 09/11/2025 10:55:00 }
+Delivery { Id = 1027, OrderId = 8065, CourierId = 329232540, TypeOfOrder = Regular, DeliveryStartTime = 09/11/2025 18:33:22, ActualDistance = 356, OrderClosedStatus = 456, DeliveryEndTime = 09/11/2025 10:55:00 }
 
 --- DELIVERY MENU ---
 0: Back to Main Menu
@@ -2328,32 +2328,32 @@ Order { Id = 1048, TypeOfOrder = Express, Address = Beersheba, Latitude = 31.251
 Order { Id = 1049, TypeOfOrder = SameDay, Address = Rehovot, Latitude = 31.8948, Longitude = 34.811, CustomerName = Nadav Tal, CustomerPhone = 056-777-7973, OrderOpeningTime = 17/07/2021 12:48:43, PackageDetails = Limited edition art box, Description = Carefully packed for collector }
 
 -- Deliveries --
-Delivery { Id = 1000, OrderId = 1044, CourierId = 262581120, TypeOfOrder = SameDay, DeliveryStartTime = 17/11/2024 22:55:33, ActualDistance = 82.26031301295912, OrderEndStatus = Delivered, DeliveryEndTime = 18/11/2024 00:43:33 }
-Delivery { Id = 1001, OrderId = 1037, CourierId = 344926647, TypeOfOrder = Express, DeliveryStartTime = 02/12/2024 08:58:41, ActualDistance = 33.437552023096465, OrderEndStatus = Cancelled, DeliveryEndTime = 02/12/2024 11:08:41 }
-Delivery { Id = 1002, OrderId = 1042, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 14/07/2024 06:40:12, ActualDistance = 10.28069354356626, OrderEndStatus = Refused, DeliveryEndTime = 14/07/2024 07:03:12 }
-Delivery { Id = 1003, OrderId = 1048, CourierId = 262581120, TypeOfOrder = Express, DeliveryStartTime = 06/02/2025 17:03:29, ActualDistance = 92.6855173262227, OrderEndStatus = Delivered, DeliveryEndTime = 06/02/2025 19:17:29 }
-Delivery { Id = 1004, OrderId = 1046, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 11/08/2025 16:02:44, ActualDistance = 29.729690756933437, OrderEndStatus = Delivered, DeliveryEndTime = 11/08/2025 17:52:44 }
-Delivery { Id = 1005, OrderId = 1032, CourierId = 543020197, TypeOfOrder = Express, DeliveryStartTime = 03/07/2022 09:31:16, ActualDistance = 10.28069354356626, OrderEndStatus = InviterNotFound, DeliveryEndTime = 03/07/2022 10:45:16 }
-Delivery { Id = 1006, OrderId = 1021, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 15/07/2025 04:08:18, ActualDistance = 54.705175646146685, OrderEndStatus = Failed, DeliveryEndTime = 15/07/2025 06:05:18 }
-Delivery { Id = 1007, OrderId = 1049, CourierId = 694180588, TypeOfOrder = SameDay, DeliveryStartTime = 27/09/2023 01:46:43, ActualDistance = 21.36088640832011, OrderEndStatus = Failed, DeliveryEndTime = 27/09/2023 04:39:43 }
-Delivery { Id = 1008, OrderId = 1036, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2024 09:23:27, ActualDistance = 29.729690756933437, OrderEndStatus = InviterNotFound, DeliveryEndTime = 27/09/2024 10:38:27 }
-Delivery { Id = 1009, OrderId = 1028, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 21/07/2024 22:05:37, ActualDistance = 92.6855173262227, OrderEndStatus = Cancelled, DeliveryEndTime = 21/07/2024 23:03:37 }
-Delivery { Id = 1010, OrderId = 1026, CourierId = 483649597, TypeOfOrder = Regular, DeliveryStartTime = 04/03/2024 02:36:07, ActualDistance = 29.729690756933437, OrderEndStatus = Refused, DeliveryEndTime = 04/03/2024 03:42:07 }
-Delivery { Id = 1011, OrderId = 1022, CourierId = 323019443, TypeOfOrder = Regular, DeliveryStartTime = 01/05/2024 23:16:30, ActualDistance = 10.28069354356626, OrderEndStatus = Failed, DeliveryEndTime = 02/05/2024 02:08:30 }
-Delivery { Id = 1012, OrderId = 1034, CourierId = 483649597, TypeOfOrder = Express, DeliveryStartTime = 06/06/2025 12:41:22, ActualDistance = 82.26031301295912, OrderEndStatus = Cancelled, DeliveryEndTime = 06/06/2025 13:09:22 }
-Delivery { Id = 1013, OrderId = 1008, CourierId = 483649597, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2024 13:23:36, ActualDistance = 92.6855173262227, OrderEndStatus = Cancelled, DeliveryEndTime = 08/05/2024 15:52:36 }
-Delivery { Id = 1014, OrderId = 1017, CourierId = 483649597, TypeOfOrder = Express, DeliveryStartTime = 16/01/2025 01:37:31, ActualDistance = 33.437552023096465, OrderEndStatus = Failed, DeliveryEndTime = 16/01/2025 02:37:31 }
-Delivery { Id = 1015, OrderId = 1039, CourierId = 141244895, TypeOfOrder = Regular, DeliveryStartTime = 29/04/2025 08:19:10, ActualDistance = 21.36088640832011, OrderEndStatus = InviterNotFound, DeliveryEndTime = 29/04/2025 09:28:10 }
-Delivery { Id = 1016, OrderId = 1047, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 10/09/2024 23:34:50, ActualDistance = 33.437552023096465, OrderEndStatus = Delivered, DeliveryEndTime = 10/09/2024 23:59:50 }
-Delivery { Id = 1017, OrderId = 1024, CourierId = 262581120, TypeOfOrder = Express, DeliveryStartTime = 08/01/2025 12:35:11, ActualDistance = 82.26031301295912, OrderEndStatus = Failed, DeliveryEndTime = 08/01/2025 13:30:11 }
-Delivery { Id = 1018, OrderId = 1001, CourierId = 262581120, TypeOfOrder = SameDay, DeliveryStartTime = 07/09/2025 13:57:20, ActualDistance = 54.705175646146685, OrderEndStatus = InviterNotFound, DeliveryEndTime = 07/09/2025 14:43:20 }
-Delivery { Id = 1019, OrderId = 1014, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 08/03/2025 07:00:19, ActualDistance = 82.26031301295912, OrderEndStatus = InviterNotFound, DeliveryEndTime = 08/03/2025 09:03:19 }
-Delivery { Id = 1020, OrderId = 1019, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 26/09/2025 14:17:37, ActualDistance = 21.36088640832011, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1021, OrderId = 1002, CourierId = 323019443, TypeOfOrder = SameDay, DeliveryStartTime = 09/11/2025 06:12:38, ActualDistance = 10.28069354356626, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1022, OrderId = 1029, CourierId = 141244895, TypeOfOrder = Regular, DeliveryStartTime = 05/11/2025 02:16:18, ActualDistance = 21.36088640832011, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1023, OrderId = 1015, CourierId = 543020197, TypeOfOrder = Regular, DeliveryStartTime = 21/10/2022 23:59:20, ActualDistance = 7.601862445755016, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1024, OrderId = 1031, CourierId = 483649597, TypeOfOrder = SameDay, DeliveryStartTime = 21/07/2025 23:06:53, ActualDistance = 54.705175646146685, OrderEndStatus = , DeliveryEndTime =  }
-Delivery { Id = 1025, OrderId = 1005, CourierId = 391874673, TypeOfOrder = Regular, DeliveryStartTime = 11/02/2023 04:32:25, ActualDistance = 7.601862445755016, OrderEndStatus = , DeliveryEndTime =  }
+Delivery { Id = 1000, OrderId = 1044, CourierId = 262581120, TypeOfOrder = SameDay, DeliveryStartTime = 17/11/2024 22:55:33, ActualDistance = 82.26031301295912, OrderClosedStatus = Delivered, DeliveryEndTime = 18/11/2024 00:43:33 }
+Delivery { Id = 1001, OrderId = 1037, CourierId = 344926647, TypeOfOrder = Express, DeliveryStartTime = 02/12/2024 08:58:41, ActualDistance = 33.437552023096465, OrderClosedStatus = Cancelled, DeliveryEndTime = 02/12/2024 11:08:41 }
+Delivery { Id = 1002, OrderId = 1042, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 14/07/2024 06:40:12, ActualDistance = 10.28069354356626, OrderClosedStatus = Refused, DeliveryEndTime = 14/07/2024 07:03:12 }
+Delivery { Id = 1003, OrderId = 1048, CourierId = 262581120, TypeOfOrder = Express, DeliveryStartTime = 06/02/2025 17:03:29, ActualDistance = 92.6855173262227, OrderClosedStatus = Delivered, DeliveryEndTime = 06/02/2025 19:17:29 }
+Delivery { Id = 1004, OrderId = 1046, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 11/08/2025 16:02:44, ActualDistance = 29.729690756933437, OrderClosedStatus = Delivered, DeliveryEndTime = 11/08/2025 17:52:44 }
+Delivery { Id = 1005, OrderId = 1032, CourierId = 543020197, TypeOfOrder = Express, DeliveryStartTime = 03/07/2022 09:31:16, ActualDistance = 10.28069354356626, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 03/07/2022 10:45:16 }
+Delivery { Id = 1006, OrderId = 1021, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 15/07/2025 04:08:18, ActualDistance = 54.705175646146685, OrderClosedStatus = Failed, DeliveryEndTime = 15/07/2025 06:05:18 }
+Delivery { Id = 1007, OrderId = 1049, CourierId = 694180588, TypeOfOrder = SameDay, DeliveryStartTime = 27/09/2023 01:46:43, ActualDistance = 21.36088640832011, OrderClosedStatus = Failed, DeliveryEndTime = 27/09/2023 04:39:43 }
+Delivery { Id = 1008, OrderId = 1036, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 27/09/2024 09:23:27, ActualDistance = 29.729690756933437, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 27/09/2024 10:38:27 }
+Delivery { Id = 1009, OrderId = 1028, CourierId = 956087862, TypeOfOrder = Regular, DeliveryStartTime = 21/07/2024 22:05:37, ActualDistance = 92.6855173262227, OrderClosedStatus = Cancelled, DeliveryEndTime = 21/07/2024 23:03:37 }
+Delivery { Id = 1010, OrderId = 1026, CourierId = 483649597, TypeOfOrder = Regular, DeliveryStartTime = 04/03/2024 02:36:07, ActualDistance = 29.729690756933437, OrderClosedStatus = Refused, DeliveryEndTime = 04/03/2024 03:42:07 }
+Delivery { Id = 1011, OrderId = 1022, CourierId = 323019443, TypeOfOrder = Regular, DeliveryStartTime = 01/05/2024 23:16:30, ActualDistance = 10.28069354356626, OrderClosedStatus = Failed, DeliveryEndTime = 02/05/2024 02:08:30 }
+Delivery { Id = 1012, OrderId = 1034, CourierId = 483649597, TypeOfOrder = Express, DeliveryStartTime = 06/06/2025 12:41:22, ActualDistance = 82.26031301295912, OrderClosedStatus = Cancelled, DeliveryEndTime = 06/06/2025 13:09:22 }
+Delivery { Id = 1013, OrderId = 1008, CourierId = 483649597, TypeOfOrder = Regular, DeliveryStartTime = 08/05/2024 13:23:36, ActualDistance = 92.6855173262227, OrderClosedStatus = Cancelled, DeliveryEndTime = 08/05/2024 15:52:36 }
+Delivery { Id = 1014, OrderId = 1017, CourierId = 483649597, TypeOfOrder = Express, DeliveryStartTime = 16/01/2025 01:37:31, ActualDistance = 33.437552023096465, OrderClosedStatus = Failed, DeliveryEndTime = 16/01/2025 02:37:31 }
+Delivery { Id = 1015, OrderId = 1039, CourierId = 141244895, TypeOfOrder = Regular, DeliveryStartTime = 29/04/2025 08:19:10, ActualDistance = 21.36088640832011, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 29/04/2025 09:28:10 }
+Delivery { Id = 1016, OrderId = 1047, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 10/09/2024 23:34:50, ActualDistance = 33.437552023096465, OrderClosedStatus = Delivered, DeliveryEndTime = 10/09/2024 23:59:50 }
+Delivery { Id = 1017, OrderId = 1024, CourierId = 262581120, TypeOfOrder = Express, DeliveryStartTime = 08/01/2025 12:35:11, ActualDistance = 82.26031301295912, OrderClosedStatus = Failed, DeliveryEndTime = 08/01/2025 13:30:11 }
+Delivery { Id = 1018, OrderId = 1001, CourierId = 262581120, TypeOfOrder = SameDay, DeliveryStartTime = 07/09/2025 13:57:20, ActualDistance = 54.705175646146685, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 07/09/2025 14:43:20 }
+Delivery { Id = 1019, OrderId = 1014, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 08/03/2025 07:00:19, ActualDistance = 82.26031301295912, OrderClosedStatus = InviterNotFound, DeliveryEndTime = 08/03/2025 09:03:19 }
+Delivery { Id = 1020, OrderId = 1019, CourierId = 956087862, TypeOfOrder = Express, DeliveryStartTime = 26/09/2025 14:17:37, ActualDistance = 21.36088640832011, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1021, OrderId = 1002, CourierId = 323019443, TypeOfOrder = SameDay, DeliveryStartTime = 09/11/2025 06:12:38, ActualDistance = 10.28069354356626, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1022, OrderId = 1029, CourierId = 141244895, TypeOfOrder = Regular, DeliveryStartTime = 05/11/2025 02:16:18, ActualDistance = 21.36088640832011, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1023, OrderId = 1015, CourierId = 543020197, TypeOfOrder = Regular, DeliveryStartTime = 21/10/2022 23:59:20, ActualDistance = 7.601862445755016, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1024, OrderId = 1031, CourierId = 483649597, TypeOfOrder = SameDay, DeliveryStartTime = 21/07/2025 23:06:53, ActualDistance = 54.705175646146685, OrderClosedStatus = , DeliveryEndTime =  }
+Delivery { Id = 1025, OrderId = 1005, CourierId = 391874673, TypeOfOrder = Regular, DeliveryStartTime = 11/02/2023 04:32:25, ActualDistance = 7.601862445755016, OrderClosedStatus = , DeliveryEndTime =  }
 
 --- END OF LIST ---
 

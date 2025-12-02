@@ -314,11 +314,11 @@ public static class Initialization
                     // Randomly select a closed status for the order
                     var closedStatuses = new[]
                     {
-                    OrderStatus.Delivered,
-                    OrderStatus.Refused,
-                    OrderStatus.Cancelled,
-                    OrderStatus.InviterNotFound,
-                    OrderStatus.Failed
+                    OrderEndStatus.Delivered,
+                    OrderEndStatus.Refused,
+                    OrderEndStatus.Cancelled,
+                    OrderEndStatus.InviterNotFound,
+                    OrderEndStatus.Failed
                     };
 
                     // Pick a random closed status

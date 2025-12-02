@@ -1,5 +1,12 @@
-﻿namespace BO;
+﻿using Helpers;
+namespace BO;
 
+/// <summary>
+/// Represents an order that is currently in progress, including details about delivery and customer information.
+/// </summary>
+/// <remarks>This class provides information about an ongoing order, such as delivery and order identifiers,
+/// customer details, and timing information related to the delivery process. It is used to track the status and
+/// progress of an order from initiation to completion.</remarks>
 public class OrderInProgress
 { 
     int DeliveryId { get; init; }
@@ -15,8 +22,8 @@ public class OrderInProgress
     DateTime DeliveryStartTime { get; init; }
     DateTime ExpectedDeliveryTime { get; init; }
     DateTime MaxDeliveryTime { get; init; }
-    OrderStatus StatusOfOrder { get; init; }
+    OrderEndStatus StatusOfOrder { get; init; }
     SchedualeStatus TimeLinessStatus { get; init; }
     TimeSpan RemainingDeliveryTime { get; init; }
+    public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
- 
