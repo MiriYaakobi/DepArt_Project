@@ -20,6 +20,6 @@ public class Courier
     public DateTime StartWorkTime { get; init; }
     public int TotalOnTimeDeliveries { get; init; }
     public int TotalLateDeliveries { get; init; }
-    public OrderInProgress? CurrentOrder { get; init; } //?
+    public OrderInProgress? CurrentOrder { get; init; } //OrderInProgress
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

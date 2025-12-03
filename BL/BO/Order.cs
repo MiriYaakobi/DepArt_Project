@@ -25,6 +25,6 @@ internal class Order
     public OrderEndStatus StatusOfOrder { get; init; }
     public SchedualeStatus TimeLinessStatus { get; init; }
     public TimeSpan RemainingDeliveryTime { get; init; }
-    DeliveryPerOrderInList DeliveryList { get; init; }
+    DeliveryPerOrderInList? DeliveryList { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
