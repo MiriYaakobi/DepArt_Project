@@ -9,22 +9,22 @@ namespace BO;
 /// location and timing constraints, which are crucial for logistics and scheduling.</remarks>
 internal class Order
 {
-    int Id { get; init; }
-    OrderType TypeOfOrder { get; set; }
-    string? Description { get; set; }
-    string Address { get; set; }
-    double Latitude { get; }
-    double Longitude { get; }
-    double AirDistance { get; }
-    string CustomerName { get; set; }
-    string CustomerPhone { get; set; }
-    string? PackageDetails { get; set; }
-    DateTime OrderOpeningTime { get; init; }
-    DateTime? ExpectedDeliveryTime { get; init; }
-    DateTime MaxDeliveryTime { get; init; }
-    OrderEndStatus StatusOfOrder { get; init; }
-    SchedualeStatus TimeLinessStatus { get; init; }
-    TimeSpan RemainingDeliveryTime { get; init; }
+    public int Id { get; init; }
+    public OrderType TypeOfOrder { get; set; }
+    public string? Description { get; set; }
+    public string? Address { get; set; }
+    public double Latitude { get; }
+    public double Longitude { get; }
+    public double AirDistance { get; }
+    public string? CustomerName { get; set; }
+    public string? CustomerPhone { get; set; }
+    public string? PackageDetails { get; set; }
+    public DateTime OrderOpeningTime { get; init; }
+    public DateTime? ExpectedDeliveryTime { get; init; }
+    public DateTime MaxDeliveryTime { get; init; }
+    public OrderEndStatus StatusOfOrder { get; init; }
+    public SchedualeStatus TimeLinessStatus { get; init; }
+    public TimeSpan RemainingDeliveryTime { get; init; }
     DeliveryPerOrderInList DeliveryList { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

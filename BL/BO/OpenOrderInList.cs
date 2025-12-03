@@ -9,16 +9,16 @@ namespace BO;
 /// initialization.</remarks>
 public class OpenOrderInList
 {
-    int? Id { get; init; }
-    int OrderId { get; init; }
-    OrderType TypeOfOrder { get; init; }
-    string PackageDetails { get; init; }
-    string Address { get; init; }
-    double AirDistance { get; init; }
-    double? ActualDistance { get; init; }
-    TimeSpan? ActualTimeExtension { get; init; }
-    SchedualeStatus TimeLinessStatus { get; init; }
-    TimeSpan RemainingTime { get; init; }
-    DateTime MaxDeliveryTime { get; init; }
+    public int? Id { get; init; }
+    public int OrderId { get; init; }
+    public OrderType TypeOfOrder { get; init; }
+    public string? PackageDetails { get; init; }
+    public string? Address { get; init; }
+    public double AirDistance { get; init; }
+    public double? ActualDistance { get; init; }
+    public TimeSpan? ActualTimeExtension { get; init; }
+    public SchedualeStatus TimeLinessStatus { get; init; }
+    public TimeSpan RemainingTime { get; init; }
+    public DateTime MaxDeliveryTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

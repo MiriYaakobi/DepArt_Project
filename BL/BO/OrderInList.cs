@@ -8,14 +8,14 @@ namespace BO;
 /// identifier, type, status, and timing details. It is designed to be immutable after initialization.</remarks>
 public class OrderInList
 {
-    int? Id { get; init; }
-    int OrderId { get; init; }
-    OrderType TypeOfOrder { get; init; }
-    double AirDistance { get; init; }
-    OrderStatus StatusOfOrder { get; init; }
-    SchedualeStatus TimeLinessStatus { get; init; }
-    TimeSpan RemainingTime { get; init; }
-    TimeSpan TotalHandlingDuration { get; init; }
-    int TotalDeliveries { get; init; }
+    public int? Id { get; init; }
+    public int OrderId { get; init; }
+    public OrderType TypeOfOrder { get; init; }
+    public double AirDistance { get; init; }
+    public OrderStatus StatusOfOrder { get; init; }
+    public SchedualeStatus TimeLinessStatus { get; init; }
+    public TimeSpan RemainingTime { get; init; }
+    public TimeSpan TotalHandlingDuration { get; init; }
+    public int TotalDeliveries { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
