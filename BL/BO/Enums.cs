@@ -58,7 +58,7 @@ public enum OrderStatus
 /// </summary>
 /// <remarks>This enumeration is used to indicate whether a schedule is proceeding as planned, at risk of delay,
 /// or already late.</remarks>
-public enum SchedualeStatus
+public enum ScheduleStatus
 {
     OnTime,
     InRisk,

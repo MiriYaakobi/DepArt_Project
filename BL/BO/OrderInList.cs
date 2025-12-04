@@ -13,7 +13,7 @@ public class OrderInList
     public OrderType TypeOfOrder { get; init; }
     public double AirDistance { get; init; }
     public OrderStatus StatusOfOrder { get; init; }
-    public SchedualeStatus TimeLinessStatus { get; init; }
+    public ScheduleStatus TimeLinessStatus { get; init; }
     public TimeSpan RemainingTime { get; init; }
     public TimeSpan TotalHandlingDuration { get; init; }
     public int TotalDeliveries { get; init; }

@@ -58,7 +58,6 @@ internal static class OrderManager
         DO.Order doOrder;
         try
         {
-            // 1. קריאה מ-DAL
             doOrder = s_dal.Order.Read(orderId);
         }
         catch (DO.DalDoesNotExistException)
@@ -66,26 +65,36 @@ internal static class OrderManager
             throw new InvalidOperationException($"Order with ID {orderId} does not exist.");
         }
 
-        // 2. חישוב סטטוסים לוגיים
+        // 2. חישוב סטטוסים לוגיים (נדרשים לפני המיפוי)
         BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
-        BO.SchedualeStatus timeLinessStatus = CalculateSchedualeStatus(orderId);
+        BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
         DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
 
-        // 3. אחזור פרטי משלוחים (DeliveryPerOrderInList)
-        // TO_DO: יש לממש מתודת עזר שתביא ותמיר את רשומות ה-Delivery.
+        // 3. **השלמת חישוב AirDistance (השלמת TO_DO)**
+        // AirDistance הוא המרחק בין כתובת החברה לכתובת ההזמנה.
+        double airDistance = Tools.GetAirDistance(
+            s_dal.Config.CompenyLatitude ?? 0,
+            s_dal.Config.CompenyLongitude ?? 0,
+            doOrder.Latitude,
+            doOrder.Longitude
+        );
+
+        // 4. אחזור פרטי משלוחים (DeliveryPerOrderInList) - נשאר TO_DO להמשך
         BO.DeliveryPerOrderInList? deliveryList = null;
 
-        // 4. מיפוי (Mapping) ל-BO
+        // 5. מיפוי (Mapping) ל-BO (פתרון שגיאות CS0200)
         return new BO.Order
         {
+            // שדות BO.Order
             Id = doOrder.Id,
             TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
             Description = doOrder.Description,
             Address = doOrder.Address,
+
             Latitude = doOrder.Latitude,
             Longitude = doOrder.Longitude,
-            // TO_DO: חישוב AirDistance כאן
-            AirDistance = 0, // דמה זמני
+            AirDistance = airDistance, // **השלמת AirDistance**
+
             CustomerName = doOrder.CustomerName,
             CustomerPhone = doOrder.CustomerPhone,
             PackageDetails = doOrder.PackageDetails,
@@ -99,7 +108,7 @@ internal static class OrderManager
             TimeLinessStatus = timeLinessStatus,
 
             // TO_DO: חישוב RemainingDeliveryTime (דורש לוגיקה נוספת)
-            RemainingDeliveryTime = TimeSpan.Zero,
+            RemainingDeliveryTime = maxDeliveryTime - AdminManager.Now, // חישוב מידי
 
             DeliveryList = deliveryList
         };
@@ -121,7 +130,7 @@ internal static class OrderManager
 
             // חישוב סטטוסים
             BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
-            BO.SchedualeStatus timeLinessStatus = CalculateSchedualeStatus(orderId);
+            BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
 
             // TO_DO: חישוב נתונים מצטברים (TotalHandlingDuration, TotalDeliveries)
             TimeSpan totalHandlingDuration = TimeSpan.Zero;
@@ -264,8 +273,8 @@ internal static class OrderManager
     /// מחשבת את סטטוס העמידה בזמנים (OnTime/InRisk/Late) של ההזמנה.
     /// </summary>
     /// <param name="orderId">מזהה ההזמנה.</param>
-    /// <returns>BO.SchedualeStatus</returns>
-    internal static BO.SchedualeStatus CalculateSchedualeStatus(int orderId)
+    /// <returns>BO.ScheduleStatus</returns>
+    internal static BO.ScheduleStatus CalculateScheduleStatus(int orderId)
     {
         // קריאה ראשונה: לוודא שההזמנה קיימת
         s_dal.Order.Read(orderId);
@@ -284,9 +293,9 @@ internal static class OrderManager
 
             if (timeOfEnd > maxDeliveryTime)
             {
-                return BO.SchedualeStatus.Late; // סופקה באיחור
+                return BO.ScheduleStatus.Late; // סופקה באיחור
             }
-            return BO.SchedualeStatus.OnTime; // סופקה בזמן
+            return BO.ScheduleStatus.OnTime; // סופקה בזמן
         }
         else // 2. אם ההזמנה פתוחה או בטיפול
         {
@@ -294,13 +303,13 @@ internal static class OrderManager
 
             if (timeRemaining.TotalSeconds <= 0)
             {
-                return BO.SchedualeStatus.Late; // חרג מהזמן המירבי
+                return BO.ScheduleStatus.Late; // חרג מהזמן המירבי
             }
             if (timeRemaining <= riskTimeSpan)
             {
-                return BO.SchedualeStatus.InRisk; // בתוך טווח הסיכון
+                return BO.ScheduleStatus.InRisk; // בתוך טווח הסיכון
             }
-            return BO.SchedualeStatus.OnTime; // יש מספיק זמן
+            return BO.ScheduleStatus.OnTime; // יש מספיק זמן
         }
     }
 

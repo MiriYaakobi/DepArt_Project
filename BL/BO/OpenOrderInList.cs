@@ -17,7 +17,7 @@ public class OpenOrderInList
     public double AirDistance { get; init; }
     public double? ActualDistance { get; init; }
     public TimeSpan? ActualTimeExtension { get; init; }
-    public SchedualeStatus TimeLinessStatus { get; init; }
+    public ScheduleStatus TimeLinessStatus { get; init; }
     public TimeSpan RemainingTime { get; init; }
     public DateTime MaxDeliveryTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
