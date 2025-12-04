@@ -9,12 +9,12 @@ namespace BO;
 /// process.</remarks>
 public class DeliveryPerOrderInList
 {
-    int Id { get; init; }
-    int? CourierId { get; init; }
-    string Name { get; init; }
-    DeliveryType TypeOfDelivery { get; init; }
-    DateTime DeliveryStartTime { get; init; }
-    OrderEndStatus? OrderClosedStatus { get; init; }
-    DateTime? DeliveryEndTime { get; init; }
+    public int Id { get; init; }
+    public int? CourierId { get; init; }
+    public string? Name { get; init; }
+    public DeliveryType TypeOfDelivery { get; init; }
+    public DateTime DeliveryStartTime { get; init; }
+    public OrderEndStatus? OrderClosedStatus { get; init; }
+    public DateTime? DeliveryEndTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

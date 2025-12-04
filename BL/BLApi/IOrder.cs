@@ -1,0 +1,19 @@
+﻿namespace BLApi;
+
+/// <summary>
+/// 
+/// </summary>
+public interface IOrder
+{
+    int[] GetOrderSummaryQuantities(int requestingUserId);
+    IEnumerable<BO.OrderInList> ReadAll(int requestingUserId, BO.OrderFieldSort? sortBy = null, BO.OrderType? filterBy = null, object? filterValue = null);
+    BO.Order Read(int requestingUserId, int orderId);
+    void Update(int requestingUserId, BO.Order boOrder);
+    void Cancel(int requestingUserId, int orderId);
+    void Delete(int requestingUserId, int orderId);
+    void Create(int requestingUserId, BO.Order boOrder);
+    void CompleteDelivery(int requestingUserId, int courierId, int deliveryId); //maybe we need to add a parameter of type DO.Delivery???
+    void ChooseOrder(int requestingUserId, int courierId, int orderId);
+    IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null);
+    IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.OpenOrderFieldSort? sortBy = null);
+}

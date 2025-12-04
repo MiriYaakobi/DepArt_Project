@@ -9,21 +9,21 @@ namespace BO;
 /// progress of an order from initiation to completion.</remarks>
 public class OrderInProgress
 { 
-    int DeliveryId { get; init; }
-    int OrderId { get; init; }
-    OrderType TypeOfOrder { get; init; }
-    string? Description { get; init; }
-    string Address { get; init; }
-    double AirDistance { get; init; }
-    double? ActualDistance { get; init; }
-    string CustomerName { get; init; }
-    string CustomerPhone { get; init; }
-    DateTime OrderOpeningTime { get; init; }
-    DateTime DeliveryStartTime { get; init; }
-    DateTime ExpectedDeliveryTime { get; init; }
-    DateTime MaxDeliveryTime { get; init; }
-    OrderEndStatus StatusOfOrder { get; init; }
-    SchedualeStatus TimeLinessStatus { get; init; }
-    TimeSpan RemainingDeliveryTime { get; init; }
+    public int DeliveryId { get; init; }
+    public int OrderId { get; init; }
+    public OrderType TypeOfOrder { get; init; }
+    public string? Description { get; init; }
+    public string? Address { get; init; }
+    public double AirDistance { get; init; }
+    public double? ActualDistance { get; init; }
+    public string? CustomerName { get; init; }
+    public string? CustomerPhone { get; init; }
+    public DateTime OrderOpeningTime { get; init; }
+    public DateTime DeliveryStartTime { get; init; }
+    public DateTime ExpectedDeliveryTime { get; init; }
+    public DateTime MaxDeliveryTime { get; init; }
+    public OrderEndStatus StatusOfOrder { get; init; }
+    public ScheduleStatus TimeLinessStatus { get; init; }
+    public TimeSpan RemainingDeliveryTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

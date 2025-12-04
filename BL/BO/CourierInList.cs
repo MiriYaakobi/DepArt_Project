@@ -9,13 +9,13 @@ namespace BO;
 /// initialization.</remarks>
 public class CourierInList
 {
-    int Id { get; init; }
-    string Name { get; init; }
-    bool IsActive { get; init; }
-    DeliveryType TypeOfDelivery { get; init; }
-    DateTime StartWorkTime { get; init; }
-    int TotalOnTimeDeliveries { get; init; }
-    int TotalLateDeliveries { get; init; }
-    int? CurrentOrderId { get; init; }
+    public int Id { get; init; }
+    public string? Name { get; init; }
+    public bool IsActive { get; init; }
+    public DeliveryType TypeOfDelivery { get; init; }
+    public DateTime StartWorkTime { get; init; }
+    public int TotalOnTimeDeliveries { get; init; }
+    public int TotalLateDeliveries { get; init; }
+    public int? CurrentOrderId { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
