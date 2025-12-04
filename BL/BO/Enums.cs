@@ -64,3 +64,12 @@ public enum SchedualeStatus
     InRisk,
     Late
 }
+
+/// <summary>
+/// תפקידי המשתמשים במערכת לצורך אימות כניסה (פנימי ל-BL).
+/// </summary>
+public enum UserRole
+{
+    Courier,
+    Admin
+}

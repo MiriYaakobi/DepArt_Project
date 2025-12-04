@@ -15,6 +15,7 @@ public interface IConfig
     double? CompenyLatitude { get; set; }
     double? CompenyLongitude { get; set; }
     int AdminId { get; set; }
+    string AdminPassword { get; set; }
     double? DeliveryMaxDistance { get; set; }
     double AverageVehicleSpeedKmH { get; set; }
     double AverageMotorcycleSpeedKmH { get; set; }
