@@ -7,7 +7,7 @@ namespace BO;
 /// <remarks>This class encapsulates the essential information for processing and tracking an order, including
 /// customer details, order type, and delivery specifics. It provides properties to access the order's geographical
 /// location and timing constraints, which are crucial for logistics and scheduling.</remarks>
-internal class Order
+public class Order
 {
     public int Id { get; init; }
     public OrderType TypeOfOrder { get; set; }

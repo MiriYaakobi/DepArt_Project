@@ -66,10 +66,79 @@ public enum ScheduleStatus
 }
 
 /// <summary>
-/// תפקידי המשתמשים במערכת לצורך אימות כניסה (פנימי ל-BL).
+/// Specifies the role of a user within the system.
 /// </summary>
+/// <remarks>This enumeration is used to define the different roles that a user can have,  such as <see
+/// cref="Courier"/> or <see cref="Admin"/>. Each role may have  different permissions and access levels within the
+/// application.</remarks>
 public enum UserRole
 {
     Courier,
     Admin
+}
+
+/// <summary>
+/// Represents units of time for various operations.
+/// </summary>
+/// <remarks>This enumeration is used to specify time intervals in terms of minutes, hours, or days.</remarks>
+public enum TimeUnit
+{
+    Minutes,
+    Hours,
+    Days
+}
+
+/// <summary>
+/// Specifies the fields by which courier data can be sorted.
+/// </summary>
+/// <remarks>This enumeration is used to define the sorting criteria for courier-related operations. Each member
+/// represents a specific field that can be used to order the results.</remarks>
+public enum CourierFieldSort
+{
+    Id,
+    Name,
+    IsActive,
+    TypeOfDelivery,
+    StartWorkTime,
+    TotalOnTimeDeliveries,
+    TotalLateDeliveries,
+    MaxDistance
+}
+
+/// <summary>
+/// Specifies the fields by which order data can be sorted.
+/// </summary>
+/// <remarks>This enumeration is used to define the sorting criteria for order-related operations. Each member
+/// represents a specific field that can be used to order the results.</remarks>
+public enum OrderFieldSort
+{
+    Id,
+    StatusOfOrder,
+    TimeLinessStatus,
+    OrderOpeningTime,
+    MaxDeliveryTime,
+    AirDistance
+}
+
+/// <summary>
+/// Specifies the fields by which closed delivery data can be sorted.
+/// </summary>
+/// <remarks>This enumeration is used to define the sorting criteria for closed delivery-related operations. Each member
+/// represents a specific field that can be used to order the results.</remarks>
+public enum ClosedDeliveryFieldSort
+{
+    OrderId,
+    CompletionType,
+    TimeOfEnd,
+    TotalHandlingTime
+}
+/// <summary>
+/// 
+/// </summary>
+public enum OpenOrderFieldSort
+{
+    Id,
+    TimeLinessStatus,
+    ExpectedDeliveryTime, //Actual time estimate
+    MaxDeliveryTime //Total time remaining
 }
