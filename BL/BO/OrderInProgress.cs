@@ -22,7 +22,7 @@ public class OrderInProgress
     public DateTime DeliveryStartTime { get; init; }
     public DateTime ExpectedDeliveryTime { get; init; }
     public DateTime MaxDeliveryTime { get; init; }
-    public OrderEndStatus StatusOfOrder { get; init; }
+    public OrderStatus StatusOfOrder { get; init; }
     public ScheduleStatus TimeLinessStatus { get; init; }
     public TimeSpan RemainingDeliveryTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method

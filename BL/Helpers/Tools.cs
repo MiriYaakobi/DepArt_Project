@@ -131,4 +131,37 @@ internal static class Tools
         // אם לא כתובת ברירת מחדל, מחזירים ערך דמה כללי
         return (32.123456, 34.567890);
     }
+
+    /// <summary>
+    /// מתודה סינכרונית לקבלת מרחק נסיעה בפועל וזמן משוער בין שתי נקודות, בהתאם לסוג השילוח.
+    /// הסימולציה מניחה שמרחק הנסיעה בפועל גדול ב-20% מהמרחק האווירי.
+    /// </summary>
+    internal static (double ActualDistance, TimeSpan EstimatedTime)? GetActualDistanceAndEstimatedTimeSync(
+        double startLat, double startLon, double endLat, double endLon, DO.DeliveryType deliveryType)
+    {
+        var dalConfig = DalApi.Factory.Get.Config;
+        double averageSpeedKmH;
+
+        // 1. קביעת מהירות הנסיעה לפי סוג השילוח
+        switch (deliveryType)
+        {
+            case DO.DeliveryType.Car: averageSpeedKmH = dalConfig.AverageVehicleSpeedKmH; break;
+            case DO.DeliveryType.Motorcycle: averageSpeedKmH = dalConfig.AverageMotorcycleSpeedKmH; break;
+            case DO.DeliveryType.Bicycle: averageSpeedKmH = dalConfig.AverageBicycleSpeedKmH; break;
+            case DO.DeliveryType.ByFoot: averageSpeedKmH = dalConfig.AverageByFootSpeedKmH; break;
+            default: throw new ArgumentException($"Unsupported delivery type: {deliveryType}.");
+        }
+
+        if (averageSpeedKmH <= 0) return null; // לא ניתן לחשב זמן ללא מהירות מוגדרת
+
+        // 2. חישוב מרחק בפועל (סימולציה)
+        double airDistance = GetAirDistance(startLat, startLon, endLat, endLon);
+        double actualDistance = airDistance * 1.2; // הנחה: מרחק בפועל גדול ב-20% מהאווירי
+
+        // 3. חישוב זמן משוער: זמן בשעות = מרחק / מהירות
+        double estimatedHours = actualDistance / averageSpeedKmH;
+        TimeSpan estimatedTime = TimeSpan.FromHours(estimatedHours);
+
+        return (actualDistance, estimatedTime);
+    }
 }
