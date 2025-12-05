@@ -1,7 +1,7 @@
 ﻿namespace BLApi;
 
 /// <summary>
-/// 
+/// Defines the operations available for managing order entities within the system.
 /// </summary>
 public interface IOrder
 {
