@@ -7,11 +7,11 @@ internal static class CourierManager
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// מבצעת בדיקות תקינות לוגיות ומוסיפה שליח חדש ל-DAL.
+    /// Creates a new courier in the system.
     /// </summary>
     internal static void CreateCourier(BO.Courier courier)
     {
-        // 1. בדיקות תקינות קלט (ArgumentException)
+        // Input validation (ArgumentException)
         if (string.IsNullOrEmpty(courier.Name) || courier.Name.Length < 2)
             throw new ArgumentException("Courier name must contain at least 2 characters.");
         if (string.IsNullOrEmpty(courier.Phone) || courier.Phone.Length != 10 || !courier.Phone.All(char.IsDigit))
@@ -21,7 +21,7 @@ internal static class CourierManager
         if (courier.MaxDistance.HasValue && courier.MaxDistance.Value <= 0)
             throw new ArgumentException("Max distance must be a positive value.");
 
-        // 2. בדיקת כפילות ID (InvalidOperationException)
+        // Check for duplicate ID (InvalidOperationException)
         try
         {
             s_dal.Courier.Read(courier.Id);
@@ -32,7 +32,7 @@ internal static class CourierManager
             // השליח לא קיים - תקין להמשיך
         }
 
-        // 3. מיפוי (Mapping) ושמירה ב-DAL
+        // Mapping BO to DO and creating the courier
         DO.Courier doCourier = new DO.Courier
         (
             Id: courier.Id,
@@ -40,31 +40,30 @@ internal static class CourierManager
             Phone: courier.Phone!,
             Email: courier.Email!,
             Password: courier.Password!,
-            IsActive: true, // ברירת מחדל: שליח חדש הוא פעיל
+            IsActive: true, // courier is active upon creation
             TypeOfDelivery: (DO.DeliveryType)courier.TypeOfDelivery,
-            StartWorkTime: AdminManager.Now, // זמן התחלת עבודה הוא שעון המערכת
+            StartWorkTime: AdminManager.Now, // Start work time is the system clock
             MaxDistance: courier.MaxDistance
         );
-
         s_dal.Courier.Create(doCourier);
     }
 
     /// <summary>
-    /// קוראת את רשימת השליחים המלאה מ-DAL וממירה אותם לישויות רשימה (BO.CourierInList).
+    /// Reads all couriers from the DAL and converts them to BO.CourierInList entities.
     /// </summary>
     internal static IEnumerable<BO.CourierInList> ReadAllCouriers(bool? isActive = null)
     {
-        // 1. קריאה מ-DAL וסינון לפי IsActive (אם נדרש)
+        // filter by isActive if provided
         var dalCouriers = s_dal.Courier.ReadAll(isActive.HasValue ? d => d.IsActive == isActive.Value : null);
 
-        // 2. מיפוי לישויות BO.CourierInList
+        // Mapping to BO.CourierInList entities
         return dalCouriers.Select(doCourier =>
         {
-            // חישוב סטטיסטיקות (דורש GetCourierStatistics)
+            // Calculate statistics
             var stats = GetCourierStatistics(doCourier.Id);
 
-            // TO_DO: יש לממש מתודת עזר שתמצא את מזהה ההזמנה הפתוחה לשליח (currentOrderId)
-            int? currentOrderId = null; // דמה זמני
+            DO.Delivery? openDelivery = FindOpenDeliveryForCourier(doCourier.Id);
+            int? currentOrderId = openDelivery?.OrderId; 
 
             return new BO.CourierInList
             {
@@ -101,8 +100,13 @@ internal static class CourierManager
         var stats = GetCourierStatistics(courierId);
 
         // 3. מציאת משלוח פתוח (CurrentOrder)
-        // TO_DO: יש לממש את הלוגיקה שתמצא Delivery פתוח ותמיר אותו ל-BO.OrderInProgress.
         BO.OrderInProgress? currentOrder = null;
+        DO.Delivery? openDelivery = FindOpenDeliveryForCourier(courierId);
+
+        if (openDelivery != null)
+        {
+            currentOrder = MapOpenDeliveryToOrderInProgress(openDelivery);
+        }
 
         // 4. מיפוי (Mapping) ל-BO
         return new BO.Courier
@@ -118,7 +122,7 @@ internal static class CourierManager
             StartWorkTime = doCourier.StartWorkTime,
             TotalOnTimeDeliveries = stats.DeliveredOnTime,
             TotalLateDeliveries = stats.DeliveredLate,
-            CurrentOrder = currentOrder // יושלם בהמשך
+            CurrentOrder = currentOrder 
         };
     }
 
@@ -141,7 +145,10 @@ internal static class CourierManager
         // 2. בדיקות תקינות על הערכים החדשים (חייב להיות תקין לפני עדכון)
         if (string.IsNullOrEmpty(courier.Name) || courier.Name.Length < 2)
             throw new ArgumentException("Courier name must contain at least 2 characters.");
-        // TO_DO: יש לבצע בדיקות על טלפון, סיסמה וכו' כפי שבוצעו ב-Create.
+        if (string.IsNullOrEmpty(courier.Phone) || courier.Phone.Length != 10 || !courier.Phone.All(char.IsDigit))
+            throw new ArgumentException("Phone number is invalid.");
+        if (string.IsNullOrEmpty(courier.Password) || courier.Password.Length < 6)
+            throw new ArgumentException("Password must be at least 6 characters long.");
 
         // 3. עדכון ה-DO באמצעות with
         DO.Courier updatedCourier = existingCourier with
@@ -246,6 +253,64 @@ internal static class CourierManager
         }
 
         return (deliveredOnTime, deliveredLate);
+    }
+
+    // הוספה ל CourierManager.cs:
+
+    /// <summary>
+    /// מתודת עזר: מוצאת את רשומת המשלוח הפתוח של שליח נתון.
+    /// </summary>
+    internal static DO.Delivery? FindOpenDeliveryForCourier(int courierId)
+    {
+        return s_dal.Delivery.ReadAll(d => d.CourierId == courierId && d.DeliveryEndTime == null).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// ממירה רשומת משלוח פתוח לישות BO.OrderInProgress מלאה.
+    /// פותר את ה-TO_DO ב-ReadCourier וב-ReadAllCouriers.
+    /// </summary>
+    internal static BO.OrderInProgress MapOpenDeliveryToOrderInProgress(DO.Delivery openDelivery)
+    {
+        // 1. קריאת ישויות בסיס
+        DO.Order doOrder = s_dal.Order.Read(openDelivery.OrderId);
+        DO.Courier doCourier = s_dal.Courier.Read(openDelivery.CourierId);
+
+        // 2. חישוב סטטוסים וזמנים (דורש OrderManager)
+        DateTime maxDeliveryTime = OrderManager.CalculateMaxDeliveryTime(doOrder.Id);
+        BO.ScheduleStatus schedualeStatus = OrderManager.CalculateScheduleStatus(doOrder.Id);
+
+        // 3. חישוב מידע לוגיסטי (דורש Tools ו-Config)
+        double airDistance = Tools.GetAirDistance(
+            s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
+            doOrder.Latitude, doOrder.Longitude);
+
+        var travelInfo = Tools.GetActualDistanceAndEstimatedTimeSync(
+            s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
+            doOrder.Latitude, doOrder.Longitude, doCourier.TypeOfDelivery);
+
+        // 4. חישוב ExpectedDeliveryTime (זמן אספקה משוער)
+        DateTime expectedDeliveryTime = travelInfo.HasValue ? openDelivery.DeliveryStartTime.Add(travelInfo.Value.EstimatedTime) : default;
+
+        // 5. בניית BO.OrderInProgress
+        return new BO.OrderInProgress
+        {
+            DeliveryId = openDelivery.Id,
+            OrderId = doOrder.Id,
+            TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
+            Description = doOrder.Description,
+            Address = doOrder.Address,
+            AirDistance = airDistance,
+            ActualDistance = travelInfo?.ActualDistance ?? 0,
+            CustomerName = doOrder.CustomerName,
+            CustomerPhone = doOrder.CustomerPhone,
+            OrderOpeningTime = doOrder.OrderOpeningTime,
+            DeliveryStartTime = openDelivery.DeliveryStartTime,
+            ExpectedDeliveryTime = expectedDeliveryTime,
+            MaxDeliveryTime = maxDeliveryTime,
+            StatusOfOrder = BO.OrderStatus.InProgress, // סטטוס קבוע כאשר יש משלוח פתוח
+            TimeLinessStatus = schedualeStatus,
+            RemainingDeliveryTime = maxDeliveryTime - AdminManager.Now
+        };
     }
 
     /// <summary>

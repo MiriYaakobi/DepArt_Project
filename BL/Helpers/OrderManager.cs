@@ -16,8 +16,8 @@ internal static class OrderManager
         // 1. בדיקות תקינות קלט
         if (string.IsNullOrEmpty(order.CustomerName) || order.CustomerName.Length < 2)
             throw new ArgumentException("Customer name must contain at least 2 characters.");
-        // TO_DO: בדיקת תקינות נוספת לטלפון (CustomerPhone).
-
+        if (string.IsNullOrEmpty(order.CustomerPhone) || order.CustomerPhone.Length != 10 || !order.CustomerPhone.All(char.IsDigit))
+            throw new ArgumentException("Phone number is invalid.");
         if (string.IsNullOrWhiteSpace(order.Address))
             throw new ArgumentException("Delivery address cannot be empty.");
 
@@ -50,9 +50,6 @@ internal static class OrderManager
     /// <summary>
     /// קוראת רשומת הזמנה מה-DAL, ממירה אותה ל-BO, ומשלבת סטטוסים לוגיים ומשלוחים.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה.</param>
-    /// <returns>ישות BO.Order מלאה.</returns>
-    /// <exception cref="InvalidOperationException">אם ההזמנה לא נמצאת.</exception>
     internal static BO.Order ReadOrder(int orderId)
     {
         DO.Order doOrder;
@@ -65,27 +62,27 @@ internal static class OrderManager
             throw new InvalidOperationException($"Order with ID {orderId} does not exist.");
         }
 
-        // 2. חישוב סטטוסים לוגיים (נדרשים לפני המיפוי)
+        // 2. חישוב סטטוסים לוגיים
         BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
         BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
         DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
 
-        // 3. **השלמת חישוב AirDistance (השלמת TO_DO)**
-        // AirDistance הוא המרחק בין כתובת החברה לכתובת ההזמנה.
+        // 3. חישוב AirDistance ו-RemainingTime
         double airDistance = Tools.GetAirDistance(
             s_dal.Config.CompenyLatitude ?? 0,
             s_dal.Config.CompenyLongitude ?? 0,
             doOrder.Latitude,
             doOrder.Longitude
         );
+        TimeSpan remainingDeliveryTime = maxDeliveryTime - AdminManager.Now;
 
-        // 4. אחזור פרטי משלוחים (DeliveryPerOrderInList) - נשאר TO_DO להמשך
-        BO.DeliveryPerOrderInList? deliveryList = null;
+        // 4. אחזור פרטי משלוחים (DeliveryPerOrderInList)
+        IEnumerable<BO.DeliveryPerOrderInList> deliveryListCollection = MapDeliveryListForOrder(orderId);
+        BO.DeliveryPerOrderInList? deliveryList = deliveryListCollection.FirstOrDefault();
 
-        // 5. מיפוי (Mapping) ל-BO (פתרון שגיאות CS0200)
+        // 5. מיפוי (Mapping) ל-BO
         return new BO.Order
         {
-            // שדות BO.Order
             Id = doOrder.Id,
             TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
             Description = doOrder.Description,
@@ -93,22 +90,21 @@ internal static class OrderManager
 
             Latitude = doOrder.Latitude,
             Longitude = doOrder.Longitude,
-            AirDistance = airDistance, // **השלמת AirDistance**
+            AirDistance = airDistance,
 
             CustomerName = doOrder.CustomerName,
             CustomerPhone = doOrder.CustomerPhone,
             PackageDetails = doOrder.PackageDetails,
             OrderOpeningTime = doOrder.OrderOpeningTime,
 
-            // TO_DO: חישוב ExpectedDeliveryTime (דורש לוגיקה נוספת)
+            // TO_DO: חישוב ExpectedDeliveryTime (נשאר NULL, נדרשת לוגיקה נוספת מפרק 9)
             ExpectedDeliveryTime = null,
 
             MaxDeliveryTime = maxDeliveryTime,
             StatusOfOrder = statusOfOrder,
             TimeLinessStatus = timeLinessStatus,
 
-            // TO_DO: חישוב RemainingDeliveryTime (דורש לוגיקה נוספת)
-            RemainingDeliveryTime = maxDeliveryTime - AdminManager.Now, // חישוב מידי
+            RemainingDeliveryTime = remainingDeliveryTime,
 
             DeliveryList = deliveryList
         };
@@ -117,13 +113,10 @@ internal static class OrderManager
     /// <summary>
     /// קוראת את רשימת ההזמנות המלאה מ-DAL וממירה אותם לישויות רשימה (BO.OrderInList).
     /// </summary>
-    /// <returns>IEnumerable של BO.OrderInList.</returns>
     internal static IEnumerable<BO.OrderInList> ReadAllOrders()
     {
-        // 1. קריאה מ-DAL
         var dalOrders = s_dal.Order.ReadAll();
 
-        // 2. מיפוי לישויות BO.OrderInList
         return dalOrders.Select(doOrder =>
         {
             int orderId = doOrder.Id;
@@ -132,13 +125,19 @@ internal static class OrderManager
             BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
             BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
 
-            // TO_DO: חישוב נתונים מצטברים (TotalHandlingDuration, TotalDeliveries)
-            TimeSpan totalHandlingDuration = TimeSpan.Zero;
-            int totalDeliveries = 0;
-            TimeSpan remainingTime = TimeSpan.Zero;
+            // 1. חישוב נתונים מצטברים:
+            int totalDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId).Count();
+            TimeSpan totalHandlingDuration = TimeSpan.Zero; // TO_DO: נשאר 0 כיוון שדורש סיכום משלוחים סגורים (פרק 9)
 
-            // TO_DO: חישוב AirDistance 
-            double airDistance = 0;
+            // 2. חישוב זמנים ומרחקים:
+            DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
+            TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
+            double airDistance = Tools.GetAirDistance(
+                s_dal.Config.CompenyLatitude ?? 0,
+                s_dal.Config.CompenyLongitude ?? 0,
+                doOrder.Latitude,
+                doOrder.Longitude
+            );
 
             return new BO.OrderInList
             {
@@ -152,10 +151,8 @@ internal static class OrderManager
                 TotalDeliveries = totalDeliveries
             };
         });
-        // TO_DO: יש לבצע מיון וסינון מלא בממשק הציבורי.
+        // TO_DO: יש לבצע מיון וסינון מלא בממשק הציבורי. (הערה לפרק 9)
     }
-
-    // הוספה ל OrderManager.cs:
 
     /// <summary>
     /// מבצעת בדיקות תקינות ומעדכנת פרטים ניתנים לשינוי של הזמנה קיימת.
@@ -358,4 +355,37 @@ internal static class OrderManager
                 return BO.OrderStatus.Open;
         }
     }
+
+    // הוספה ל OrderManager.cs
+
+    /// <summary>
+    /// מתודת עזר: ממירה את רשומות ה-Delivery הסגורות של הזמנה לרשימת BO.DeliveryPerOrderInList.
+    /// </summary>
+    internal static IEnumerable<BO.DeliveryPerOrderInList> MapDeliveryListForOrder(int orderId)
+    {
+        var closedDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue);
+
+        return closedDeliveries.Select(doDelivery =>
+        {
+            // נדרשת קריאה לשליח כדי לקבל את השם
+            DO.Courier doCourier = s_dal.Courier.Read(doDelivery.CourierId);
+
+            // חישוב TotalHandlingDuration
+            TimeSpan totalHandlingDuration = doDelivery.DeliveryEndTime.Value - doDelivery.DeliveryStartTime;
+
+            return new BO.DeliveryPerOrderInList
+            {
+                Id = doDelivery.Id,
+                CourierId = doDelivery.CourierId,
+                Name = doCourier.Name,
+                TypeOfDelivery = (BO.DeliveryType)doCourier.TypeOfDelivery,
+                DeliveryStartTime = doDelivery.DeliveryStartTime,
+                OrderClosedStatus = (BO.OrderEndStatus?)doDelivery.OrderClosedStatus, //?
+                DeliveryEndTime = doDelivery.DeliveryEndTime,
+                ActualDistance = doDelivery.ActualDistance,
+                TotalHandlingDuration = totalHandlingDuration // **השלמה**
+            };
+        });
+    }
+
 }
