@@ -90,15 +90,14 @@ internal static class AdminManager //stage 4
             s_dal.Config.CompenyLongitude = coordinates.Value.Longitude;
             configChanged = true;
         }
-        // 2. בדיקות תקינות לוגיות (חלקית)
+        // validation of speed values
         if (configuration.AverageVehicleSpeedKmH < configuration.AverageMotorcycleSpeedKmH)
             throw new ArgumentException("Vehicle speed must be higher than motorcycle speed.");
 
-        // 3. עדכון ה-DAL (השלמת כל השדות)
+        // update other fields
         if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
         { s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance; configChanged = true; }
-
-        //TO_DO: //stage 4 - **השלמה של שאר השדות:**
+    
         if (s_dal.Config.MaxDeliveryRange != configuration.MaxDeliveryRange) { s_dal.Config.MaxDeliveryRange = configuration.MaxDeliveryRange; configChanged = true; }
         if (s_dal.Config.RiskRange != configuration.RiskRange) { s_dal.Config.RiskRange = configuration.RiskRange; configChanged = true; }
         if (s_dal.Config.InactivityTimeRange != configuration.InactivityTimeRange) { s_dal.Config.InactivityTimeRange = configuration.InactivityTimeRange; configChanged = true; }
@@ -132,6 +131,33 @@ internal static class AdminManager //stage 4
             AdminManager.SetConfig(AdminManager.GetConfig()); //stage 5 - needed for update the PL
         }
     }
+    /// <summary>
+    /// checks whether the requesting user is an admin
+    /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <exception cref="BO.BlNotAuthorizedException"></exception>
+    public static void AssertAdmin(int requestingUserId)
+    {
+        if (requestingUserId != s_dal.Config.AdminId)
+        {
+            throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to perform this administrative action.");
+        }
+    }
+
+    /// <summary>
+    /// checks whether the requesting user is an admin or the target user itself
+    /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <param name="targetId"></param>
+    /// <exception cref="BO.BlNotAuthorizedException"></exception>
+    public static void AssertAdminOrSelf(int requestingUserId, int targetId)
+    {
+        // Check if the requesting user is neither the admin nor the target user
+        if (requestingUserId != s_dal.Config.AdminId && requestingUserId != targetId)
+        {
+            throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to access data for courier {targetId}.");
+        }
+    }
 
     #endregion Stage 4-7
 
@@ -159,7 +185,7 @@ internal static class AdminManager //stage 4
     public static void ThrowOnSimulatorIsRunning()
     {
         if (s_thread is not null)
-            throw new BO.BLTemporaryNotAvailableException("Cannot perform the operation since Simulator is running");
+            throw new BO.BlTemporaryNotAvailableException("Cannot perform the operation since Simulator is running");
     }
 
     [MethodImpl(MethodImplOptions.Synchronized)] //stage 7                                                 
@@ -198,7 +224,7 @@ internal static class AdminManager //stage 4
             //Add calls here to any logic simulation that was required in stage 7
             //for example: course registration simulation
             if (_simulateTask is null || _simulateTask.IsCompleted)//stage 7
-                _simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
+                //_simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
 
             //etc...
 

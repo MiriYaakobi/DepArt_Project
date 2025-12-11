@@ -2,44 +2,42 @@
 
 namespace Helpers;
 
+/// <summary>
+/// Manages order-related operations.
+/// </summary>
 internal static class OrderManager
 {
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// מבצעת בדיקות תקינות, ממירה כתובת לקואורדינטות, ויוצרת הזמנה חדשה ב-DAL.
+    /// Creates a new order after validating input and geocoding the address.
     /// </summary>
-    /// <param name="order">ישות BO.Order ליצירה.</param>
-    /// <exception cref="ArgumentException">אם נתוני ההזמנה אינם תקינים (כולל כתובת לא נמצאה).</exception>
+    /// <param name="order">BO.Order entity to create.</param>
+    /// <exception cref="ArgumentException">If the order data is invalid (including address not found).</exception>
     internal static void CreateOrder(BO.Order order)
     {
-        // 1. בדיקות תקינות קלט
-        if (string.IsNullOrEmpty(order.CustomerName) || order.CustomerName.Length < 2)
-            throw new ArgumentException("Customer name must contain at least 2 characters.");
-        if (string.IsNullOrEmpty(order.CustomerPhone) || order.CustomerPhone.Length != 10 || !order.CustomerPhone.All(char.IsDigit))
-            throw new ArgumentException("Phone number is invalid.");
-        if (string.IsNullOrWhiteSpace(order.Address))
-            throw new ArgumentException("Delivery address cannot be empty.");
+        // verify input validity
+        AssertOrderInputValidity(order);
 
-        // 2. Geocoding: המרת כתובת לקואורדינטות
-        var coordinates = Tools.GetCoordinatesOfAddressSync(order.Address);
+        // Geocoding the address to get coordinates
+        var coordinates = Tools.GetCoordinatesOfAddressSync(order.Address!);
         if (coordinates == null)
         {
-            // אם כתובת הלקוח לא תקינה, זורקים חריגה
+            // If the customer's address is invalid, throw an exception
             throw new ArgumentException($"Address '{order.Address}' is invalid or could not be found.");
         }
 
-        // 3. מיפוי (Mapping) ושמירה ב-DAL
+        // Mapping and saving to DAL
         DO.Order doOrder = new DO.Order
         (
-            Id: default, // ה-ID האמיתי יגיע מ-Dal.Config.NextOrderId
+            Id: default, // ID will be assigned by DAL
             TypeOfOrder: (DO.OrderType)order.TypeOfOrder,
-            Address: order.Address,
-            Latitude: coordinates.Value.Latitude, // הקואורדינטות שהתקבלו
+            Address: order.Address!,
+            Latitude: coordinates.Value.Latitude, // Using geocoded latitude
             Longitude: coordinates.Value.Longitude,
             CustomerName: order.CustomerName!,
             CustomerPhone: order.CustomerPhone!,
-            OrderOpeningTime: AdminManager.Now, // זמן פתיחה הוא שעון המערכת
+            OrderOpeningTime: AdminManager.Now,
             PackageDetails: order.PackageDetails,
             Description: order.Description
         );
@@ -48,26 +46,19 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// קוראת רשומת הזמנה מה-DAL, ממירה אותה ל-BO, ומשלבת סטטוסים לוגיים ומשלוחים.
+    /// Reads a single order by ID, calculating its statuses and related data.
     /// </summary>
     internal static BO.Order ReadOrder(int orderId)
     {
-        DO.Order doOrder;
-        try
-        {
-            doOrder = s_dal.Order.Read(orderId);
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            throw new InvalidOperationException($"Order with ID {orderId} does not exist.");
-        }
+        // use helper to get existing order or throw exception
+        DO.Order doOrder = GetExistingOrder(orderId);
 
-        // 2. חישוב סטטוסים לוגיים
+        // calculate statuses
         BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
         BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
         DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
 
-        // 3. חישוב AirDistance ו-RemainingTime
+        // calculate air distance
         double airDistance = Tools.GetAirDistance(
             s_dal.Config.CompenyLatitude ?? 0,
             s_dal.Config.CompenyLongitude ?? 0,
@@ -76,11 +67,11 @@ internal static class OrderManager
         );
         TimeSpan remainingDeliveryTime = maxDeliveryTime - AdminManager.Now;
 
-        // 4. אחזור פרטי משלוחים (DeliveryPerOrderInList)
+        // Retrieve shipping details (DeliveryPerOrderInList)
         IEnumerable<BO.DeliveryPerOrderInList> deliveryListCollection = MapDeliveryListForOrder(orderId);
         BO.DeliveryPerOrderInList? deliveryList = deliveryListCollection.FirstOrDefault();
 
-        // 5. מיפוי (Mapping) ל-BO
+        // map to BO.Order and return
         return new BO.Order
         {
             Id = doOrder.Id,
@@ -111,30 +102,31 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// קוראת את רשימת ההזמנות המלאה מ-DAL וממירה אותם לישויות רשימה (BO.OrderInList).
+    /// Reads all orders, calculating their statuses and related data for each.
     /// </summary>
     internal static IEnumerable<BO.OrderInList> ReadAllOrders()
     {
-        var dalOrders = s_dal.Order.ReadAll();
+        var dalOrders = s_dal.Order.ReadAll().ToList();
+        var companyCoords = GetCompanyCoordinates();
 
         return dalOrders.Select(doOrder =>
         {
             int orderId = doOrder.Id;
 
-            // חישוב סטטוסים
+            // calculate statuses
             BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
             BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
 
-            // 1. חישוב נתונים מצטברים:
+            // calculate total deliveries and handling duration
             int totalDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId).Count();
             TimeSpan totalHandlingDuration = TimeSpan.Zero; // TO_DO: נשאר 0 כיוון שדורש סיכום משלוחים סגורים (פרק 9)
 
-            // 2. חישוב זמנים ומרחקים:
+            // calculate remaining time and air distance
             DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
             TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
             double airDistance = Tools.GetAirDistance(
-                s_dal.Config.CompenyLatitude ?? 0,
-                s_dal.Config.CompenyLongitude ?? 0,
+                companyCoords.Latitude,
+                companyCoords.Longitude,
                 doOrder.Latitude,
                 doOrder.Longitude
             );
@@ -155,31 +147,23 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// מבצעת בדיקות תקינות ומעדכנת פרטים ניתנים לשינוי של הזמנה קיימת.
+    /// Updates an existing order after validating its status and input data.
     /// </summary>
-    /// <param name="order">ישות BO.Order עם הערכים המעודכנים.</param>
-    /// <exception cref="InvalidOperationException">אם ההזמנה לא נמצאה או סופקה/בוטלה.</exception>
+    /// <param name="order"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     internal static void UpdateOrder(BO.Order order)
     {
-        // 1. בדיקת קיום
-        DO.Order existingOrder;
-        try
-        {
-            existingOrder = s_dal.Order.Read(order.Id);
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            throw new InvalidOperationException($"Order with ID {order.Id} was not found for update.");
-        }
+        // check input validity
+        DO.Order existingOrder = GetExistingOrder(order.Id);
 
-        // 2. בדיקה לוגית: אסור לעדכן הזמנה אם היא כבר סופקה, סורבה או בוטלה
+        // logic check: only Open or InProgress orders can be updated
         BO.OrderStatus currentStatus = CalculateOrderStatus(order.Id);
         if (currentStatus == BO.OrderStatus.Delivered || currentStatus == BO.OrderStatus.Refused || currentStatus == BO.OrderStatus.Cancelled)
         {
             throw new InvalidOperationException($"Cannot update Order {order.Id}. Status is {currentStatus}.");
         }
 
-        // 3. עדכון ה-DO באמצעות with (רק השדות הרלוונטיים)
+        // update fields
         DO.Order updatedOrder = existingOrder with
         {
             TypeOfOrder = (DO.OrderType)order.TypeOfOrder,
@@ -190,26 +174,24 @@ internal static class OrderManager
             // שימו לב: Address, Latitude, Longitude, OrderOpeningTime אינם ניתנים לעדכון כאן
         };
 
-        // 4. קריאה ל-DAL לעדכון הרשומה
+        // call DAL to update
         s_dal.Order.Update(updatedOrder);
     }
 
-    // הוספה ל OrderManager.cs:
-
     /// <summary>
-    /// מוחקת הזמנה מהמערכת, רק אם אינה קשורה לאף רשומת משלוח.
+    /// Deletes an order from the system, only if it is not associated with any delivery records.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה למחיקה.</param>
-    /// <exception cref="InvalidOperationException">אם ההזמנה לא נמצאה או קשורה למשלוחים.</exception>
+    /// <param name="orderId">The ID of the order to delete.</param>
+    /// <exception cref="InvalidOperationException">If the order is not found or is associated with deliveries.</exception>
     internal static void DeleteOrder(int orderId)
     {
-        // 1. בדיקת תלות: אסור למחוק אם קיימת רשומת Delivery כלשהי (פתוחה או סגורה)
+        // check for existing deliveries
         if (s_dal.Delivery.ReadAll(d => d.OrderId == orderId).Any())
         {
             throw new InvalidOperationException($"Cannot delete Order {orderId}: order is associated with existing deliveries (history).");
         }
 
-        // 2. קריאה ל-DAL למחיקה 
+        // attempt deletion
         try
         {
             s_dal.Order.Delete(orderId);
@@ -221,39 +203,29 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// מחשב את זמן האספקה המירבי המותר להזמנה נתונה.
-    /// **מתודה זו פותרת את שגיאת הקומפילציה ב-CourierManager.**
+    /// Calculates the maximum allowed delivery time for a given order.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה.</param>
-    /// <returns>DateTime המייצג את זמן הסיום המקסימלי.</returns>
-    /// <exception cref="InvalidOperationException">אם ההזמנה לא נמצאת.</exception>
+    /// <param name="orderId">The ID of the order.</param>
+    /// <returns>DateTime representing the maximum end time.</returns>
+    /// <exception cref="InvalidOperationException">If the order is not found.</exception>
     internal static DateTime CalculateMaxDeliveryTime(int orderId)
     {
-        DO.Order doOrder;
-        try
-        {
-            // 1. קבלת ההזמנה
-            doOrder = s_dal.Order.Read(orderId);
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            // תרגום חריגה של DAL לחריגה לוגית של BL
-            throw new InvalidOperationException($"Order with ID={orderId} does not exist.");
-        }
+        // get existing order
+        DO.Order doOrder = GetExistingOrder(orderId);
 
-        // 2. קבלת טווח זמן האספקה המירבי מהתצורה
+        // get max delivery range from config
         TimeSpan maxTimeSpan = s_dal.Config.MaxDeliveryRange;
 
-        // 3. חישוב זמן אספקה מירבי (זמן הפתיחה + טווח מירבי)
+        // calculate maximum delivery time (opening time + max range)
         return doOrder.OrderOpeningTime.Add(maxTimeSpan);
     }
 
     /// <summary>
-    /// מתודת עזר: מחזירה את זמן סיום המשלוח המאוחר ביותר של הזמנה (אם סופקה או נסגרה).
+    /// Gets the last delivery end time for a given order.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה.</param>
-    /// <returns>DateTime של סיום המשלוח המאוחר ביותר.</returns>
-    /// <exception cref="InvalidOperationException">אם אין משלוחים סגורים להזמנה זו.</exception>
+    /// <param name="orderId">The ID of the order.</param>
+    /// <returns>DateTime representing the last delivery end time.</returns>
+    /// <exception cref="InvalidOperationException">If there are no closed deliveries for this order.</exception>
     internal static DateTime GetLastDeliveryEndTime(int orderId)
     {
         var closedDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue);
@@ -263,79 +235,80 @@ internal static class OrderManager
             throw new InvalidOperationException($"Order ID={orderId} has no closed deliveries.");
         }
 
-        return closedDeliveries.Max(d => d.DeliveryEndTime.Value);
+        return closedDeliveries.Max(d => d.DeliveryEndTime!.Value);
     }
 
     /// <summary>
-    /// מחשבת את סטטוס העמידה בזמנים (OnTime/InRisk/Late) של ההזמנה.
+    /// Calculates the schedule status (OnTime/InRisk/Late) of the order.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה.</param>
+    /// <param name="orderId">The ID of the order.</param>
     /// <returns>BO.ScheduleStatus</returns>
     internal static BO.ScheduleStatus CalculateScheduleStatus(int orderId)
     {
-        // קריאה ראשונה: לוודא שההזמנה קיימת
+        // first read: ensure order exists
         s_dal.Order.Read(orderId);
 
-        // מציאת משלוח פתוח (אם קיים)
+        // check for current open delivery
         DO.Delivery? currentDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime == null).FirstOrDefault();
 
         DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
-        DateTime now = AdminManager.Now; // שימוש בשעון המערכת
-        TimeSpan riskTimeSpan = s_dal.Config.RiskRange; // טווח הסיכון מהתצורה
+        DateTime now = AdminManager.Now; // use current clock time
+        TimeSpan riskTimeSpan = s_dal.Config.RiskRange; // risk time span from config
 
-        // 1. בדיקה אם ההזמנה סופקה
+        // check if order is closed or open
         if (currentDelivery == null && s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue).Any())
         {
             DateTime timeOfEnd = GetLastDeliveryEndTime(orderId);
 
             if (timeOfEnd > maxDeliveryTime)
             {
-                return BO.ScheduleStatus.Late; // סופקה באיחור
+                return BO.ScheduleStatus.Late; // provided late
             }
-            return BO.ScheduleStatus.OnTime; // סופקה בזמן
+            return BO.ScheduleStatus.OnTime; // provided on time
         }
-        else // 2. אם ההזמנה פתוחה או בטיפול
+        //if order is still open
+        else
         {
             TimeSpan timeRemaining = maxDeliveryTime - now;
 
             if (timeRemaining.TotalSeconds <= 0)
             {
-                return BO.ScheduleStatus.Late; // חרג מהזמן המירבי
+                return BO.ScheduleStatus.Late; // Exceeded maximum delivery time
             }
             if (timeRemaining <= riskTimeSpan)
             {
-                return BO.ScheduleStatus.InRisk; // בתוך טווח הסיכון
+                return BO.ScheduleStatus.InRisk; // in risk of being late
             }
-            return BO.ScheduleStatus.OnTime; // יש מספיק זמן
+            return BO.ScheduleStatus.OnTime; // there is sufficient time remaining
         }
     }
 
     /// <summary>
-    /// מחשבת את סטטוס ההזמנה הכללי (Open, InProgress, Delivered, Refused, Cancelled) על פי מצב המשלוחים שלה.
+    /// Calculates the current status of the order based on its delivery records.
     /// </summary>
-    /// <param name="orderId">מזהה ההזמנה.</param>
-    /// <returns>BO.OrderStatus</returns>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     internal static BO.OrderStatus CalculateOrderStatus(int orderId)
     {
-        // קריאה ראשונה: לוודא שההזמנה קיימת
+        // first read: ensure order exists
         s_dal.Order.Read(orderId);
 
-        // 1. מציאת משלוח פתוח
+        // find current open delivery
         DO.Delivery? currentDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime == null).FirstOrDefault();
         if (currentDelivery != null)
         {
-            return BO.OrderStatus.InProgress; // יש משלוח פתוח = בטיפול
+            return BO.OrderStatus.InProgress; // there is an ongoing delivery
         }
 
-        // 2. מציאת המשלוח הסגור האחרון
+        // find last closed delivery
         DO.Delivery? lastClosedDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue)
                                             .OrderByDescending(d => d.DeliveryEndTime)
                                             .FirstOrDefault();
 
-        // 3. קביעת הסטטוס על פי סוג סיום המשלוח האחרון
+        // determine status based on last closed delivery
         if (lastClosedDelivery == null)
         {
-            return BO.OrderStatus.Open; // אין משלוחים כלל = פתוחה
+            return BO.OrderStatus.Open; // no deliveries yet- order is open
         }
 
         switch (lastClosedDelivery.OrderClosedStatus)
@@ -349,17 +322,15 @@ internal static class OrderManager
 
             case DO.OrderEndStatus.InviterNotFound:
             case DO.OrderEndStatus.Failed:
-                // אם הסיום היה כשל או מזמין לא נמצא, ההזמנה חוזרת לסטטוס 'פתוחה' לטיפול מחדש.
+                // These statuses imply the order is still open for future delivery attempts
                 return BO.OrderStatus.Open;
             default:
                 return BO.OrderStatus.Open;
         }
     }
 
-    // הוספה ל OrderManager.cs
-
     /// <summary>
-    /// מתודת עזר: ממירה את רשומות ה-Delivery הסגורות של הזמנה לרשימת BO.DeliveryPerOrderInList.
+    /// Maps delivery records for a given order into BO.DeliveryPerOrderInList objects.
     /// </summary>
     internal static IEnumerable<BO.DeliveryPerOrderInList> MapDeliveryListForOrder(int orderId)
     {
@@ -367,11 +338,11 @@ internal static class OrderManager
 
         return closedDeliveries.Select(doDelivery =>
         {
-            // נדרשת קריאה לשליח כדי לקבל את השם
-            DO.Courier doCourier = s_dal.Courier.Read(doDelivery.CourierId);
+            // Get courier details
+            DO.Courier doCourier = s_dal.Courier.Read(doDelivery.CourierId)!;
 
-            // חישוב TotalHandlingDuration
-            TimeSpan totalHandlingDuration = doDelivery.DeliveryEndTime.Value - doDelivery.DeliveryStartTime;
+            // calculate TotalHandlingDuration
+            TimeSpan totalHandlingDuration = doDelivery.DeliveryEndTime!.Value - doDelivery.DeliveryStartTime;
 
             return new BO.DeliveryPerOrderInList
             {
@@ -380,12 +351,48 @@ internal static class OrderManager
                 Name = doCourier.Name,
                 TypeOfDelivery = (BO.DeliveryType)doCourier.TypeOfDelivery,
                 DeliveryStartTime = doDelivery.DeliveryStartTime,
-                OrderClosedStatus = (BO.OrderEndStatus?)doDelivery.OrderClosedStatus, //?
+                OrderClosedStatus = (BO.OrderEndStatus?)doDelivery.OrderClosedStatus, // is the cast safe?
                 DeliveryEndTime = doDelivery.DeliveryEndTime,
                 ActualDistance = doDelivery.ActualDistance,
-                TotalHandlingDuration = totalHandlingDuration // **השלמה**
+                TotalHandlingDuration = totalHandlingDuration
             };
         });
     }
 
+    /// <summary>
+    /// helper method to get existing order or throw exception if not found.
+    /// </summary>
+    private static DO.Order GetExistingOrder(int orderId)
+    {
+        try
+        {
+            return s_dal.Order.Read(orderId)!;
+        }
+        catch (DO.DalDoesNotExistException)
+        {
+            throw new InvalidOperationException($"Order with ID {orderId} does not exist.");
+        }
+    }
+
+    /// <summary>
+    /// helper method to validate order input data.
+    /// </summary>
+    private static void AssertOrderInputValidity(BO.Order order)
+    {
+        if (string.IsNullOrEmpty(order.CustomerName) || order.CustomerName.Length < 2)
+            throw new ArgumentException("Customer name must contain at least 2 characters.");
+        if (string.IsNullOrEmpty(order.CustomerPhone) || order.CustomerPhone.Length != 10 || !order.CustomerPhone.All(char.IsDigit))
+            throw new ArgumentException("Phone number is invalid.");
+        if (string.IsNullOrWhiteSpace(order.Address))
+            throw new ArgumentException("Delivery address cannot be empty.");
+    }
+
+    /// <summary>
+    /// helper method to get company coordinates from config.
+    /// </summary>
+    private static (double Latitude, double Longitude) GetCompanyCoordinates()
+    {
+        // Using null-coalescing operator to provide default values in case of null
+        return (s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0);
+    }
 }

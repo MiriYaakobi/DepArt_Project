@@ -74,7 +74,8 @@ public enum ScheduleStatus
 public enum UserRole
 {
     Courier,
-    Admin
+    Admin,
+    None
 }
 
 /// <summary>

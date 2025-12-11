@@ -10,8 +10,8 @@ public interface ICourier
 {
     BO.UserRole Login(int userId, string password);
     IEnumerable<BO.CourierInList> ReadAll(int requestingUserId, bool? isActive = null, BO.CourierFieldSort? sortBy = null);
-    BO.Courier? Read(int requestingUserId);
-    void Update(BO.Courier boCourier, int couruerId);
+    BO.Courier? Read(int requestingUserId, int courierId);
+    void Update(int requestingUserId, BO.Courier boCourier);
     void Delete(int requestingUserId, int courierId);
     void Create(int requestingUserId, BO.Courier boCourier);
 }
