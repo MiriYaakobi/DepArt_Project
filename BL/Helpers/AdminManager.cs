@@ -131,6 +131,33 @@ internal static class AdminManager //stage 4
             AdminManager.SetConfig(AdminManager.GetConfig()); //stage 5 - needed for update the PL
         }
     }
+    /// <summary>
+    /// checks whether the requesting user is an admin
+    /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <exception cref="BO.BlNotAuthorizedException"></exception>
+    public static void AssertAdmin(int requestingUserId)
+    {
+        if (requestingUserId != s_dal.Config.AdminId)
+        {
+            throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to perform this administrative action.");
+        }
+    }
+
+    /// <summary>
+    /// checks whether the requesting user is an admin or the target user itself
+    /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <param name="targetId"></param>
+    /// <exception cref="BO.BlNotAuthorizedException"></exception>
+    public static void AssertAdminOrSelf(int requestingUserId, int targetId)
+    {
+        // Check if the requesting user is neither the admin nor the target user
+        if (requestingUserId != s_dal.Config.AdminId && requestingUserId != targetId)
+        {
+            throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to access data for courier {targetId}.");
+        }
+    }
 
     #endregion Stage 4-7
 

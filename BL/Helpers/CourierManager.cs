@@ -59,7 +59,7 @@ internal static class CourierManager
             var stats = GetCourierStatistics(doCourier.Id);
 
             DO.Delivery? openDelivery = FindOpenDeliveryForCourier(doCourier.Id);
-            int? currentOrderId = openDelivery?.OrderId; 
+            int? currentOrderId = openDelivery?.OrderId;
 
             return new BO.CourierInList
             {
@@ -110,7 +110,7 @@ internal static class CourierManager
             StartWorkTime = doCourier.StartWorkTime,
             TotalOnTimeDeliveries = stats.DeliveredOnTime,
             TotalLateDeliveries = stats.DeliveredLate,
-            CurrentOrder = currentOrder 
+            CurrentOrder = currentOrder
         };
     }
 
@@ -353,5 +353,41 @@ internal static class CourierManager
             throw new ArgumentException("Password must be at least 6 characters long.");
         if (courier.MaxDistance.HasValue && courier.MaxDistance.Value <= 0)
             throw new ArgumentException("Max distance must be a positive value.");
+    }
+
+    /// <summary>
+    /// gets whether a courier is associated with any deliveries.
+    /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
+    internal static bool IsCourierUsed(int courierId)
+    {
+        // check for any deliveries linked to the courier
+        return s_dal.Delivery.ReadAll(d => d.CourierId == courierId).Any();
+    }
+
+    /// <summary>
+    /// sorts a collection of couriers based on the specified field.
+    /// </summary>
+    /// <param name="couriers"></param>
+    /// <param name="sortBy"></param>
+    /// <returns></returns>
+    public static IEnumerable<BO.CourierInList> SortCouriersBy(IEnumerable<BO.CourierInList> couriers,
+                                                                            BO.CourierFieldSort sortBy)
+    {
+        // sorting logic based on the specified field
+        return sortBy switch
+        {
+            BO.CourierFieldSort.Id => couriers.OrderBy(c => c.Id),
+            BO.CourierFieldSort.Name => couriers.OrderBy(c => c.Name),
+            BO.CourierFieldSort.IsActive => couriers.OrderBy(c => c.IsActive),
+            BO.CourierFieldSort.TypeOfDelivery => couriers.OrderBy(c => c.TypeOfDelivery),
+            BO.CourierFieldSort.StartWorkTime => couriers.OrderBy(c => c.StartWorkTime),
+            BO.CourierFieldSort.TotalOnTimeDeliveries => couriers.OrderByDescending(c => c.TotalOnTimeDeliveries),
+            BO.CourierFieldSort.TotalLateDeliveries => couriers.OrderBy(c => c.TotalLateDeliveries),
+
+            //default case
+            _ => couriers.OrderBy(c => c.Id)
+        };
     }
 }
