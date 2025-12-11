@@ -1,6 +1,10 @@
 ﻿using System.Collections;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Web;
+using System.Net.Http;
+using System.Linq;
 
 namespace Helpers;
 
@@ -12,6 +16,11 @@ namespace Helpers;
 /// required.</remarks>
 internal static class Tools
 {
+    // Static HttpClient instance for making HTTP requests
+    private static readonly HttpClient s_httpClient = new HttpClient();
+    // LocationIQ API key for geocoding and routing services
+    private const string apiKey = "912f217174197978d7da19cf22005ef920a4772b8c3df456d156f7d7cbb7fea5";
+
     /// <summary>
     /// Generates a string representation of the properties and their values for the specified object.
     /// In writing this method, we used AI for accurate and correct use of Reflection.
@@ -83,23 +92,24 @@ internal static class Tools
 
     /// <summary>
     /// Calculates the air distance between two geographical points using the Haversine formula.
+    /// We asked AI to create a code for us that calculates the difference between 2 coordinate points.
     /// </summary>
-    /// <param name="lat1">Latitude of point 1</param>
-    /// <param name="lon1">Longitude of point 1</param>
-    /// <param name="lat2">Latitude of point 2</param>
-    /// <param name="lon2">Longitude of point 2</param>
-    internal static double GetAirDistance(double lat1, double lon1, double lat2, double lon2)
+    /// <param name="latitude1">Latitude of point 1</param>
+    /// <param name="longitude1">Longitude of point 1</param>
+    /// <param name="latitude2">Latitude of point 2</param>
+    /// <param name="longitude2">Longitude of point 2</param>
+    internal static double GetAirDistance(double latitude1, double longitude1, double latitude2, double longitude2)
     {
         const double R = 6371; // Average radius of the Earth in km
 
         // Calculate the differences in coordinates in radians
-        double dLat = ToRadians(lat2 - lat1);
-        double dLon = ToRadians(lon2 - lon1);
+        double diffLatitude = ToRadians(latitude2 - latitude1);
+        double diffLongitude = ToRadians(longitude2 - longitude1);
 
         // Part A of the Haversine formula (calculate the angular distance)
-        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                   Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        double a = Math.Sin(diffLatitude / 2) * Math.Sin(diffLatitude / 2) +
+                   Math.Cos(ToRadians(latitude1)) * Math.Cos(ToRadians(latitude2)) *
+                   Math.Sin(diffLongitude / 2) * Math.Sin(diffLongitude / 2);
 
         // Part C of the formula (the central angle)
         double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
@@ -109,59 +119,161 @@ internal static class Tools
     }
 
     /// <summary>
-    /// מתודה סינכרונית לקבלת קואורדינטות מכתובת טקסטואלית, באמצעות שירות חיצוני.
-    /// בשלב זה, היא ממומשת כהחזרת ערך מדומה לצורך בדיקות.
+    /// Gets the geographical coordinates (latitude and longitude) for a given address using the LocationIQ API.
+    /// The code to perform the synchronous network read and decode the JSON from the Geocoding/Routing service (LocationIQ)
+    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling).
     /// </summary>
-    /// <param name="address">כתובת טקסטואלית</param>
-    /// <returns>טופל (Latitude, Longitude) או null אם הכתובת לא נמצאה.</returns>
     internal static (double Latitude, double Longitude)? GetCoordinatesOfAddressSync(string address)
     {
-        // *** קוד פניית רשת חיצונית לאתר Geocoding אמור להיות כאן ***
+        if (string.IsNullOrWhiteSpace(address))
+            return null;
 
-        // כרגע, לצורך המימוש הלוגי (דאגה לזריקת חריגות וטיפול ב-null):
-        if (string.IsNullOrWhiteSpace(address) || address.Contains("Invalid"))
-            return null; // כתובת לא נמצאה
-
-        // דוגמה לכתובת חוקית - מחזירה קואורדינטות קבועות
-        if (address.Contains("Default"))
+        try
         {
-            return (32.0641632, 34.7692375); // קואורדינטות דמיוניות
-        }
+            // encoding the address for URL
+            string encodedAddress = HttpUtility.UrlEncode(address);
 
-        // אם לא כתובת ברירת מחדל, מחזירים ערך דמה כללי
-        return (32.123456, 34.567890);
+            // Building the LocationIQ API URL (Forward Geocoding)
+            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={apiKey}&q={encodedAddress}&format=json";
+
+            // Performing a synchronous web request using s_httpClient.GetAsync(apiUrl).Result
+            // Throws an HttpRequestException if there is a network-level failure (e.g., Timeout)
+            HttpResponseMessage response = s_httpClient.GetAsync(apiUrl).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Parsing the JSON response
+                string resultJson = response.Content.ReadAsStringAsync().Result;
+
+                using (JsonDocument doc = JsonDocument.Parse(resultJson))
+                {
+                    if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
+                    {
+                        JsonElement firstResult = doc.RootElement[0];
+
+                        // Extracting the coordinates (lat/lon)
+                        if (firstResult.TryGetProperty("lat", out JsonElement latElement) &&
+                            firstResult.TryGetProperty("lon", out JsonElement lonElement) &&
+                            double.TryParse(latElement.GetString(), out double latitude) &&
+                            double.TryParse(lonElement.GetString(), out double longitude))
+                        {
+                            return (latitude, longitude);
+                        }
+                    }
+                }
+            }
+
+            // If the status code was not successful (e.g., 400 Bad Request, 403 Forbidden)
+            string errorContent = response.Content.ReadAsStringAsync().Result;
+            throw new InvalidOperationException($"Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
+        }
+        catch (HttpRequestException ex)
+        {
+            // Network error (e.g., no connection, Timeout), throw a transient system exception
+            throw new InvalidOperationException($"Network error connecting to Geocoding service: {ex.Message}");
+        }
+        catch (Exception ex) when (ex is JsonException || ex is InvalidOperationException)
+        {
+            // JSON parsing errors or errors thrown from the API
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Unexpected errors
+            throw new Exception($"An unexpected error occurred during geocoding: {ex.Message}");
+        }
     }
 
     /// <summary>
-    /// מתודה סינכרונית לקבלת מרחק נסיעה בפועל וזמן משוער בין שתי נקודות, בהתאם לסוג השילוח.
-    /// הסימולציה מניחה שמרחק הנסיעה בפועל גדול ב-20% מהמרחק האווירי.
+    /// gets the actual distance and estimated travel time between two geographical points using the LocationIQ Routing API.
+    /// The code to perform the synchronous network read and decode the JSON from the Geocoding/Routing service (LocationIQ)
+    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling).
     /// </summary>
+    /// <param name="startLat"></param>
+    /// <param name="startLon"></param>
+    /// <param name="endLat"></param>
+    /// <param name="endLon"></param>
+    /// <param name="shippingType"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="Exception"></exception>
     internal static (double ActualDistance, TimeSpan EstimatedTime)? GetActualDistanceAndEstimatedTimeSync(
-        double startLat, double startLon, double endLat, double endLon, DO.DeliveryType deliveryType)
+          double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
     {
-        var dalConfig = DalApi.Factory.Get.Config;
-        double averageSpeedKmH;
+        // Using the static instance we defined above: s_httpClient
+        var client = s_httpClient;
 
-        // 1. קביעת מהירות הנסיעה לפי סוג השילוח
-        switch (deliveryType)
+        // Determine the travel profile for the API based on the shipping type
+        string profile;
+        switch (shippingType)
         {
-            case DO.DeliveryType.Car: averageSpeedKmH = dalConfig.AverageVehicleSpeedKmH; break;
-            case DO.DeliveryType.Motorcycle: averageSpeedKmH = dalConfig.AverageMotorcycleSpeedKmH; break;
-            case DO.DeliveryType.Bicycle: averageSpeedKmH = dalConfig.AverageBicycleSpeedKmH; break;
-            case DO.DeliveryType.ByFoot: averageSpeedKmH = dalConfig.AverageByFootSpeedKmH; break;
-            default: throw new ArgumentException($"Unsupported delivery type: {deliveryType}.");
+            case BO.DeliveryType.Car:
+            case BO.DeliveryType.Motorcycle:
+                profile = "driving"; // LocationIQ uses "driving" for vehicles
+                break;
+            case BO.DeliveryType.Bicycle:
+                profile = "cycling";
+                break;
+            case BO.DeliveryType.ByFoot:
+                profile = "foot";
+                break;
+            default:
+                throw new ArgumentException($"Unsupported shipping type for routing: {shippingType}.");
         }
 
-        if (averageSpeedKmH <= 0) return null; // לא ניתן לחשב זמן ללא מהירות מוגדרת
+        try
+        {
+            // Building the API URL for LocationIQ Routing
+            // The location is in the format: lon1,lat1;lon2,lat2
+            string coordinates = $"{startLon},{startLat};{endLon},{endLat}";
+            string apiUrl = $"https://us1.locationiq.com/v1/directions/v2/route/{profile}/{coordinates}?key={apiKey}&overview=false";
 
-        // 2. חישוב מרחק בפועל (סימולציה)
-        double airDistance = GetAirDistance(startLat, startLon, endLat, endLon);
-        double actualDistance = airDistance * 1.2; // הנחה: מרחק בפועל גדול ב-20% מהאווירי
+            // Performing a synchronous network read
+            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
 
-        // 3. חישוב זמן משוער: זמן בשעות = מרחק / מהירות
-        double estimatedHours = actualDistance / averageSpeedKmH;
-        TimeSpan estimatedTime = TimeSpan.FromHours(estimatedHours);
+            if (response.IsSuccessStatusCode)
+            {
+                string resultJson = response.Content.ReadAsStringAsync().Result;
 
-        return (actualDistance, estimatedTime);
+                using (JsonDocument doc = JsonDocument.Parse(resultJson))
+                {
+                    // LocationIQ returns JSON with a "routes" field (array)
+                    if (doc.RootElement.TryGetProperty("routes", out JsonElement routesElement) &&
+                        routesElement.ValueKind == JsonValueKind.Array && routesElement.GetArrayLength() > 0)
+                    {
+                        JsonElement route = routesElement[0];
+
+                        if (route.TryGetProperty("distance", out JsonElement distanceElement) &&
+                            route.TryGetProperty("duration", out JsonElement durationElement) &&
+                            distanceElement.ValueKind == JsonValueKind.Number &&
+                            durationElement.ValueKind == JsonValueKind.Number)
+                        {
+                            // Extracting the data
+                            double actualDistanceMeters = distanceElement.GetDouble(); // meters
+                            double durationSeconds = durationElement.GetDouble();       // seconds
+
+                            // Unit conversion: meters to kilometers, seconds to TimeSpan
+                            double actualDistanceKm = actualDistanceMeters / 1000.0;
+                            TimeSpan estimatedTime = TimeSpan.FromSeconds(durationSeconds);
+
+                            return (actualDistanceKm, estimatedTime); // sending back the tuple
+                        }
+                    }
+                }
+            }
+
+            // If we reach here, the API did not return a successful route
+            string errorContent = response.Content.ReadAsStringAsync().Result;
+            throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException($"Network error connecting to Routing service: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"An unexpected error occurred during routing: {ex.Message}");
+        }
     }
 }

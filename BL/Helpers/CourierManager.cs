@@ -7,11 +7,11 @@ internal static class CourierManager
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// מבצעת בדיקות תקינות לוגיות ומוסיפה שליח חדש ל-DAL.
+    /// Creates a new courier in the system.
     /// </summary>
     internal static void CreateCourier(BO.Courier courier)
     {
-        // 1. בדיקות תקינות קלט (ArgumentException)
+        // Input validation (ArgumentException)
         if (string.IsNullOrEmpty(courier.Name) || courier.Name.Length < 2)
             throw new ArgumentException("Courier name must contain at least 2 characters.");
         if (string.IsNullOrEmpty(courier.Phone) || courier.Phone.Length != 10 || !courier.Phone.All(char.IsDigit))
@@ -21,7 +21,7 @@ internal static class CourierManager
         if (courier.MaxDistance.HasValue && courier.MaxDistance.Value <= 0)
             throw new ArgumentException("Max distance must be a positive value.");
 
-        // 2. בדיקת כפילות ID (InvalidOperationException)
+        // Check for duplicate ID (InvalidOperationException)
         try
         {
             s_dal.Courier.Read(courier.Id);
@@ -32,7 +32,7 @@ internal static class CourierManager
             // השליח לא קיים - תקין להמשיך
         }
 
-        // 3. מיפוי (Mapping) ושמירה ב-DAL
+        // Mapping BO to DO and creating the courier
         DO.Courier doCourier = new DO.Courier
         (
             Id: courier.Id,
@@ -40,31 +40,30 @@ internal static class CourierManager
             Phone: courier.Phone!,
             Email: courier.Email!,
             Password: courier.Password!,
-            IsActive: true, // ברירת מחדל: שליח חדש הוא פעיל
+            IsActive: true, // courier is active upon creation
             TypeOfDelivery: (DO.DeliveryType)courier.TypeOfDelivery,
-            StartWorkTime: AdminManager.Now, // זמן התחלת עבודה הוא שעון המערכת
+            StartWorkTime: AdminManager.Now, // Start work time is the system clock
             MaxDistance: courier.MaxDistance
         );
-
         s_dal.Courier.Create(doCourier);
     }
 
     /// <summary>
-    /// קוראת את רשימת השליחים המלאה מ-DAL וממירה אותם לישויות רשימה (BO.CourierInList).
+    /// Reads all couriers from the DAL and converts them to BO.CourierInList entities.
     /// </summary>
     internal static IEnumerable<BO.CourierInList> ReadAllCouriers(bool? isActive = null)
     {
-        // 1. קריאה מ-DAL וסינון לפי IsActive (אם נדרש)
+        // filter by isActive if provided
         var dalCouriers = s_dal.Courier.ReadAll(isActive.HasValue ? d => d.IsActive == isActive.Value : null);
 
-        // 2. מיפוי לישויות BO.CourierInList
+        // Mapping to BO.CourierInList entities
         return dalCouriers.Select(doCourier =>
         {
-            // חישוב סטטיסטיקות (דורש GetCourierStatistics)
+            // Calculate statistics
             var stats = GetCourierStatistics(doCourier.Id);
 
             DO.Delivery? openDelivery = FindOpenDeliveryForCourier(doCourier.Id);
-            int? currentOrderId = openDelivery?.OrderId;
+            int? currentOrderId = openDelivery?.OrderId; 
 
             return new BO.CourierInList
             {

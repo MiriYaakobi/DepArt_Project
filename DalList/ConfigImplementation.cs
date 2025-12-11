@@ -90,4 +90,9 @@ internal class ConfigImplementation : IConfig
         get => Config.AverageByFootSpeedKmH;
         set => Config.AverageByFootSpeedKmH = value;
     }
+    public string AdminPassword 
+    { 
+        get => Config.AdminPassword; 
+        set => Config.AdminPassword = value; 
+    }
 }
