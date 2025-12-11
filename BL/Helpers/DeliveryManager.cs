@@ -7,22 +7,16 @@ internal static class DeliveryManager
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// קוראת רשומת משלוח בודדת (פנימי).
+    /// Reads a single delivery record (internal).
     /// </summary>
     internal static DO.Delivery ReadDelivery(int deliveryId)
     {
-        try
-        {
-            return s_dal.Delivery.Read(deliveryId);
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            throw new InvalidOperationException($"Delivery with ID {deliveryId} does not exist.");
-        }
+        // Validate existence by calling the helper method.
+        return GetExistingDelivery(deliveryId);
     }
 
     /// <summary>
-    /// קוראת את כל רשומות המשלוח (פנימי).
+    /// Reads all delivery records, optionally filtered by a predicate (internal).
     /// </summary>
     internal static IEnumerable<DO.Delivery> ReadAllDeliveries(Func<DO.Delivery, bool>? predicate = null)
     {
@@ -48,4 +42,23 @@ internal static class DeliveryManager
         // הלוגיקה הזו תמומש במלואה בפרק 9 (מימוש OrderImplementation).
         throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// Helper method to get an existing delivery or throw an exception if it does not exist.
+    /// </summary>
+    /// <param name="deliveryId"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private static DO.Delivery GetExistingDelivery(int deliveryId)
+    {
+        try
+        {
+            return s_dal.Delivery.Read(deliveryId)!;
+        }
+        catch (DO.DalDoesNotExistException)
+        {
+            throw new InvalidOperationException($"Delivery with ID {deliveryId} does not exist.");
+        }
+    }
 }
+

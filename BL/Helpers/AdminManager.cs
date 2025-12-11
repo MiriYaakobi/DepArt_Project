@@ -90,15 +90,14 @@ internal static class AdminManager //stage 4
             s_dal.Config.CompenyLongitude = coordinates.Value.Longitude;
             configChanged = true;
         }
-        // 2. בדיקות תקינות לוגיות (חלקית)
+        // validation of speed values
         if (configuration.AverageVehicleSpeedKmH < configuration.AverageMotorcycleSpeedKmH)
             throw new ArgumentException("Vehicle speed must be higher than motorcycle speed.");
 
-        // 3. עדכון ה-DAL (השלמת כל השדות)
+        // update other fields
         if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
         { s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance; configChanged = true; }
-
-        //TO_DO: //stage 4 - **השלמה של שאר השדות:**
+    
         if (s_dal.Config.MaxDeliveryRange != configuration.MaxDeliveryRange) { s_dal.Config.MaxDeliveryRange = configuration.MaxDeliveryRange; configChanged = true; }
         if (s_dal.Config.RiskRange != configuration.RiskRange) { s_dal.Config.RiskRange = configuration.RiskRange; configChanged = true; }
         if (s_dal.Config.InactivityTimeRange != configuration.InactivityTimeRange) { s_dal.Config.InactivityTimeRange = configuration.InactivityTimeRange; configChanged = true; }
@@ -198,7 +197,7 @@ internal static class AdminManager //stage 4
             //Add calls here to any logic simulation that was required in stage 7
             //for example: course registration simulation
             if (_simulateTask is null || _simulateTask.IsCompleted)//stage 7
-                _simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
+                //_simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
 
             //etc...
 
