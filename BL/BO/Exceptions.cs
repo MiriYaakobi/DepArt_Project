@@ -42,13 +42,13 @@ public class BlInvalidDataException : BlException
 }
 
 [Serializable]
-public class BlCannotDeleteException : BlException
+public class BlTemporaryNotAvailableException : BlException
 {
-    public BlCannotDeleteException(string message) : base(message) { }
+    public BlTemporaryNotAvailableException(string message) : base(message) { }
 }
 
 [Serializable]
-public class BlInvalidDataException : BlException
+public class BlCannotDeleteException : BlException
 {
-    public BlInvalidDataException(string message) : base(message) { }
+    public BlCannotDeleteException(string message) : base(message) { }
 }
