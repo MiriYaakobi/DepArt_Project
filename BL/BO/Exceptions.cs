@@ -39,6 +39,7 @@ public class BlLoginFailedException : BlException
 public class BlInvalidDataException : BlException
 {
     public BlInvalidDataException(string message) : base(message) { }
+    public BlInvalidDataException(string message, Exception innerException) : base(message, innerException) { }
 }
 
 [Serializable]
@@ -52,3 +53,11 @@ public class BlCannotDeleteException : BlException
 {
     public BlCannotDeleteException(string message) : base(message) { }
 }
+
+[Serializable]
+public class BlInvalidOperationException : BlException
+{
+    public BlInvalidOperationException(string message) : base(message) { }
+    public BlInvalidOperationException(string message, Exception innerException) : base(message, innerException) { }
+}
+

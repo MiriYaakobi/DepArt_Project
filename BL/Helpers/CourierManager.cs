@@ -326,7 +326,7 @@ internal static class CourierManager
     /// <summary>
     /// helper method to get an existing courier or throw if not found.
     /// </summary>
-    private static DO.Courier GetExistingCourier(int courierId)
+    internal static DO.Courier GetExistingCourier(int courierId)
     {
         try
         {

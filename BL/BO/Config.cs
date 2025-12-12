@@ -21,4 +21,7 @@ public class Config
     public double AverageMotorcycleSpeedKmH { get; set; }
     public double AverageBicycleSpeedKmH { get; set; }
     public double AverageByFootSpeedKmH { get; set; }
+    //
+    int NextOrderId { get; set; }
+    int NextDeliveryId { get; set; }
 }
