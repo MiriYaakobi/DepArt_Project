@@ -141,5 +141,7 @@ public enum OpenOrderFieldSort
     Id,
     TimeLinessStatus,
     ExpectedDeliveryTime, //Actual time estimate
-    MaxDeliveryTime //Total time remaining
+    MaxDeliveryTime, //Total time remaining
+    AirDistance, // sorting by air distance
+    ActualDistance // sorting by actual distance
 }

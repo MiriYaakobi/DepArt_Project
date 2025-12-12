@@ -17,5 +17,6 @@ public class ClosedDeliveryInList
     public double? ActualDistance { get; init; }
     public TimeSpan TotalHandlingDuration { get; init; }
     public OrderEndStatus OrderClosedStatus { get; init; }
+    public DateTime? DeliveryEndTime { get; init; }
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }
