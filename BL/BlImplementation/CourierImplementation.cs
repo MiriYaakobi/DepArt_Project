@@ -15,6 +15,9 @@ internal class CourierImplementation : ICourier
         //access control: only admin can create couriers
         AdminManager.AssertAdmin(requestingUserId);
 
+        //validate courier data
+        CourierManager.ValidateCourierData(boCourier);
+
         try
         {
             CourierManager.CreateCourier(boCourier);
@@ -118,16 +121,14 @@ internal class CourierImplementation : ICourier
         //get the list of couriers with optional filtering
         IEnumerable<BO.CourierInList> couriers = CourierManager.ReadAllCouriers(isActive);
 
-        //apply sorting if specified
-        if (!sortBy.HasValue)
+        //sort the list if a sort field is provided
+        if (sortBy.HasValue)
+        {
+            couriers = CourierManager.SortCouriersBy(couriers, sortBy.Value);
+        }
+        else
         {
             couriers = couriers.OrderBy(c => c.Id);
-        }
-        
-        else if (sortBy.HasValue)
-        {
-            //sort the couriers based on the specified field
-            couriers = CourierManager.SortCouriersBy(couriers, sortBy.Value);
         }
 
         return couriers;
@@ -143,6 +144,9 @@ internal class CourierImplementation : ICourier
     {
         //access control: only admin or the courier themselves can update the details
         AdminManager.AssertAdminOrSelf(requestingUserId, boCourier.Id);
+
+        //validate courier data
+        CourierManager.ValidateCourierData(boCourier);
 
         try
         {

@@ -1,4 +1,5 @@
 ﻿using DalApi;
+using System.Text.RegularExpressions;
 
 namespace Helpers;
 
@@ -21,11 +22,10 @@ internal static class CourierManager
         try
         {
             s_dal.Courier.Read(courier.Id);
-            throw new InvalidOperationException($"Courier with ID {courier.Id} already exists.");
+            throw new BO.BlAlreadyExistsException($"Courier with ID {courier.Id} already exists.");
         }
-        catch (DO.DalDoesNotExistException)
+        catch (BO.BlAlreadyExistsException)
         {
-            // השליח לא קיים - תקין להמשיך
         }
 
         // Mapping BO to DO and creating the courier
@@ -36,17 +36,19 @@ internal static class CourierManager
             Phone: courier.Phone!,
             Email: courier.Email!,
             Password: courier.Password!,
-            IsActive: true, // courier is active upon creation
+            IsActive: true,
             TypeOfDelivery: (DO.DeliveryType)courier.TypeOfDelivery,
-            StartWorkTime: AdminManager.Now, // Start work time is the system clock
+            StartWorkTime: AdminManager.Now,
             MaxDistance: courier.MaxDistance
         );
         s_dal.Courier.Create(doCourier);
     }
 
     /// <summary>
-    /// Reads all couriers from the DAL and converts them to BO.CourierInList entities.
+    /// reads all couriers from the DAL, maps them to BO, and attaches statistical data.
     /// </summary>
+    /// <param name="isActive"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.CourierInList> ReadAllCouriers(bool? isActive = null)
     {
         // filter by isActive if provided
@@ -73,12 +75,13 @@ internal static class CourierManager
                 CurrentOrderId = currentOrderId
             };
         });
-        // TO_DO: המיון הלוגי (sort) ימומש בממשק ICourier.ReadAll, לאחר קבלת ה-IEnumerable.
     }
 
     /// <summary>
-    /// Reads a courier record from the DAL, maps it to BO, and attaches logical and statistical data.
+    /// reads a specific courier by ID, including statistics and current order if any.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
     internal static BO.Courier ReadCourier(int courierId)
     {
         // Retrieve existing courier or throw if not found by calling helper method
@@ -115,8 +118,9 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// Updates an existing courier's information in the system.
+    /// updates an existing courier's information.
     /// </summary>
+    /// <param name="courier"></param>
     internal static void UpdateCourier(BO.Courier courier)
     {
         // retrieve existing courier or throw if not found by calling helper method
@@ -141,14 +145,16 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// Deletes a courier from the system after checking for dependencies.
+    /// deletes a courier if they have no associated deliveries.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     internal static void DeleteCourier(int courierId)
     {
         // check for existing deliveries
         if (s_dal.Delivery.ReadAll(d => d.CourierId == courierId).Any())
         {
-            throw new InvalidOperationException($"Cannot delete Courier {courierId}: courier is associated with existing deliveries (history).");
+            throw new BO.BlCannotDeleteException($"Cannot delete Courier {courierId}: courier is associated with existing deliveries (history).");
         }
 
         // perform deletion
@@ -156,15 +162,17 @@ internal static class CourierManager
         {
             s_dal.Courier.Delete(courierId);
         }
-        catch (DO.DalDoesNotExistException)
+        catch (BO.BlDoesNotExistException)
         {
-            throw new InvalidOperationException($"Courier with ID {courierId} does not exist and cannot be deleted.");
+            throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist and cannot be deleted.");
         }
     }
 
     /// <summary>
-    /// helper method to get the last activity time of a courier based on their deliveries.
+    /// gets the last activity time of a courier based on their deliveries.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
     internal static DateTime? GetLastActivityTime(int courierId)
     {
         // assume using System.Linq; is present
@@ -178,8 +186,10 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// called by AdminManager.UpdateClock to perform periodic updates on couriers based on inactivity.
+    /// called by the AdminManager periodically to update courier activity statuses.
     /// </summary>
+    /// <param name="oldClock"></param>
+    /// <param name="newClock"></param>
     internal static void PeriodicCourierUpdates(DateTime oldClock, DateTime newClock)
     {
         // check all couriers for inactivity
@@ -187,6 +197,7 @@ internal static class CourierManager
         TimeSpan inactivityTimeSpan = s_dal.Config.InactivityTimeRange;
         if (inactivityTimeSpan == TimeSpan.Zero) return;
 
+        //check each courier for inactivity and update status if needed
         foreach (var doCourier in allCouriers)
         {
             if (doCourier.IsActive)
@@ -202,8 +213,10 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// Calculates delivery statistics for a given courier.
+    /// calculates the number of on-time and late deliveries for a courier.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
     internal static (int DeliveredOnTime, int DeliveredLate) GetCourierStatistics(int courierId)
     {
         // retrieve all completed deliveries for the courier
@@ -233,16 +246,20 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// helper method to find an open delivery for a given courier.
+    /// finds an open delivery (in-progress) for a given courier.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
     internal static DO.Delivery? FindOpenDeliveryForCourier(int courierId)
     {
         return s_dal.Delivery.ReadAll(d => d.CourierId == courierId && d.DeliveryEndTime == null).FirstOrDefault();
     }
 
     /// <summary>
-    /// Maps an open delivery to an in-progress order.
+    /// maps an open DO.Delivery to a BO.OrderInProgress entity.
     /// </summary>
+    /// <param name="openDelivery"></param>
+    /// <returns></returns>
     internal static BO.OrderInProgress MapOpenDeliveryToOrderInProgress(DO.Delivery openDelivery)
     {
         // read base entities
@@ -289,8 +306,12 @@ internal static class CourierManager
     }
 
     /// <summary>
-    /// Authenticates a user (admin or courier) based on provided credentials.
+    /// authenticates a user and returns their role.
     /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     internal static BO.UserRole Login(int userId, string password)
     {
         // first, check if the user is admin
@@ -314,18 +335,21 @@ internal static class CourierManager
                 return BO.UserRole.Courier;
             }
         }
-        catch (DO.DalDoesNotExistException) // if courier not found
+        catch (BO.BlDoesNotExistException) // if courier not found
         {
             // continue to next step to throw a general failure exception.
         }
 
         // if neither admin nor courier login succeeded
-        throw new ArgumentException("Login failed: Invalid ID or password.");
+        throw new BO.BlLoginFailedException("Login failed: Invalid ID or password.");
     }
 
     /// <summary>
-    /// helper method to get an existing courier or throw if not found.
+    /// gets an existing courier or throws if not found.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private static DO.Courier GetExistingCourier(int courierId)
     {
         try
@@ -333,26 +357,28 @@ internal static class CourierManager
             // retrieve existing courier
             return s_dal.Courier.Read(courierId)!;
         }
-        catch (DO.DalDoesNotExistException)
+        catch (BO.BlDoesNotExistException)
         {
             // courier not found
-            throw new InvalidOperationException($"Courier with ID {courierId} does not exist.");
+            throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist.");
         }
     }
 
     /// <summary>
-    /// helper method to validate courier input data.
+    /// asserts the validity of courier input data.
     /// </summary>
+    /// <param name="courier"></param>
+    /// <exception cref="ArgumentException"></exception>
     private static void AssertCourierInputValidity(BO.Courier courier)
     {
         if (string.IsNullOrEmpty(courier.Name) || courier.Name.Length < 2)
-            throw new ArgumentException("Courier name must contain at least 2 characters.");
+            throw new BO.BlInvalidDataException("Courier name must contain at least 2 characters.");
         if (string.IsNullOrEmpty(courier.Phone) || courier.Phone.Length != 10 || !courier.Phone.All(char.IsDigit))
-            throw new ArgumentException("Phone number is invalid.");
+            throw new BO.BlInvalidDataException("Phone number is invalid.");
         if (string.IsNullOrEmpty(courier.Password) || courier.Password.Length < 6)
-            throw new ArgumentException("Password must be at least 6 characters long.");
+            throw new BO.BlInvalidDataException("Password must be at least 6 characters long.");
         if (courier.MaxDistance.HasValue && courier.MaxDistance.Value <= 0)
-            throw new ArgumentException("Max distance must be a positive value.");
+            throw new BO.BlInvalidDataException("Max distance must be a positive value.");
     }
 
     /// <summary>
@@ -389,5 +415,73 @@ internal static class CourierManager
             //default case
             _ => couriers.OrderBy(c => c.Id)
         };
+    }
+
+    /// <summary>
+    /// Validates the data of a BO.Courier object.
+    /// </summary>
+    /// <param name="boCourier"></param>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
+    internal static void ValidateCourierData(BO.Courier boCourier)
+    {
+        // Validate ID is a 9-digit number
+        if (boCourier.Id < 100000000 || boCourier.Id > 999999999)
+        {
+            throw new BO.BlInvalidDataException($"ID must be a 9-digit number");
+        }
+
+        // Validate Name
+        if (string.IsNullOrWhiteSpace(boCourier.Name) || boCourier.Name.Length < 2)
+        {
+            throw new BO.BlInvalidDataException($"Courier name must contain at least 2 characters.");
+        }
+
+        // Validate Phone (10 digits, starts with 0)
+        const string phonePattern = @"^0\d{9}$";
+        if (string.IsNullOrEmpty(boCourier.Phone) || !Regex.IsMatch(boCourier.Phone, phonePattern))
+        {
+            throw new BO.BlInvalidDataException($"Phone number '{boCourier.Phone}' is invalid. Must be 10 digits starting with 0.");
+        }
+
+        // Validate Email format
+        const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        if (string.IsNullOrEmpty(boCourier.Email) || !Regex.IsMatch(boCourier.Email, emailPattern))
+        {
+            throw new BO.BlInvalidDataException($"Email address '{boCourier.Email}' is not in a valid format.");
+        }
+
+        // Validate Password (at least 8 characters)
+        if (string.IsNullOrEmpty(boCourier.Password) || boCourier.Password.Length < 8)
+        {
+            throw new BO.BlInvalidDataException($"Password must contain at least 8 characters.");
+        }
+
+        // Validate MaxDistance
+        if (boCourier.MaxDistance.HasValue)
+        {
+            if (boCourier.MaxDistance.Value <= 0)
+            {
+                throw new BO.BlInvalidDataException($"Maximum distance must be a positive number.");
+            }
+
+            // Retrieve current configuration
+            BO.Config currentConfig = AdminManager.GetConfig();
+
+            //if the company has a limit for max delivery distance, ensure courier's max distance does not exceed it
+            if (currentConfig.DeliveryMaxDistance.HasValue)
+            {
+                if (boCourier.MaxDistance.Value > currentConfig.DeliveryMaxDistance.Value)
+                {
+                    throw new BO.BlInvalidDataException(
+                        $"Courier's max distance ({boCourier.MaxDistance.Value} km) cannot exceed the company's max distance ({currentConfig.DeliveryMaxDistance.Value} km).");
+                }
+            }
+        }
+
+        // Validate TypeOfDelivery
+        if (!Enum.IsDefined(typeof(BO.DeliveryType), boCourier.TypeOfDelivery))
+        {
+            throw new BO.BlInvalidDataException($"The provided Delivery Type ({boCourier.TypeOfDelivery}) is not a valid option.");
+        }
     }
 }
