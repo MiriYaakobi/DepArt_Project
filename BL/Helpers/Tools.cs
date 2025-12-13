@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using BO;
+using System.Collections;
+using System.Security.Cryptography;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Web;
-using System.Net.Http;
-using System.Linq;
 
 namespace Helpers;
 
@@ -275,5 +275,49 @@ internal static class Tools
         {
             throw new Exception($"An unexpected error occurred during routing: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// a function that hashes a password using SHA256.
+    /// </summary>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    /// <exception cref="BlInvalidDataException"></exception>
+    internal static string HashPassword(string password)
+    {
+        if (string.IsNullOrEmpty(password))
+        {
+            throw new BlInvalidDataException("Password cannot be empty");
+        }
+
+        //use SHA256 to hash the password
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            //Convert the password to byte array and computing the hash
+            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            // Convert byte array to a hexadecimal string for saving in the database
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                //format each byte as a two-digit hexadecimal string
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+    /// <summary>
+    /// verifies if the entered password matches the stored hashed password.
+    /// </summary>
+    /// <param name="enteredPassword"></param>
+    /// <param name="storedHash"></param>
+    /// <returns></returns>
+    internal static bool VerifyPassword(string enteredPassword, string storedHash)
+    {
+        string hashedEnteredPassword = HashPassword(enteredPassword);
+
+        //compare the hashed entered password with the stored hash
+        return hashedEnteredPassword == storedHash;
     }
 }
