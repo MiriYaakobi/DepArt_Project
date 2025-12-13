@@ -17,5 +17,7 @@ public class OrderInList
     public TimeSpan RemainingTime { get; init; }
     public TimeSpan TotalHandlingDuration { get; init; }
     public int TotalDeliveries { get; init; }
+    public DateTime OrderOpeningTime { get; init; }
+    public DateTime MaxDeliveryTime { get; init; } // added for use in OrderManager.FilterOrdersBy
     public override string ToString() => this.ToStringProperty(); // Uses Helpers.ToStringProperty extension method
 }

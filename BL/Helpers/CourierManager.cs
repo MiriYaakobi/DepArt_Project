@@ -347,6 +347,7 @@ internal static class CourierManager
     /// <summary>
     /// gets an existing courier or throws if not found.
     /// </summary>
+    internal static DO.Courier GetExistingCourier(int courierId)
     /// <param name="courierId"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
