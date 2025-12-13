@@ -1,6 +1,5 @@
 ﻿namespace BlImplementation;
 using BLApi;
-using BO;
 using System;
 using Helpers;
 
@@ -56,16 +55,16 @@ internal class OrderImplementation : IOrder
             // ReadOrder handles DAL-level existence check and maps the full BO entity
             boOrder = OrderManager.ReadOrder(orderId);
         }
-        catch (BlDoesNotExistException ex)
+        catch (BO.BlDoesNotExistException ex)
         {
             // Translates exception if the order does not exist
-            throw new BlDoesNotExistException($"Order ID {orderId} was not found.", ex);
+            throw new BO.BlDoesNotExistException($"Order ID {orderId} was not found.", ex);
         }
 
         // check if the order is not in 'Open' status, it cannot be chosen.
         if (boOrder.StatusOfOrder != BO.OrderStatus.Open)
         {
-            throw new BlInvalidOperationException($"Order {orderId} cannot be chosen: current status is {boOrder.StatusOfOrder}. Only 'Open' orders are eligible for assignment.");
+            throw new BO.BlInvalidOperationException($"Order {orderId} cannot be chosen: current status is {boOrder.StatusOfOrder}. Only 'Open' orders are eligible for assignment.");
         }
 
         // courier existence and status check
@@ -75,16 +74,16 @@ internal class OrderImplementation : IOrder
             // ReadCourier handles DAL-level existence check and maps the full BO entity
             boCourier = CourierManager.ReadCourier(courierId);
         }
-        catch (BlDoesNotExistException ex)
+        catch (BO.BlDoesNotExistException ex)
         {
             // Translates exception if the courier does not exist
-            throw new BlDoesNotExistException($"Courier ID {courierId} was not found.", ex);
+            throw new BO.BlDoesNotExistException($"Courier ID {courierId} was not found.", ex);
         }
 
         // Courier must be active to accept a new delivery.
         if (!boCourier.IsActive)
         {
-            throw new BlInvalidOperationException($"Courier {courierId} is currently inactive and cannot accept new orders.");
+            throw new BO.BlInvalidOperationException($"Courier {courierId} is currently inactive and cannot accept new orders.");
         }
 
         // All validations passed, proceed to create the Delivery record.
@@ -174,20 +173,6 @@ internal class OrderImplementation : IOrder
         // conform to business logic: orders cannot be deleted, only cancelled
         throw new BO.BlInvalidOperationException($"Order ID {orderId} cannot be deleted from the system due to business logic (only cancellation is allowed).");
 
-        /* // אם היינו צריכים לממש מחיקה אמיתית, היינו משתמשים בלוגיקה הבאה:
-        // try
-        // {
-        //     OrderManager.DeleteOrder(orderId);
-        // }
-        // catch (BO.BlDoesNotExistException)
-        // {
-        //     throw;
-        // }
-        // catch (BO.BlInvalidOperationException ex)
-        // {
-        //     throw; // נזרק אם יש משלוחים קשורים
-        // }
-        */
     }
 
     /// <summary>

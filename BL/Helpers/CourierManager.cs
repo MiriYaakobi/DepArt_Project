@@ -1,6 +1,7 @@
 ﻿using DalApi;
 using System.Text.RegularExpressions;
 
+
 namespace Helpers;
 
 /// <summary>
@@ -16,16 +17,19 @@ internal static class CourierManager
     internal static void CreateCourier(BO.Courier courier)
     {
         // Validate input by calling the helper method
-        AssertCourierInputValidity(courier);
+        ValidateCourierData(courier);
+
+        string hashedPassword = Tools.HashPassword(courier.Password!);
 
         // Check for duplicate ID (InvalidOperationException)
         try
         {
             s_dal.Courier.Read(courier.Id);
-            throw new BO.BlAlreadyExistsException($"Courier with ID {courier.Id} already exists.");
+            throw new DO.DalDoesNotExistException($"Courier with ID {courier.Id} already exists.");
         }
-        catch (BO.BlAlreadyExistsException)
+        catch (DO.DalDoesNotExistException)
         {
+
         }
 
         // Mapping BO to DO and creating the courier
@@ -35,7 +39,7 @@ internal static class CourierManager
             Name: courier.Name!,
             Phone: courier.Phone!,
             Email: courier.Email!,
-            Password: courier.Password!,
+            Password: hashedPassword,
             IsActive: true,
             TypeOfDelivery: (DO.DeliveryType)courier.TypeOfDelivery,
             StartWorkTime: AdminManager.Now,
@@ -106,7 +110,7 @@ internal static class CourierManager
             Name = doCourier.Name,
             Phone = doCourier.Phone,
             Email = doCourier.Email,
-            Password = doCourier.Password,
+            Password = " ",
             IsActive = doCourier.IsActive,
             MaxDistance = doCourier.MaxDistance,
             TypeOfDelivery = (BO.DeliveryType)doCourier.TypeOfDelivery,
@@ -126,8 +130,8 @@ internal static class CourierManager
         // retrieve existing courier or throw if not found by calling helper method
         DO.Courier existingCourier = GetExistingCourier(courierId: courier.Id);
 
-        // validate input by calling the helper method
-        AssertCourierInputValidity(courier);
+        // determine password to store
+        string passwordToStore = string.IsNullOrEmpty(courier.Password) ? existingCourier.Password : Tools.HashPassword(courier.Password);
 
         // map updated fields
         DO.Courier updatedCourier = existingCourier with
@@ -135,7 +139,7 @@ internal static class CourierManager
             Name = courier.Name!,
             Phone = courier.Phone!,
             Email = courier.Email!,
-            Password = courier.Password!,
+            Password = passwordToStore,
             TypeOfDelivery = (DO.DeliveryType)courier.TypeOfDelivery,
             MaxDistance = courier.MaxDistance
         };
@@ -162,9 +166,9 @@ internal static class CourierManager
         {
             s_dal.Courier.Delete(courierId);
         }
-        catch (BO.BlDoesNotExistException)
+        catch (DO.DalDoesNotExistException)
         {
-            throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist and cannot be deleted.");
+            throw;
         }
     }
 
@@ -317,7 +321,8 @@ internal static class CourierManager
         // first, check if the user is admin
         if (userId == s_dal.Config.AdminId)
         {
-            if (password == s_dal.Config.AdminPassword)
+            if (Tools.VerifyPassword(password, s_dal.Config.AdminPassword)
+)
             {
                 return BO.UserRole.Admin;
             }
@@ -329,9 +334,9 @@ internal static class CourierManager
             // trying to read the courier record
             DO.Courier doCourier = s_dal.Courier.Read(userId)!;
 
-            if (doCourier.Password == password)
+            // verify the password
+            if (Tools.VerifyPassword(password, doCourier.Password))
             {
-                // successful courier login
                 return BO.UserRole.Courier;
             }
         }
@@ -347,39 +352,21 @@ internal static class CourierManager
     /// <summary>
     /// gets an existing courier or throws if not found.
     /// </summary>
-    internal static DO.Courier GetExistingCourier(int courierId)
     /// <param name="courierId"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static DO.Courier GetExistingCourier(int courierId)
+    internal static DO.Courier GetExistingCourier(int courierId)
     {
         try
         {
             // retrieve existing courier
             return s_dal.Courier.Read(courierId)!;
         }
-        catch (BO.BlDoesNotExistException)
+        catch (DO.DalDoesNotExistException)
         {
             // courier not found
-            throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist.");
+            throw;
         }
-    }
-
-    /// <summary>
-    /// asserts the validity of courier input data.
-    /// </summary>
-    /// <param name="courier"></param>
-    /// <exception cref="ArgumentException"></exception>
-    private static void AssertCourierInputValidity(BO.Courier courier)
-    {
-        if (string.IsNullOrEmpty(courier.Name) || courier.Name.Length < 2)
-            throw new BO.BlInvalidDataException("Courier name must contain at least 2 characters.");
-        if (string.IsNullOrEmpty(courier.Phone) || courier.Phone.Length != 10 || !courier.Phone.All(char.IsDigit))
-            throw new BO.BlInvalidDataException("Phone number is invalid.");
-        if (string.IsNullOrEmpty(courier.Password) || courier.Password.Length < 6)
-            throw new BO.BlInvalidDataException("Password must be at least 6 characters long.");
-        if (courier.MaxDistance.HasValue && courier.MaxDistance.Value <= 0)
-            throw new BO.BlInvalidDataException("Max distance must be a positive value.");
     }
 
     /// <summary>

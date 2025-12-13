@@ -21,5 +21,7 @@ public interface IConfig
     double AverageMotorcycleSpeedKmH { get; set; }
     double AverageBicycleSpeedKmH { get; set; }
     double AverageByFootSpeedKmH { get; set; }
+    int NextDeliveryId { get; }
+    int NextOrderId { get; }
     void Reset();
 }

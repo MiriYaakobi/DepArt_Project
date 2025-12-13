@@ -2,9 +2,9 @@
 using BLApi;
 internal class Bl : IBl
 {
-    public ICourier Courier => throw new NotImplementedException();
+    public ICourier Courier { get; } = new CourierImplementation();
 
-    public IOrder Order => throw new NotImplementedException();
+    public IOrder Order { get; } = new OrderImplementation();
 
-    public IAdmin Admin => throw new NotImplementedException();
+    public IAdmin Admin { get; } = new AdminImplementation();
 }

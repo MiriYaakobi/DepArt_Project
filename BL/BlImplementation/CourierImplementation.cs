@@ -34,21 +34,23 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
-    /// <exception cref="BO.BlCannotDeleteException"></exception>
     /// <exception cref="BO.BlDoesNotExistException"></exception>
     public void Delete(int requestingUserId, int courierId)
     {
         //access control: only admin can delete couriers
         AdminManager.AssertAdmin(requestingUserId);
 
-        //check if courier is used in any order
+        // check if the courier has handled any orders
         if (CourierManager.IsCourierUsed(courierId))
+        {
             throw new BO.BlCannotDeleteException($"Cannot delete courier {courierId} because they have handled or are currently handling orders.");
+        }
 
         try
         {
             CourierManager.DeleteCourier(courierId);
         }
+
         catch (DO.DalDoesNotExistException ex)
         {
             throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist.", ex);
@@ -56,7 +58,7 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// login method for the users
+    /// logs in a courier using their ID and password
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="password"></param>
@@ -73,22 +75,15 @@ internal class CourierImplementation : ICourier
         // attempt to login
         BO.UserRole role = CourierManager.Login(userId, password);
 
-        // check if login was successful
-        if (role == BO.UserRole.None)
-        {
-            throw new BO.BlLoginFailedException($"Login failed for user ID {userId}. User not found or incorrect password.");
-        }
-
         return role;
     }
 
     /// <summary>
-    /// gets the details of a specific courier
+    /// reads the details of a specific courier
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
     /// <returns></returns>
-    /// <exception cref="BO.BlDoesNotExistException"></exception>
     public BO.Courier? Read(int requestingUserId, int courierId)
     {
         //access control: only admin or the courier themselves can read the details
@@ -97,7 +92,7 @@ internal class CourierImplementation : ICourier
         //get the courier details
         BO.Courier? boCourier = CourierManager.ReadCourier(courierId);
 
-        //check if courier exists
+        //handle case where courier does not exist
         if (boCourier == null)
         {
             throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist.");
@@ -107,7 +102,7 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// gets a list of couriers, with optional filtering and sorting
+    /// reads all couriers with optional filtering and sorting
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="isActive"></param>
@@ -148,10 +143,12 @@ internal class CourierImplementation : ICourier
         //validate courier data
         CourierManager.ValidateCourierData(boCourier);
 
+        //validate courier data
         try
         {
             CourierManager.UpdateCourier(boCourier);
         }
+
         catch (DO.DalDoesNotExistException ex)
         {
             throw new BO.BlDoesNotExistException($"Courier with ID {boCourier.Id} does not exist.", ex);
