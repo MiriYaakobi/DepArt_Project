@@ -86,7 +86,9 @@ public enum TimeUnit
 {
     Minutes,
     Hours,
-    Days
+    Days,
+    Months,
+    Years
 }
 
 /// <summary>

@@ -4,20 +4,19 @@ namespace BlTest;
 
 internal class Program
 {
-    static readonly IBl s_bl = BLApi.Factory.Get();
+    static readonly IBl s_bl = Factory.Get();
     private enum MainMenuOptions
     {
         Exit,
-        Courier,
-        Order,
-        Delivery,
         Admin,
-        InitializeData,
+        Courier,
+        Order
     }
 
-    private enum CrudMenuOptions
+    private enum CurierMenuOptions
     {
         Exit,
+        Login,
         Create,
         Read,
         ReadAll,
@@ -25,66 +24,134 @@ internal class Program
         Delete
     }
 
+    private enum OrderMenuOptions
+    {
+        Exit,
+        Create,
+        Read,
+        ReadAll,
+        Update,
+        Delete,
+        Cancel,
+        OrderSummary,
+        CompleteDelivery,
+        ChooseOrder,
+        ClosedDeliveries,
+        ReadAllOpenOrders
+    }
+
     private enum AdminMenuOptions
     {
         Exit,
-        AdvanceClock,
+        Reset,
+        Initialize,
+        GetClock,
+        ForwardClock,
+        GetConfig,
+        SetConfig
     }
+
+    private static int AdminID = 123456782; // Default Admin ID for testing
 
     private static MainMenuOptions ShowMainMenu()
     {
         Console.WriteLine("\n--- MAIN MENU ---");
         Console.WriteLine("0: Exit");
-        Console.WriteLine("1: Courier Management");
-        Console.WriteLine("2: Order Management");
-        Console.WriteLine("3: Delivery Operations");
-        Console.WriteLine("4: Admin & Configuration");
-        Console.WriteLine("5: Initialize Data");
+        Console.WriteLine("1: Admin Management");
+        Console.WriteLine("2: Courier Management");
+        Console.WriteLine("3: Order Management");
         Console.Write("Enter your choice: ");
 
         int choice;
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(MainMenuOptions), choice))
         {
-            Console.Write("Invalid input. Please enter a number between 0 and 5: ");
+            Console.Write("Invalid input. Please enter a number between 0 and 3: ");
         }
         return (MainMenuOptions)choice;
     }
 
-    private static CrudMenuOptions ShowCrudMenu(string entityName)
+    private static CurierMenuOptions ShowCurierdMenu()
     {
-        Console.WriteLine($"\n--- {entityName.ToUpper()} MENU ---");
-        Console.WriteLine("0: Back to Main Menu"); // Exit
-        Console.WriteLine("1: Create (Add new)");
-        Console.WriteLine("2: Read (Get by ID)");
-        Console.WriteLine("3: ReadAll (List all)");
-        Console.WriteLine("4: Update");
-        Console.WriteLine("5: Delete (By ID)");
+        Console.WriteLine($"\n--- CURIER MENU ---");
+        Console.WriteLine("0: Exit"); // Exit
+        Console.WriteLine("1: Login");
+        Console.WriteLine("2: Create");
+        Console.WriteLine("3: Read");
+        Console.WriteLine("4: ReadAll");
+        Console.WriteLine("5: Update");
+        Console.WriteLine("6: Delete");
         Console.Write("Enter your choice: ");
 
         int choice;
 
         // Validate input
-        while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(CrudMenuOptions), choice))
+        while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(CurierMenuOptions), choice))
         {
-            Console.Write("Invalid input. Please enter a number between 0 and 6: ");
+            Console.Write("Invalid input. Please enter a number between 0 and 5: ");
         }
-        return (CrudMenuOptions)choice;
+        return (CurierMenuOptions)choice;
+    }
+
+    private static OrderMenuOptions ShowOrderMenu()
+    {
+        Console.WriteLine($"\n--- ORDER MENU ---");
+        Console.WriteLine("0: Exit"); // Exit
+        Console.WriteLine("1: Create");
+        Console.WriteLine("2: Read");
+        Console.WriteLine("3: ReadAll");
+        Console.WriteLine("4: Update");
+        Console.WriteLine("5: Delete");
+        Console.WriteLine("6: Cancel");
+        Console.WriteLine("7: Orders Summary");
+        Console.WriteLine("8: Watch Completed Deliveries");
+        Console.WriteLine("9: Choose An Order For treatment");
+        Console.WriteLine("10: Watch Closed Deliveries");
+        Console.WriteLine("11: Read All Open Orders");
+        Console.Write("Enter your choice: ");
+
+        int choice;
+
+        // Validate input
+        while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(OrderMenuOptions), choice))
+        {
+            Console.Write("Invalid input. Please enter a number between 0 and 11: ");
+        }
+        return (OrderMenuOptions)choice;
     }
     private static void PrintException(BO.BlException ex)
     {
-        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine($"\nERROR: {ex.GetType().Name}");
-        Console.WriteLine($"Message: {ex.Message}");
+        Console.WriteLine(ex.Message);
         if (ex.InnerException != null)
         {
-            Console.WriteLine($"Inner Exception: {ex.InnerException.GetType().Name} - {ex.InnerException.Message}");
+            Console.WriteLine($"{ex.InnerException.GetType().Name} - {ex.InnerException.Message}");
         }
         Console.ResetColor();
     }
-
+    private static void LoginCourier()
+    {
+        Console.WriteLine("\n--- Courier Login ---");
+        Console.Write("Enter Courier ID: ");
+        if (!int.TryParse(Console.ReadLine(), out int id)) { Console.WriteLine("Invalid ID format."); return; }
+        Console.Write("Enter Password: ");
+        string? password = Console.ReadLine();
+        try
+        {
+            BO.UserRole role = s_bl.Courier.Login(id, password!);
+            if (role != BO.UserRole.None)
+            {
+                Console.WriteLine($"\n Login successful. Welcome!");
+            }
+            else
+            {
+                Console.WriteLine("\n Login failed. Invalid ID or password.");
+            }
+        }
+        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
+    }
     private static void AddCourier()
     {
-        Console.WriteLine("\n--- Add New Courier (BO) ---");
+        Console.WriteLine("\n--- Add New Courier ---");
 
         Console.Write("Enter Courier ID (9 digits): ");
         if (!int.TryParse(Console.ReadLine(), out int id)) { Console.WriteLine("Invalid ID format."); return; }
@@ -104,7 +171,7 @@ internal class Program
         Console.Write("Enter Delivery Type (Car, Motorcycle, Bicycle, ByFoot): ");
         if (!Enum.TryParse(Console.ReadLine(), true, out BO.DeliveryType typeOfDelivery)) { Console.WriteLine("Invalid delivery type."); return; }
 
-        Console.Write("Enter Max Delivery Distance (double): ");
+        Console.Write("Enter Max Delivery Distance: ");
         string? maxDistInput = Console.ReadLine();
         double? maxDist = null;
         if (!string.IsNullOrEmpty(maxDistInput) && double.TryParse(maxDistInput, out double tempDistance))
@@ -128,7 +195,7 @@ internal class Program
                 TotalLateDeliveries = 0,
                 CurrentOrder = null
             };
-            s_bl.Courier.Create(123, newCourier);
+            s_bl.Courier.Create(AdminID, newCourier);
 
             Console.WriteLine($"\n Successfully added Courier {id} - {name}");
         }
@@ -136,7 +203,6 @@ internal class Program
         catch (BO.BlAlreadyExistsException ex) { PrintException(ex); } //already exists
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); } //alout unauthorized
     }
-
     private static void GetCourier()
     {
         Console.WriteLine("\n--- Read Courier ---");
@@ -145,7 +211,7 @@ internal class Program
 
         try
         {
-            BO.Courier? courier = s_bl.Courier.Read(123, id);
+            BO.Courier? courier = s_bl.Courier.Read(AdminID, id);
 
             if (courier != null)
             {
@@ -155,14 +221,13 @@ internal class Program
         catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void ListAllCouriers()
     {
-        Console.WriteLine("\n--- List All Couriers (BO.CourierInList) ---");
+        Console.WriteLine("\n--- List All Couriers ---");
 
         try
         {
-            IEnumerable<BO.CourierInList> couriers = s_bl.Courier.ReadAll(123);
+            IEnumerable<BO.CourierInList> couriers = s_bl.Courier.ReadAll(AdminID);
 
             if (!couriers.Any())
             {
@@ -177,16 +242,15 @@ internal class Program
         }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void UpdateCourier()
     {
-        Console.WriteLine("\n--- Update Courier (BO) ---");
+        Console.WriteLine("\n--- Update Courier ---");
         Console.Write("Enter Courier ID to update: ");
         if (!int.TryParse(Console.ReadLine(), out int id)) { Console.WriteLine("Invalid ID format."); return; }
 
         try
         {
-            BO.Courier oldCourier = s_bl.Courier.Read(123, id)!;
+            BO.Courier oldCourier = s_bl.Courier.Read(AdminID, id)!;
 
             Console.WriteLine($"\nUpdating Courier {id}. Current Name: {oldCourier.Name}");
 
@@ -214,7 +278,7 @@ internal class Program
                 CurrentOrder = oldCourier.CurrentOrder
             };
 
-            s_bl.Courier.Update(123, updatedCourier);
+            s_bl.Courier.Update(AdminID, updatedCourier);
 
             Console.WriteLine($"\n Successfully updated Courier {id}");
         }
@@ -222,7 +286,6 @@ internal class Program
         catch (BO.BlInvalidDataException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void DeleteCourier()
     {
         Console.WriteLine("\n--- Delete Courier ---");
@@ -231,7 +294,7 @@ internal class Program
 
         try
         {
-            s_bl.Courier.Delete(123, id);
+            s_bl.Courier.Delete(AdminID, id);
 
             Console.WriteLine($"\n Successfully deleted Courier {id}");
         }
@@ -239,31 +302,30 @@ internal class Program
         catch (BO.BlCannotDeleteException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void CourierMenu()
     {
         bool exit = false;
         while (!exit)
         {
-            CrudMenuOptions choice = ShowCrudMenu("Courier");
+            CurierMenuOptions choice = ShowCurierdMenu();
 
             try
             {
                 switch (choice)
                 {
-                    case CrudMenuOptions.Exit: exit = true; break;
-                    case CrudMenuOptions.Create: AddCourier(); break;
-                    case CrudMenuOptions.Read: GetCourier(); break;
-                    case CrudMenuOptions.ReadAll: ListAllCouriers(); break;
-                    case CrudMenuOptions.Update: UpdateCourier(); break;
-                    case CrudMenuOptions.Delete: DeleteCourier(); break;
+                    case CurierMenuOptions.Exit: exit = true; break;
+                    case CurierMenuOptions.Login: LoginCourier(); break;
+                    case CurierMenuOptions.Create: AddCourier(); break;
+                    case CurierMenuOptions.Read: GetCourier(); break;
+                    case CurierMenuOptions.ReadAll: ListAllCouriers(); break;
+                    case CurierMenuOptions.Update: UpdateCourier(); break;
+                    case CurierMenuOptions.Delete: DeleteCourier(); break;
                 }
             }
             catch (BO.BlException ex) { PrintException(ex); }
             catch (Exception ex) { Console.WriteLine($"An unexpected system error occurred: {ex.Message}"); }
         }
     }
-
     private static void AddOrder()
     {
         Console.WriteLine("\n--- Add New Order ---");
@@ -294,15 +356,14 @@ internal class Program
 
         try
         {
-            s_bl.Order.Create(123, newOrder);
+            s_bl.Order.Create(AdminID, newOrder);
 
-            Console.WriteLine($"\n Successfully requested new order for {customerName}.");
+            Console.WriteLine($"\n Successfully requested");
         }
         catch (BO.BlInvalidDataException ex) { PrintException(ex); } //validation failed
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); } //ID or Geocoding failed
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); } //alout unauthorized
     }
-
     private static void GetOrder()
     {
         Console.WriteLine("\n--- Read Order ---");
@@ -311,21 +372,20 @@ internal class Program
 
         try
         {
-            BO.Order order = s_bl.Order.Read(123, id);
+            BO.Order order = s_bl.Order.Read(AdminID, id);
 
             Console.WriteLine($"\n Order Details:\n{order}"); 
         }
         catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void ListAllOrders()
     {
-        Console.WriteLine("\n--- List All Orders (BO.OrderInList) ---");
+        Console.WriteLine("\n--- List All Orders ---");
 
         try
         {
-            IEnumerable<BO.OrderInList> orders = s_bl.Order.ReadAll(123);
+            IEnumerable<BO.OrderInList> orders = s_bl.Order.ReadAll(AdminID);
 
             if (!orders.Any())
             {
@@ -340,7 +400,6 @@ internal class Program
         }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void UpdateOrder()
     {
         Console.WriteLine("\n--- Update Order ---");
@@ -349,7 +408,7 @@ internal class Program
 
         try
         {
-            BO.Order oldOrder = s_bl.Order.Read(123, id)!;
+            BO.Order oldOrder = s_bl.Order.Read(AdminID, id)!;
 
             Console.WriteLine($"\nUpdating Order {id}. Current Status: {oldOrder.StatusOfOrder}");
 
@@ -380,7 +439,7 @@ internal class Program
                 DeliveryList = oldOrder.DeliveryList
             };
 
-            s_bl.Order.Update(123, updatedOrder);
+            s_bl.Order.Update(AdminID, updatedOrder);
 
             Console.WriteLine($"\n Successfully updated Order {id}");
         }
@@ -389,48 +448,86 @@ internal class Program
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
     private static void DeleteOrder()
     {
         Console.WriteLine("\n--- Delete Order ---");
-        Console.Write("Enter Order ID to delete (Note: Deletion is often disallowed by BL): ");
+        Console.Write("Enter Order ID to delete: ");
         if (!int.TryParse(Console.ReadLine(), out int id)) { Console.WriteLine("Invalid ID format."); return; }
 
         try
         {
-            s_bl.Order.Delete(123, id);
+            s_bl.Order.Delete(AdminID, id);
 
-            Console.WriteLine($"\n✅ Successfully deleted Order {id}");
+            Console.WriteLine($"\nSuccessfully deleted Order {id}");
         }
         catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
     }
-
-    private static void OrderMenu()
+    private static void CancelOrderOperation()
     {
-        bool exit = false;
-        while (!exit)
+        Console.WriteLine("\n--- Cancel Order ---");
+        Console.Write("Enter Requesting User ID (Admin/Courier performing the action): ");
+        if (!int.TryParse(Console.ReadLine(), out int requestingUserId)) { Console.WriteLine("Invalid User ID format."); return; }
+        Console.Write("Enter Order ID to cancel: ");
+        if (!int.TryParse(Console.ReadLine(), out int orderId)) { Console.WriteLine("Invalid Order ID format."); return; }
+        try
         {
-            CrudMenuOptions choice = ShowCrudMenu("Order (BL)");
-
-            try
-            {
-                switch (choice)
-                {
-                    case CrudMenuOptions.Exit: exit = true; break;
-                    case CrudMenuOptions.Create: AddOrder(); break;
-                    case CrudMenuOptions.Read: GetOrder(); break;
-                    case CrudMenuOptions.ReadAll: ListAllOrders(); break;
-                    case CrudMenuOptions.Update: UpdateOrder(); break;
-                    case CrudMenuOptions.Delete: DeleteOrder(); break;
-                }
-            }
-            catch (BO.BlException ex) { PrintException(ex); }
-            catch (Exception ex) { Console.WriteLine($"An unexpected system error occurred: {ex.Message}"); }
+            s_bl.Order.Cancel(requestingUserId, orderId);
+            Console.WriteLine($"\n Order {orderId} successfully canceled.");
         }
+        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
+        catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
+        catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
+        catch (BO.BlException ex) { PrintException(ex); }
     }
+    private static void OrderSummaryOperation()
+    {
+        Console.WriteLine("\n--- Get Order Summary ---");
 
+        Console.Write("Enter Requesting User ID: ");
+        if (!int.TryParse(Console.ReadLine(), out int requestingUserId)) { Console.WriteLine("Invalid User ID format."); return; }
+
+        try
+        {
+            int[] summary = s_bl.Order.GetOrderSummaryQuantities(requestingUserId);
+
+            Console.WriteLine($"\n Orders Summary:");
+            for (int i = 0; i < summary.Length; i++)
+                Console.WriteLine($"{(BO.OrderStatus)i}: {summary[i]}");
+
+        }
+        catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
+        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
+        catch (BO.BlException ex) { PrintException(ex); }
+    }
+    private static void CompleteDeliveryOperation()
+    {
+        Console.WriteLine("\n--- Report Delivery Completion ---");
+
+        Console.Write("Enter Courier ID reporting completion: ");
+        if (!int.TryParse(Console.ReadLine(), out int courierId)) { Console.WriteLine("Invalid Courier ID format."); return; }
+
+        Console.Write("Enter Order ID that was delivered: ");
+        if (!int.TryParse(Console.ReadLine(), out int orderId)) { Console.WriteLine("Invalid Order ID format."); return; }
+
+        Console.Write("Enter Delivery End Latitude (where delivery was finished): ");
+        if (!double.TryParse(Console.ReadLine(), out double endLat)) { Console.WriteLine("Invalid Latitude format."); return; }
+
+        Console.Write("Enter Delivery End Longitude (where delivery was finished): ");
+        if (!double.TryParse(Console.ReadLine(), out double endLon)) { Console.WriteLine("Invalid Longitude format."); return; }
+
+        try
+        {
+            s_bl.Order.CompleteDelivery(AdminID, courierId, orderId, endLat, endLon);
+
+            Console.WriteLine($"\n Order {orderId} successfully marked as Delivered by Courier {courierId}.");
+        }
+        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
+        catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
+        catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
+        catch (BO.BlException ex) { PrintException(ex); }
+    }
     private static void ChooseOrderOperation()
     {
         Console.WriteLine("\n--- Choose Order for Delivery ---");
@@ -448,42 +545,13 @@ internal class Program
         {
             s_bl.Order.ChooseOrder(requestingUserId, courierId, orderId);
 
-            Console.WriteLine($"\n✅ Order {orderId} successfully assigned to Courier {courierId}. Delivery process initiated.");
+            Console.WriteLine($"\n Order {orderId} successfully assigned to Courier {courierId}. Delivery process initiated.");
         }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
         catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
         catch (BO.BlException ex) { PrintException(ex); }
     }
-    private static void CompleteDeliveryOperation()
-    {
-        Console.WriteLine("\n--- Report Delivery Completion ---");
-
-        Console.Write("Enter Courier ID reporting completion: ");
-        if (!int.TryParse(Console.ReadLine(), out int courierId)) { Console.WriteLine("Invalid Courier ID format."); return; }
-
-        Console.Write("Enter Delivery ID to close: ");
-        if (!int.TryParse(Console.ReadLine(), out int deliveryId)) { Console.WriteLine("Invalid Delivery ID format."); return; }
-
-        Console.Write("Enter Delivery End Latitude: ");
-        if (!double.TryParse(Console.ReadLine(), out double endLat)) { Console.WriteLine("Invalid Latitude format."); return; }
-
-        Console.Write("Enter Delivery End Longitude: ");
-        if (!double.TryParse(Console.ReadLine(), out double endLon)) { Console.WriteLine("Invalid Longitude format."); return; }
-
-        try
-        {
-
-            s_bl.Order.CompleteDelivery(courierId, courierId, deliveryId, endLat, endLon);
-
-            Console.WriteLine($"\n✅ Delivery {deliveryId} successfully marked as Delivered by Courier {courierId}.");
-        }
-        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
-        catch (BO.BlDoesNotExistException ex) { PrintException(ex); }
-        catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
-        catch (BO.BlException ex) { PrintException(ex); }
-    }
-
     private static void GetClosedDeliveriesForCourierOperation()
     {
         Console.WriteLine("\n--- View Closed Deliveries History ---");
@@ -504,7 +572,7 @@ internal class Program
                 return;
             }
 
-            Console.WriteLine($"\n✅ Closed Deliveries for Courier {courierId}:");
+            Console.WriteLine($"\n Closed Deliveries for Courier {courierId}:");
             foreach (var delivery in closedDeliveries)
             {
                 Console.WriteLine(delivery);
@@ -513,65 +581,65 @@ internal class Program
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
         catch (BO.BlException ex) { PrintException(ex); }
     }
-
-
-    private enum DeliveryOperationsMenuOptions
+    private static void ListAllOpenOrders()
     {
-        Exit,
-        ChooseOrder,
-        CompleteDelivery,
-        ViewClosedHistory
-    }
+        Console.WriteLine("\n--- List All Open Orders for Courier ---");
 
-    private static DeliveryOperationsMenuOptions ShowDeliveryMenu()
-    {
-        Console.WriteLine("\n--- DELIVERY OPERATIONS MENU ---");
-        Console.WriteLine("0: Back to Main Menu");
-        Console.WriteLine("1: Choose Order (Assign Delivery)");
-        Console.WriteLine("2: Complete Delivery (Report Delivery)");
-        Console.WriteLine("3: View Courier's Closed Deliveries History");
-        Console.Write("Enter your choice: ");
-
-        int choice;
-        while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(DeliveryOperationsMenuOptions), choice))
+        Console.Write("Enter Requesting User ID (Admin or Courier): ");
+        if (!int.TryParse(Console.ReadLine(), out int requestingUserId)) { Console.WriteLine("Invalid User ID format."); return; }
+        
+        Console.Write("Enter Courier ID to view open orders for: ");
+        if (!int.TryParse(Console.ReadLine(), out int courierId)) { Console.WriteLine("Invalid Courier ID format."); return; }
+        
+        try
         {
-            Console.Write("Invalid input. Please enter a number between 0 and 3: ");
+            IEnumerable<BO.OpenOrderInList> openOrders = s_bl.Order.ReadAllOpenOrders(requestingUserId, courierId);
+            if (!openOrders.Any())
+            {
+                Console.WriteLine($"\nCourier {courierId} has no open orders.");
+                return;
+            }
+            Console.WriteLine($"\n Open Orders for Courier {courierId}:");
+            foreach (var order in openOrders)
+            {
+                Console.WriteLine(order);
+            }
         }
-        return (DeliveryOperationsMenuOptions)choice;
+        catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
+        catch (BO.BlException ex) { PrintException(ex); }
     }
-
-    private static void DeliveryMenu()
+    private static void OrderMenu()
     {
         bool exit = false;
         while (!exit)
         {
-            DeliveryOperationsMenuOptions choice = ShowDeliveryMenu();
+            OrderMenuOptions choice = ShowOrderMenu();
 
             try
             {
                 switch (choice)
                 {
-                    case DeliveryOperationsMenuOptions.Exit: exit = true; break;
-                    case DeliveryOperationsMenuOptions.ChooseOrder: ChooseOrderOperation(); break;
-                    case DeliveryOperationsMenuOptions.CompleteDelivery: CompleteDeliveryOperation(); break;
-                    case DeliveryOperationsMenuOptions.ViewClosedHistory: GetClosedDeliveriesForCourierOperation(); break;
+                    case OrderMenuOptions.Exit: exit = true; break;
+                    case OrderMenuOptions.Create: AddOrder(); break;
+                    case OrderMenuOptions.Read: GetOrder(); break;
+                    case OrderMenuOptions.ReadAll: ListAllOrders(); break;
+                    case OrderMenuOptions.Update: UpdateOrder(); break;
+                    case OrderMenuOptions.Delete: DeleteOrder(); break;
+                    case OrderMenuOptions.Cancel: CancelOrderOperation(); break;
+                    case OrderMenuOptions.OrderSummary: OrderSummaryOperation(); break;
+                    case OrderMenuOptions.CompleteDelivery: CompleteDeliveryOperation(); break;
+                    case OrderMenuOptions.ChooseOrder: ChooseOrderOperation(); break;
+                    case OrderMenuOptions.ClosedDeliveries: GetClosedDeliveriesForCourierOperation(); break;
+                    case OrderMenuOptions.ReadAllOpenOrders: ListAllOpenOrders(); break;
                 }
             }
             catch (BO.BlException ex) { PrintException(ex); }
             catch (Exception ex) { Console.WriteLine($"An unexpected system error occurred: {ex.Message}"); }
         }
     }
-
     private static void AdvanceClockOperation()
     {
         Console.WriteLine("\n--- Advance Simulated Clock ---");
-
-        Console.Write("Enter number of hours to advance: ");
-        if (!int.TryParse(Console.ReadLine(), out int hours) || hours < 0)
-        {
-            Console.WriteLine("Invalid hours.");
-            return;
-        }
 
         Console.Write("Enter number of minutes to advance: ");
         if (!int.TryParse(Console.ReadLine(), out int minutes) || minutes < 0)
@@ -580,31 +648,203 @@ internal class Program
             return;
         }
 
+        Console.Write("Enter number of hours to advance: ");
+        if (!int.TryParse(Console.ReadLine(), out int hours) || hours < 0)
+        {
+            Console.WriteLine("Invalid hours.");
+            return;
+        }
+
+        Console.Write("Enter number of days to advance: ");
+        if (!int.TryParse(Console.ReadLine(), out int days) || days < 0)
+        {
+            Console.WriteLine("Invalid minutes.");
+            return;
+        }
+
+        Console.Write("Enter number of months to advance: ");
+        if (!int.TryParse(Console.ReadLine(), out int months) || months < 0)
+        {
+            Console.WriteLine("Invalid minutes.");
+            return;
+        }
+
+        Console.Write("Enter number of years to advance: ");
+        if (!int.TryParse(Console.ReadLine(), out int years) || years < 0)
+        {
+            Console.WriteLine("Invalid minutes.");
+            return;
+        }
+
         try
         {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
+            for (int i = 0; i < minutes; i++)
+                s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
 
-            Console.WriteLine($"\n Simulated clock successfully advanced by {hours} hours and {minutes} minutes.");
+            for (int i = 0; i < hours; i++)
+                s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
+
+            for (int i = 0; i < days; i++)
+                s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
+
+            for (int i = 0; i < months; i++)
+                s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
+
+            for (int i = 0; i < years; i++)
+                s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
+
+            Console.WriteLine($"\n Simulated clock successfully");
         }
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); }
         catch (BO.BlException ex) { PrintException(ex); }
     }
-
     private static AdminMenuOptions ShowAdminMenu()
     {
-        Console.WriteLine("\n--- ADMIN / CLOCK MENU ---");
-        Console.WriteLine("0: Back to Main Menu");
-        Console.WriteLine("1: Advance Simulated Clock");
-        Console.Write("Enter your choice: ");
+        Console.WriteLine("\n--- ADMIN MENU ---");
+        Console.WriteLine("0: Exit");
+        Console.WriteLine("1: Reset Data");
+        Console.WriteLine("2: Initialize Data");
+        Console.WriteLine("3: Get current Clock Time");
+        Console.WriteLine("4: Forward System Clock");
+        Console.WriteLine("5: Get Configuration");
+        Console.WriteLine("6: Set Configuration");
 
         int choice;
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(AdminMenuOptions), choice))
         {
-            Console.Write("Invalid input. Please enter a number between 0 and 1: ");
+            Console.Write("Invalid input. Please enter a number between 0 and 6: ");
         }
         return (AdminMenuOptions)choice;
     }
+    private static void printConfig(BO.Config config)
+    {
+        Console.WriteLine("\n--- Current Configuration ---");
+        Console.WriteLine($"Current system clock: {config.Clock}");
+        Console.WriteLine($"Maximum range for deliveries: {config.MaxDeliveryRange}");
+        Console.WriteLine($"Risk range for deliveries: {config.RiskRange}");
+        Console.WriteLine($"Inactivity time range: {config.InactivityTimeRange}");
+        Console.WriteLine($"Company address: {config.CompenyAddress}");
+        Console.WriteLine($"Company latitude: {config.CompenyLatitude}");
+        Console.WriteLine($"Company longitude: {config.CompenyLongitude}");
+        Console.WriteLine($"Admin ID: {config.AdminId}");
+        Console.WriteLine($"Delivery max distance: {config.DeliveryMaxDistance}");
+        Console.WriteLine($"Average vehicle speed (km/h): {config.AverageVehicleSpeedKmH}");
+        Console.WriteLine($"Average motorcycle speed (km/h): {config.AverageMotorcycleSpeedKmH}");
+        Console.WriteLine($"Average bicycle speed (km/h): {config.AverageBicycleSpeedKmH}");
+        Console.WriteLine($"Average by foot speed (km/h): {config.AverageByFootSpeedKmH}");
+    }
+    private static void setConfigByAdmin()
+    {
+        Console.WriteLine("\n--- Update System Configuration ---");
 
+        try
+        {
+            BO.Config oldConfig = s_bl.Admin.GetConfig();
+
+            //Set Admin ID
+            Console.Write("Enter new Admin ID: ");
+            string? inputAdminId = Console.ReadLine();
+            int newAdminId = oldConfig.AdminId;
+            if (!string.IsNullOrEmpty(inputAdminId) && int.TryParse(inputAdminId, out int tempAdminId))
+                newAdminId = tempAdminId;
+
+            //Set Max Delivery Distance
+            Console.Write("Enter new Max Distance for deliveries in KM: ");
+            string? inputMaxDist = Console.ReadLine();
+            double? newMaxDist = oldConfig.DeliveryMaxDistance;
+            if (string.IsNullOrEmpty(inputMaxDist))
+                newMaxDist = null;
+            else if (double.TryParse(inputMaxDist, out double tempMaxDist))
+                newMaxDist = tempMaxDist;
+            else if (!string.IsNullOrEmpty(inputMaxDist))
+                Console.WriteLine("Invalid number for Max Distance. Keeping old value.");
+
+            //Set Average Vehicle Speed
+            Console.Write("Enter new Car Speed (km/h): ");
+            string? inputSpeedV = Console.ReadLine();
+            double newSpeedV = oldConfig.AverageVehicleSpeedKmH;
+            if (!string.IsNullOrEmpty(inputSpeedV) && double.TryParse(inputSpeedV, out double tempSpeedV))
+                newSpeedV = tempSpeedV;
+            else if (!string.IsNullOrEmpty(inputSpeedV))
+                Console.WriteLine("Invalid number for Speed. Keeping old value.");
+
+            //Set Average Motorcycle Speed
+            Console.WriteLine("Enter new Motorcycle Speed (km/h): ");
+            string? inputSpeedM = Console.ReadLine();
+            double newSpeedM = oldConfig.AverageMotorcycleSpeedKmH;
+            if (!string.IsNullOrEmpty(inputSpeedM) && double.TryParse(inputSpeedM, out double tempSpeedM))
+                newSpeedM = tempSpeedM;
+            else if (!string.IsNullOrEmpty(inputSpeedM))
+                Console.WriteLine("Invalid number for Speed. Keeping old value.");
+
+            //Set Average Bicycle Speed
+            Console.WriteLine("Enter new Bicycle Speed (km/h): ");
+            string? inputSpeedB = Console.ReadLine();
+            double newSpeedB = oldConfig.AverageBicycleSpeedKmH;
+            if (!string.IsNullOrEmpty(inputSpeedB) && double.TryParse(inputSpeedB, out double tempSpeedB))
+                newSpeedB = tempSpeedB;
+            else if (!string.IsNullOrEmpty(inputSpeedB))
+                Console.WriteLine("Invalid number for Speed. Keeping old value.");
+
+            //Set Average By Foot Speed
+            Console.WriteLine("Enter new By Foot Speed (km/h): ");
+            string? inputSpeedF = Console.ReadLine();
+            double newSpeedF = oldConfig.AverageByFootSpeedKmH;
+            if (!string.IsNullOrEmpty(inputSpeedF) && double.TryParse(inputSpeedF, out double tempSpeedF))
+                newSpeedF = tempSpeedF;
+            else if (!string.IsNullOrEmpty(inputSpeedF))
+                Console.WriteLine("Invalid number for Speed. Keeping old value.");
+
+            //Set Max Delivery Range
+            Console.WriteLine("Enter new maximum range fo deliveries (in format 00:00:00): ");
+            string? inputMaxDeliveryRange = Console.ReadLine();
+            TimeSpan newMaxDeliveryRange = oldConfig.MaxDeliveryRange;
+            if (!string.IsNullOrEmpty(inputMaxDeliveryRange) && TimeSpan.TryParse(inputMaxDeliveryRange, out TimeSpan tempMaxDeliveryRange))
+                newMaxDeliveryRange = tempMaxDeliveryRange;
+            else if (!string.IsNullOrEmpty(inputMaxDeliveryRange))
+                Console.WriteLine("Invalid format for Max Delivery Range. Keeping old value.");
+
+            //Set Risk Range
+            Console.WriteLine("Enter new risk range (in format 00:00:00): ");
+            string? inputRiskRange = Console.ReadLine();
+            TimeSpan newRiskRange = oldConfig.RiskRange;
+            if (!string.IsNullOrEmpty(inputRiskRange) && TimeSpan.TryParse(inputRiskRange, out TimeSpan tempRiskRange))
+                newRiskRange = tempRiskRange;
+            else if (!string.IsNullOrEmpty(inputRiskRange))
+                Console.WriteLine("Invalid format for Risk Range. Keeping old value.");
+
+            //Set Inactivity Time Range
+            Console.WriteLine("Enter new inactivity time range (in format 00:00:00): ");
+            string? inputInactivityTimeRange = Console.ReadLine();
+            TimeSpan newInactivityTimeRange = oldConfig.InactivityTimeRange;
+            if (!string.IsNullOrEmpty(inputInactivityTimeRange) && TimeSpan.TryParse(inputInactivityTimeRange, out TimeSpan tempInactivityTimeRange))
+                newInactivityTimeRange = tempInactivityTimeRange;
+            else if (!string.IsNullOrEmpty(inputInactivityTimeRange))
+                Console.WriteLine("Invalid format for Inactivity Time Range. Keeping old value.");
+
+            //create updated config object
+            BO.Config updatedConfig = new BO.Config
+            {
+                AdminId = newAdminId,
+                DeliveryMaxDistance = newMaxDist,
+                AverageVehicleSpeedKmH = newSpeedV,
+                CompenyAddress = oldConfig.CompenyAddress,
+                CompenyLatitude = oldConfig.CompenyLatitude,
+                CompenyLongitude = oldConfig.CompenyLongitude,
+                AverageMotorcycleSpeedKmH = newSpeedM,
+                AverageBicycleSpeedKmH = newSpeedB,
+                AverageByFootSpeedKmH = newSpeedF,
+                MaxDeliveryRange = newMaxDeliveryRange,
+                RiskRange = newRiskRange,
+                InactivityTimeRange = newInactivityTimeRange,
+            };
+
+            s_bl.Admin.SetConfig(updatedConfig);
+            Console.WriteLine("\nConfiguration updated successfully.");
+        }
+        catch (BO.BlInvalidDataException ex) { PrintException(ex); }
+        catch (BO.BlException ex) { PrintException(ex); }
+    }
     private static void AdminMenu()
     {
         bool exit = false;
@@ -617,7 +857,19 @@ internal class Program
                 switch (choice)
                 {
                     case AdminMenuOptions.Exit: exit = true; break;
-                    case AdminMenuOptions.AdvanceClock: AdvanceClockOperation(); break;
+                    case AdminMenuOptions.Reset: s_bl.Admin.ResetDB();
+                        Console.WriteLine("Database reset successfully."); break;
+                    case AdminMenuOptions.Initialize: s_bl.Admin.InitializeDB();
+                        Console.WriteLine("Database initialized successfully."); break;
+                    case AdminMenuOptions.GetClock: 
+                        DateTime currentTime = s_bl.Admin.GetClock();
+                        Console.WriteLine($"\nCurrent simulated clock time: {currentTime}"); break;
+                    case AdminMenuOptions.ForwardClock: AdvanceClockOperation(); break;
+                    case AdminMenuOptions.GetConfig:
+                        var config = s_bl.Admin.GetConfig();
+                        printConfig(config);
+                        break;
+                    case AdminMenuOptions.SetConfig: setConfigByAdmin(); break;
                 }
             }
             catch (BO.BlException ex) { PrintException(ex); }
@@ -628,7 +880,7 @@ internal class Program
     {
         try
         {
-            Console.WriteLine("Initializing BL data...");
+            Console.WriteLine("Initializing data...");
             s_bl.Admin.InitializeDB(); 
             Console.WriteLine("Data initialized successfully.");
         }
@@ -650,15 +902,9 @@ internal class Program
                 switch (choice)
                 {
                     case MainMenuOptions.Exit: exit = true; break;
+                    case MainMenuOptions.Admin: AdminMenu(); break;
                     case MainMenuOptions.Courier: CourierMenu(); break;
                     case MainMenuOptions.Order: OrderMenu(); break;
-                    case MainMenuOptions.Delivery: DeliveryMenu(); break;
-                    case MainMenuOptions.Admin: AdminMenu(); break;
-                    case MainMenuOptions.InitializeData:
-                        Console.WriteLine("Re-initializing data...");
-                        s_bl.Admin.InitializeDB();
-                        Console.WriteLine("Data re-initialized successfully.");
-                        break;
                 }
             }
             catch (BO.BlException ex)

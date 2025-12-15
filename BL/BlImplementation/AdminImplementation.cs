@@ -11,6 +11,8 @@ internal class AdminImplementation : IAdmin
             BO.TimeUnit.Minutes => AdminManager.Now.AddMinutes(1),
             BO.TimeUnit.Hours => AdminManager.Now.AddHours(1),
             BO.TimeUnit.Days => AdminManager.Now.AddDays(1),
+            BO.TimeUnit.Months => AdminManager.Now.AddMonths(1),
+            BO.TimeUnit.Years => AdminManager.Now.AddYears(1),
 
             _ => throw new ArgumentException($"Unsupported time unit for clock forward: {unit}")
         };

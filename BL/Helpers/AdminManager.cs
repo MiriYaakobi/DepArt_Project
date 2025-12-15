@@ -19,7 +19,7 @@ internal static class AdminManager //stage 4
     internal static event Action? ConfigUpdatedObservers; //stage 5 - for config update observers
     internal static event Action? ClockUpdatedObservers; //stage 5 - for clock update observers
 
-    private static Task? _periodicTask = null; //stage 7
+    //private static Task? _periodicTask = null; //stage 7
 
     /// <summary>
     /// Method to update application's clock from any BL class as may be required

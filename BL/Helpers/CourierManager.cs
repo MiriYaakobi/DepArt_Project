@@ -110,7 +110,6 @@ internal static class CourierManager
             Name = doCourier.Name,
             Phone = doCourier.Phone,
             Email = doCourier.Email,
-            Password = " ",
             IsActive = doCourier.IsActive,
             MaxDistance = doCourier.MaxDistance,
             TypeOfDelivery = (BO.DeliveryType)doCourier.TypeOfDelivery,
