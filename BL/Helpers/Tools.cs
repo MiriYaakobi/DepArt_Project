@@ -19,7 +19,7 @@ internal static class Tools
     // Static HttpClient instance for making HTTP requests
     private static readonly HttpClient s_httpClient = new HttpClient();
     // LocationIQ API key for geocoding and routing services
-    private const string apiKey = "912f217174197978d7da19cf22005ef920a4772b8c3df456d156f7d7cbb7fea5";
+    private const string apiKey = "pk.b0ca8983fc24d5c07a7173ce946693f3";
 
     /// <summary>
     /// Generates a string representation of the properties and their values for the specified object.
@@ -54,21 +54,24 @@ internal static class Tools
 
             // Handle null values
             if (value == null)
-                sb.AppendLine($"    {property.Name}: null");
+                sb.AppendLine($"    {property.Name}: *****");
 
             //check if the property is a collection
-            if (value is IEnumerable enumerable && value is not string)
+            else if (value is IEnumerable enumerable && value is not string)
             {
+                //get the count of items in the collection
+                int count = (enumerable is ICollection collection) ? collection.Count : enumerable.Cast<object>().Count();
+
                 //create a collection representation
                 sb.AppendLine($"    {property.Name}: (Collection of {property.PropertyType.GetGenericArguments().FirstOrDefault()?.Name} - Count: {((ICollection)enumerable).Count})");
 
-                int count = 0;
+                int itemIndex = 0;
 
                 //iterate through the collection items
                 foreach (var item in enumerable)
                 {
-                    sb.AppendLine($"        [{count}]: {item}");
-                    count++;
+                    sb.AppendLine($"        [{itemIndex}]: {item}");
+                    itemIndex++;
                 }
             }
 
@@ -165,7 +168,7 @@ internal static class Tools
 
             // If the status code was not successful (e.g., 400 Bad Request, 403 Forbidden)
             string errorContent = response.Content.ReadAsStringAsync().Result;
-            throw new InvalidOperationException($"Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
+            throw new InvalidOperationException($"ERROR: Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
         }
         catch (HttpRequestException ex)
         {

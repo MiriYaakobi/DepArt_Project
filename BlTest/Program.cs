@@ -120,7 +120,6 @@ internal class Program
     }
     private static void PrintException(BO.BlException ex)
     {
-        Console.WriteLine($"\nERROR: {ex.GetType().Name}");
         Console.WriteLine(ex.Message);
         if (ex.InnerException != null)
         {
@@ -254,22 +253,58 @@ internal class Program
 
             Console.WriteLine($"\nUpdating Courier {id}. Current Name: {oldCourier.Name}");
 
-            Console.Write("Enter new Name (Enter to skip): ");
+            Console.Write("Enter new Name: ");
             string? newName = Console.ReadLine();
+            if (newName == "")
+                newName = oldCourier.Name;
 
-            Console.Write("Enter new Phone (Enter to skip): ");
+            Console.Write("Enter new Phone: ");
             string? newPhone = Console.ReadLine();
+            if (newPhone == "")
+                newPhone = oldCourier.Phone;
 
-            Console.Write("Enter new Password (Enter to skip): ");
+            Console.Write("Enter new Email: ");
+            string? newEmail = Console.ReadLine();
+            if (newEmail == "")
+                newEmail = oldCourier.Email;
+
+            Console.Write("Enter new Password: ");
             string? newPassword = Console.ReadLine();
+            if (newPassword == "")
+                newPassword = oldCourier.Password;
+
+            Console.Write("Enter your Activity - YES/NO: ");
+            string? answer = Console.ReadLine();
+            if (answer == "YES")
+                oldCourier.IsActive = true;
+            else if (answer == "NO")
+                oldCourier.IsActive = false;
+            if (answer != "YES" && answer != "NO" && answer != "")
+                throw new BO.BlInvalidDataException ("one of the data entered is incorrect or not formatted.");
+
+            Console.Write("Enter your Type Of Shipping - Car/ Motorcycle/ Bicycle/ By Foot: ");
+            string? typeInput = Console.ReadLine();
+            if (typeInput == "Car")
+                oldCourier.TypeOfDelivery = BO.DeliveryType.Car;
+            else if (typeInput == "Motorcycle")
+                oldCourier.TypeOfDelivery = BO.DeliveryType.Motorcycle;
+            else if (typeInput == "Bicycle")
+                oldCourier.TypeOfDelivery = BO.DeliveryType.Bicycle;
+            else if (typeInput == "By Foot")
+                oldCourier.TypeOfDelivery = BO.DeliveryType.ByFoot;
+
+            Console.Write("Enter new maximum distance for shipping: ");
+            double? maxDistInput = Console.Read();
+            if (maxDistInput != null)
+                oldCourier.MaxDistance = maxDistInput;
 
             BO.Courier updatedCourier = new BO.Courier
             {
                 Id = oldCourier.Id,
                 Name = string.IsNullOrEmpty(newName) ? oldCourier.Name : newName!,
                 Phone = string.IsNullOrEmpty(newPhone) ? oldCourier.Phone : newPhone!,
-                Email = oldCourier.Email,
-                Password = string.IsNullOrEmpty(newPassword) ? oldCourier.Password : newPassword!,
+                Email = string.IsNullOrEmpty(newEmail) ? oldCourier.Email : newEmail!,
+                Password = newPassword,
                 IsActive = oldCourier.IsActive,
                 TypeOfDelivery = oldCourier.TypeOfDelivery,
                 MaxDistance = oldCourier.MaxDistance,
@@ -323,7 +358,7 @@ internal class Program
                 }
             }
             catch (BO.BlException ex) { PrintException(ex); }
-            catch (Exception ex) { Console.WriteLine($"An unexpected system error occurred: {ex.Message}"); }
+            catch (Exception ex) { Console.WriteLine($"ERROR: {ex.Message}"); }
         }
     }
     private static void AddOrder()
@@ -358,7 +393,7 @@ internal class Program
         {
             s_bl.Order.Create(AdminID, newOrder);
 
-            Console.WriteLine($"\n Successfully requested");
+            Console.WriteLine($"\nOrder added Successfully");
         }
         catch (BO.BlInvalidDataException ex) { PrintException(ex); } //validation failed
         catch (BO.BlInvalidOperationException ex) { PrintException(ex); } //ID or Geocoding failed
@@ -719,6 +754,7 @@ internal class Program
     private static void printConfig(BO.Config config)
     {
         Console.WriteLine("\n--- Current Configuration ---");
+        Console.WriteLine($"Admin ID: {config.AdminId}");
         Console.WriteLine($"Current system clock: {config.Clock}");
         Console.WriteLine($"Maximum range for deliveries: {config.MaxDeliveryRange}");
         Console.WriteLine($"Risk range for deliveries: {config.RiskRange}");
@@ -726,7 +762,6 @@ internal class Program
         Console.WriteLine($"Company address: {config.CompenyAddress}");
         Console.WriteLine($"Company latitude: {config.CompenyLatitude}");
         Console.WriteLine($"Company longitude: {config.CompenyLongitude}");
-        Console.WriteLine($"Admin ID: {config.AdminId}");
         Console.WriteLine($"Delivery max distance: {config.DeliveryMaxDistance}");
         Console.WriteLine($"Average vehicle speed (km/h): {config.AverageVehicleSpeedKmH}");
         Console.WriteLine($"Average motorcycle speed (km/h): {config.AverageMotorcycleSpeedKmH}");
@@ -769,7 +804,7 @@ internal class Program
                 Console.WriteLine("Invalid number for Speed. Keeping old value.");
 
             //Set Average Motorcycle Speed
-            Console.WriteLine("Enter new Motorcycle Speed (km/h): ");
+            Console.Write("Enter new Motorcycle Speed (km/h): ");
             string? inputSpeedM = Console.ReadLine();
             double newSpeedM = oldConfig.AverageMotorcycleSpeedKmH;
             if (!string.IsNullOrEmpty(inputSpeedM) && double.TryParse(inputSpeedM, out double tempSpeedM))
@@ -778,7 +813,7 @@ internal class Program
                 Console.WriteLine("Invalid number for Speed. Keeping old value.");
 
             //Set Average Bicycle Speed
-            Console.WriteLine("Enter new Bicycle Speed (km/h): ");
+            Console.Write("Enter new Bicycle Speed (km/h): ");
             string? inputSpeedB = Console.ReadLine();
             double newSpeedB = oldConfig.AverageBicycleSpeedKmH;
             if (!string.IsNullOrEmpty(inputSpeedB) && double.TryParse(inputSpeedB, out double tempSpeedB))
@@ -787,7 +822,7 @@ internal class Program
                 Console.WriteLine("Invalid number for Speed. Keeping old value.");
 
             //Set Average By Foot Speed
-            Console.WriteLine("Enter new By Foot Speed (km/h): ");
+            Console.Write("Enter new By Foot Speed (km/h): ");
             string? inputSpeedF = Console.ReadLine();
             double newSpeedF = oldConfig.AverageByFootSpeedKmH;
             if (!string.IsNullOrEmpty(inputSpeedF) && double.TryParse(inputSpeedF, out double tempSpeedF))
@@ -796,7 +831,7 @@ internal class Program
                 Console.WriteLine("Invalid number for Speed. Keeping old value.");
 
             //Set Max Delivery Range
-            Console.WriteLine("Enter new maximum range fo deliveries (in format 00:00:00): ");
+            Console.Write("Enter new maximum range fo deliveries (in format 00:00:00): ");
             string? inputMaxDeliveryRange = Console.ReadLine();
             TimeSpan newMaxDeliveryRange = oldConfig.MaxDeliveryRange;
             if (!string.IsNullOrEmpty(inputMaxDeliveryRange) && TimeSpan.TryParse(inputMaxDeliveryRange, out TimeSpan tempMaxDeliveryRange))
@@ -805,7 +840,7 @@ internal class Program
                 Console.WriteLine("Invalid format for Max Delivery Range. Keeping old value.");
 
             //Set Risk Range
-            Console.WriteLine("Enter new risk range (in format 00:00:00): ");
+            Console.Write("Enter new risk range (in format 00:00:00): ");
             string? inputRiskRange = Console.ReadLine();
             TimeSpan newRiskRange = oldConfig.RiskRange;
             if (!string.IsNullOrEmpty(inputRiskRange) && TimeSpan.TryParse(inputRiskRange, out TimeSpan tempRiskRange))
@@ -814,7 +849,7 @@ internal class Program
                 Console.WriteLine("Invalid format for Risk Range. Keeping old value.");
 
             //Set Inactivity Time Range
-            Console.WriteLine("Enter new inactivity time range (in format 00:00:00): ");
+            Console.Write("Enter new inactivity time range (in format 00:00:00): ");
             string? inputInactivityTimeRange = Console.ReadLine();
             TimeSpan newInactivityTimeRange = oldConfig.InactivityTimeRange;
             if (!string.IsNullOrEmpty(inputInactivityTimeRange) && TimeSpan.TryParse(inputInactivityTimeRange, out TimeSpan tempInactivityTimeRange))
@@ -873,7 +908,7 @@ internal class Program
                 }
             }
             catch (BO.BlException ex) { PrintException(ex); }
-            catch (Exception ex) { Console.WriteLine($"An unexpected system error occurred: {ex.Message}"); }
+            catch (Exception ex) { Console.WriteLine($"ERROR: {ex.Message}"); }
         }
     }
     static void Main(string[] args)

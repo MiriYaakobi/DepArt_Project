@@ -6,9 +6,11 @@ using Helpers;
 internal class OrderImplementation : IOrder
 {
     /// <summary>
-    /// Cancels an existing order if it is Open or InProgress. Cancellation creates a dummy delivery 
-    /// or updates the current open delivery status to Cancelled.
+    /// cancels an existing order in the system.
     /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Cancel(int requestingUserId, int orderId)
     {
         // check authorization - only Admin can cancel orders
@@ -142,10 +144,7 @@ internal class OrderImplementation : IOrder
         // call to Manager
         try
         {
-            // OrderManager handles:
-            // - Input validation (AssertOrderInputValidity).
-            // - Geocoding (synchronous network call).
-            // - Creating the DO.Order and adding it to the DAL.
+            // OrderManager.CreateOrder handles:
             OrderManager.CreateOrder(boOrder);
         }
         catch (ArgumentException ex)

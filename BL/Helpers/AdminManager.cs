@@ -36,7 +36,6 @@ internal static class AdminManager //stage 4
         // - Go through all students to update properties that are affected by the clock update
         // - (students become not active after 5 years etc.)
 
-        //TO_DO: //stage 4
         CourierManager.PeriodicCourierUpdates(oldClock, newClock); //stage 4. to be removed in stage 7 and replaced as below
 
         //TO_DO: //stage 7
@@ -55,6 +54,7 @@ internal static class AdminManager //stage 4
     internal static BO.Config GetConfig() //stage 4
     => new BO.Config()
     {
+        AdminId = s_dal.Config.AdminId,
         DeliveryMaxDistance = s_dal.Config.DeliveryMaxDistance,
         Clock = s_dal.Config.Clock,
         MaxDeliveryRange = s_dal.Config.MaxDeliveryRange,
@@ -63,7 +63,6 @@ internal static class AdminManager //stage 4
         CompenyAddress = s_dal.Config.CompenyAddress,
         CompenyLatitude = s_dal.Config.CompenyLatitude,
         CompenyLongitude = s_dal.Config.CompenyLongitude,
-        AdminId = s_dal.Config.AdminId,
         AverageVehicleSpeedKmH = s_dal.Config.AverageVehicleSpeedKmH,
         AverageMotorcycleSpeedKmH = s_dal.Config.AverageMotorcycleSpeedKmH,
         AverageBicycleSpeedKmH = s_dal.Config.AverageBicycleSpeedKmH,
@@ -78,7 +77,8 @@ internal static class AdminManager //stage 4
     {
         bool configChanged = false; // stage 5
 
-        if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance) //stage 4
+        // update company address and its coordinates if changed
+        if (s_dal.Config.CompenyAddress != configuration.CompenyAddress)
         {
             var coordinates = Tools.GetCoordinatesOfAddressSync(configuration.CompenyAddress ?? "");
 
@@ -90,22 +90,67 @@ internal static class AdminManager //stage 4
             s_dal.Config.CompenyLongitude = coordinates.Value.Longitude;
             configChanged = true;
         }
-        // validation of speed values
-        if (configuration.AverageVehicleSpeedKmH < configuration.AverageMotorcycleSpeedKmH)
-            throw new ArgumentException("Vehicle speed must be higher than motorcycle speed.");
 
-        // update other fields
+        // update other configuration parameters if changed
         if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
-        { s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance; configChanged = true; }
+        {
+            s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance;
+            configChanged = true;
+        }
     
-        if (s_dal.Config.MaxDeliveryRange != configuration.MaxDeliveryRange) { s_dal.Config.MaxDeliveryRange = configuration.MaxDeliveryRange; configChanged = true; }
-        if (s_dal.Config.RiskRange != configuration.RiskRange) { s_dal.Config.RiskRange = configuration.RiskRange; configChanged = true; }
-        if (s_dal.Config.InactivityTimeRange != configuration.InactivityTimeRange) { s_dal.Config.InactivityTimeRange = configuration.InactivityTimeRange; configChanged = true; }
-        if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance) { s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance; configChanged = true; }
-        if (s_dal.Config.AverageVehicleSpeedKmH != configuration.AverageVehicleSpeedKmH) { s_dal.Config.AverageVehicleSpeedKmH = configuration.AverageVehicleSpeedKmH; configChanged = true; }
-        if (s_dal.Config.AverageMotorcycleSpeedKmH != configuration.AverageMotorcycleSpeedKmH) { s_dal.Config.AverageMotorcycleSpeedKmH = configuration.AverageMotorcycleSpeedKmH; configChanged = true; }
-        if (s_dal.Config.AverageBicycleSpeedKmH != configuration.AverageBicycleSpeedKmH) { s_dal.Config.AverageBicycleSpeedKmH = configuration.AverageBicycleSpeedKmH; configChanged = true; }
-        if (s_dal.Config.AverageByFootSpeedKmH != configuration.AverageByFootSpeedKmH) { s_dal.Config.AverageByFootSpeedKmH = configuration.AverageByFootSpeedKmH; configChanged = true; }
+        if (s_dal.Config.MaxDeliveryRange != configuration.MaxDeliveryRange)
+        {
+            s_dal.Config.MaxDeliveryRange = configuration.MaxDeliveryRange;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.RiskRange != configuration.RiskRange)
+        {
+            s_dal.Config.RiskRange = configuration.RiskRange;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.InactivityTimeRange != configuration.InactivityTimeRange)
+        {
+            s_dal.Config.InactivityTimeRange = configuration.InactivityTimeRange;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.AdminId != configuration.AdminId)
+        {
+            s_dal.Config.AdminId = configuration.AdminId;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
+        {
+            s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.AverageVehicleSpeedKmH != configuration.AverageVehicleSpeedKmH)
+        {
+            s_dal.Config.AverageVehicleSpeedKmH = configuration.AverageVehicleSpeedKmH;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.AverageMotorcycleSpeedKmH != configuration.AverageMotorcycleSpeedKmH)
+        {
+            s_dal.Config.AverageMotorcycleSpeedKmH = configuration.AverageMotorcycleSpeedKmH;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.AverageBicycleSpeedKmH != configuration.AverageBicycleSpeedKmH)
+        {
+            s_dal.Config.AverageBicycleSpeedKmH = configuration.AverageBicycleSpeedKmH;
+            configChanged = true;
+        }
+
+        if (s_dal.Config.AverageByFootSpeedKmH != configuration.AverageByFootSpeedKmH)
+        {
+            s_dal.Config.AverageByFootSpeedKmH = configuration.AverageByFootSpeedKmH;
+            configChanged = true;
+        }
 
         //Calling all the observers of configuration update
         if (configChanged) // stage 5

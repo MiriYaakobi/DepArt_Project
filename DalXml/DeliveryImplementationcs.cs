@@ -15,13 +15,16 @@ internal class DeliveryImplementation : IDelivery
     /// <param name="item"></param>
     public void Create(Delivery item)
     {
+        int nextId = Config.NextDeliveryId;
+        Delivery copy = item with { Id = nextId };
+
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);
 
         // check if the order already exists
         if (deliveries.Exists(d => d.Id == item.Id))
             throw new DalAlreadyExistsException($"Delivery with ID={item.Id} already exists");
 
-        deliveries.Add(item);
+        deliveries.Add(copy);
         XMLTools.SaveListToXMLSerializer(deliveries, Config.s_deliveries_xml);
     }
 

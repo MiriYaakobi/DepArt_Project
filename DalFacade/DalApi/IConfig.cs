@@ -7,6 +7,8 @@
 /// configuration.</remarks>
 public interface IConfig
 {
+    int AdminId { get; set; }
+    string AdminPassword { get; set; }
     DateTime Clock { get; set; }  
     TimeSpan MaxDeliveryRange { get; set; } 
     TimeSpan RiskRange { get; set; } 
@@ -14,14 +16,10 @@ public interface IConfig
     string? CompenyAddress { get; set; } 
     double? CompenyLatitude { get; set; }
     double? CompenyLongitude { get; set; }
-    int AdminId { get; set; }
-    string AdminPassword { get; set; }
     double? DeliveryMaxDistance { get; set; }
     double AverageVehicleSpeedKmH { get; set; }
     double AverageMotorcycleSpeedKmH { get; set; }
     double AverageBicycleSpeedKmH { get; set; }
     double AverageByFootSpeedKmH { get; set; }
-    int NextDeliveryId { get; }
-    int NextOrderId { get; }
     void Reset();
 }

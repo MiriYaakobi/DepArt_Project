@@ -8,6 +8,7 @@
 /// transportation.</remarks>
 public class Config
 {
+    public int AdminId { get; set; }
     public DateTime Clock { get; set; } // Current system clock time
     public TimeSpan MaxDeliveryRange { get; set; } // Maximum allowed delivery time range
     public TimeSpan RiskRange { get; set; } // Time range considered as high risk
@@ -15,7 +16,6 @@ public class Config
     public string? CompenyAddress { get; set; }
     public double? CompenyLatitude { get; set; }
     public double? CompenyLongitude { get; set; }
-    public int AdminId { get; set; }
     public double? DeliveryMaxDistance { get; set; }
     public double AverageVehicleSpeedKmH { get; set; }
     public double AverageMotorcycleSpeedKmH { get; set; }
