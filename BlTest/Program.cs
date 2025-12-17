@@ -743,6 +743,7 @@ internal class Program
         Console.WriteLine("4: Forward System Clock");
         Console.WriteLine("5: Get Configuration");
         Console.WriteLine("6: Set Configuration");
+        Console.Write("Enter your choice: ");
 
         int choice;
         while (!int.TryParse(Console.ReadLine(), out choice) || !Enum.IsDefined(typeof(AdminMenuOptions), choice))

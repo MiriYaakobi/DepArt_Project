@@ -37,10 +37,25 @@ internal static class DeliveryManager
         // cordinates of the company (source)
         (double companyLat, double companyLon) = OrderManager.GetCompanyCoordinates();
 
+        if (orderLat == 0 || orderLon == 0)
+        {
+            // default address value in Israel for routing to work
+            orderLat = 32.07;
+            orderLon = 34.77;
+        }
+
         // calculate actual distance and estimated time
-        (double actualDistance, TimeSpan estimatedTime)? routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
-            companyLat, companyLon, orderLat, orderLon, shippingType
-        );
+        (double actualDistance, TimeSpan estimatedTime)? routingResult;
+        try
+        {
+            routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
+                companyLat, companyLon, orderLat, orderLon, shippingType
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BO.BlInvalidOperationException($"Routing failed. Please check internet and coordinates. Internal error: {ex.Message}");
+        }
 
         if (!routingResult.HasValue)
         {
@@ -83,6 +98,12 @@ internal static class DeliveryManager
         DO.Order doOrder = OrderManager.GetExistingOrder(doDelivery.OrderId);
         DO.Courier doCourier = CourierManager.GetExistingCourier(courierId);
 
+        // check courier assigned to delivery
+        if (doDelivery.CourierId != courierId)
+        {
+            throw new BO.BlInvalidOperationException($"Courier {courierId} is not assigned to delivery {deliveryId}.");
+        }
+
         // check courier ID matches
         if (doDelivery.DeliveryEndTime.HasValue)
         {
@@ -122,14 +143,12 @@ internal static class DeliveryManager
     /// <exception cref="InvalidOperationException"></exception>
     private static DO.Delivery GetExistingDelivery(int deliveryId)
     {
-        try
+        var delivery = s_dal.Delivery.Read(deliveryId);
+        if (delivery == null)
         {
-            return s_dal.Delivery.Read(deliveryId)!;
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            throw new InvalidOperationException($"Delivery with ID {deliveryId} does not exist.");
-        }
+            throw new BO.BlDoesNotExistException($"Delivery with ID {deliveryId} does not exist.");
+        } 
+        return delivery;
     }
 
     /// <summary>

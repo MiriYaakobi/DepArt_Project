@@ -118,13 +118,9 @@ internal class CourierImplementation : ICourier
 
         //sort the list if a sort field is provided
         if (sortBy.HasValue)
-        {
             couriers = CourierManager.SortCouriersBy(couriers, sortBy.Value);
-        }
         else
-        {
             couriers = couriers.OrderBy(c => c.Id);
-        }
 
         return couriers;
     }

@@ -1,9 +1,10 @@
 ﻿namespace BlImplementation;
 using BLApi;
-using System;
+using DalApi;
 using Helpers;
+using System;
 
-internal class OrderImplementation : IOrder
+internal class OrderImplementation : BLApi.IOrder
 {
     /// <summary>
     /// cancels an existing order in the system.
@@ -93,7 +94,6 @@ internal class OrderImplementation : IOrder
         try
         {
             // The helper handles Routing, Geocoding, and DO.Delivery creation using AdminManager.Now.
-            // הערה: נשתמש ב-DeliveryManager כפי שתכננו.
             DeliveryManager.CreateNewDeliveryForOrder(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
         }
         catch (InvalidOperationException ex)
@@ -109,10 +109,7 @@ internal class OrderImplementation : IOrder
     public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, double endLat, double endLon)
     {
         // control access: only the assigned courier can report completion
-        if (requestingUserId != courierId)
-        {
-            throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized. Only courier {courierId} can report completion for this delivery.");
-        }
+        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
         // call to Manager
         try
@@ -184,21 +181,21 @@ internal class OrderImplementation : IOrder
     /// <returns></returns>
     public IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null)
     {
-        // 1. בקרת גישה: רק Admin או השליח עצמו רשאי לצפות בהיסטוריה שלו
+        // access control: only Admin or the courier himself can view closed deliveries
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
-        // 2. קריאה ל-Manager: קבלת הרשימה הגולמית והממופה
+        // call to Manager: get the raw mapped list
         IEnumerable<BO.ClosedDeliveryInList> closedDeliveries = DeliveryManager.GetClosedDeliveriesForCourier(courierId, filterByType);
 
-        // 3. מימוש המיון (Sort)
+        // Implement sorting
         if (sortBy.HasValue)
         {
-            // המיון יבוצע במתודת עזר ב-DeliveryManager
+            // sorting will be done in a helper method in DeliveryManager
             closedDeliveries = DeliveryManager.SortClosedDeliveries(closedDeliveries, sortBy.Value);
         }
         else
         {
-            // ברירת מחדל: מיון לפי סוג סיום משלוח סטטוס עמידה בזמנים (OrderClosedStatus)
+            // Default: sort by delivery end status (OrderClosedStatus)
             closedDeliveries = closedDeliveries.OrderBy(d => d.OrderClosedStatus);
         }
 
@@ -277,14 +274,10 @@ internal class OrderImplementation : IOrder
 
         // sorting
         if (sortBy.HasValue)
-        {
             orders = OrderManager.SortOrdersBy(orders, sortBy.Value);
-        }
         else
-        {
             // default sort by StatusOfOrder
             orders = orders.OrderBy(o => o.StatusOfOrder);
-        }
 
         return orders;
     }
@@ -303,15 +296,11 @@ internal class OrderImplementation : IOrder
 
         // Implement sorting
         if (sortBy.HasValue)
-        {
             // sorting will be done in a helper method in DeliveryManager
             openOrders = DeliveryManager.SortOpenOrders(openOrders, sortBy.Value);
-        }
         else
-        {
             // default sort by TimeLinessStatus
             openOrders = openOrders.OrderBy(o => o.TimeLinessStatus);
-        }
 
         return openOrders;
     }

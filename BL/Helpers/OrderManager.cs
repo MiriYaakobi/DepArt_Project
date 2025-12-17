@@ -131,6 +131,9 @@ internal static class OrderManager
         {
             int orderId = doOrder.Id;
 
+            // find active delivery if any
+            var activeDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime == null).FirstOrDefault();
+
             // calculate statuses
             BO.OrderStatus statusOfOrder = CalculateOrderStatus(orderId);
             BO.ScheduleStatus timeLinessStatus = CalculateScheduleStatus(orderId);
@@ -162,15 +165,11 @@ internal static class OrderManager
             // calculate remaining time and air distance
             DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
             TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
-            double airDistance = Tools.GetAirDistance(
-                companyCoords.Latitude,
-                companyCoords.Longitude,
-                doOrder.Latitude,
-                doOrder.Longitude
-            );
+            double airDistance = Tools.GetAirDistance(companyCoords.Latitude, companyCoords.Longitude, doOrder.Latitude, doOrder.Longitude);
 
             return new BO.OrderInList
             {
+                Id = activeDelivery?.Id,
                 OrderId = orderId,
                 TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
                 AirDistance = airDistance,
@@ -227,7 +226,7 @@ internal static class OrderManager
         // check for existing deliveries
         if (s_dal.Delivery.ReadAll(d => d.OrderId == orderId).Any())
         {
-            throw new InvalidOperationException($"Cannot delete Order {orderId}: order is associated with existing deliveries (history).");
+            throw new BO.BlCannotDeleteException($"Cannot delete Order {orderId}: order is associated with existing deliveries (history).");
         }
 
         // attempt deletion
@@ -235,9 +234,9 @@ internal static class OrderManager
         {
             s_dal.Order.Delete(orderId);
         }
-        catch (DO.DalDoesNotExistException)
+        catch (DO.DalDoesNotExistException ex)
         {
-            throw new InvalidOperationException($"Order with ID {orderId} does not exist and cannot be deleted.");
+            throw new BO.BlDoesNotExistException($"Order with ID {orderId} does not exist and cannot be deleted.", ex);
         }
     }
 
@@ -315,7 +314,7 @@ internal static class OrderManager
 
         if (!closedDeliveries.Any())
         {
-            throw new InvalidOperationException($"Order ID={orderId} has no closed deliveries.");
+            throw new BO.BlInvalidOperationException($"Order ID={orderId} has no closed deliveries.");
         }
 
         return closedDeliveries.Max(d => d.DeliveryEndTime!.Value);
@@ -451,9 +450,9 @@ internal static class OrderManager
         {
             return s_dal.Order.Read(orderId)!;
         }
-        catch (DO.DalDoesNotExistException)
+        catch (DO.DalDoesNotExistException ex)
         {
-            throw new InvalidOperationException($"Order with ID {orderId} does not exist.");
+            throw new BO.BlDoesNotExistException($"Order with ID {orderId} does not exist.", ex);
         }
     }
 
@@ -511,8 +510,17 @@ internal static class OrderManager
     /// </summary>
     internal static (double Latitude, double Longitude) GetCompanyCoordinates()
     {
-        // Using null-coalescing operator to provide default values in case of null
-        return (s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0);
+        // try to get from dal config
+        double? lat = s_dal.Config.CompenyLatitude;
+        double? lon = s_dal.Config.CompenyLongitude;
+
+        // if not set, return default hardcoded values
+        if (lat == null || lon == null || lat == 0 || lon == 0)
+        {
+            return (32.0641632, 34.7692375); // Default company coordinates
+        }
+
+        return (lat.Value, lon.Value);
     }
 
     /// <summary>

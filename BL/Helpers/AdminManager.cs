@@ -83,7 +83,7 @@ internal static class AdminManager //stage 4
             var coordinates = Tools.GetCoordinatesOfAddressSync(configuration.CompenyAddress ?? "");
 
             if (coordinates == null)
-                throw new ArgumentException($"Company address '{configuration.CompenyAddress}' is invalid or could not be found.");
+                throw new BO.BlDoesNotExistException($"Company address '{configuration.CompenyAddress}' is invalid or could not be found.");
 
             s_dal.Config.CompenyAddress = configuration.CompenyAddress;
             s_dal.Config.CompenyLatitude = coordinates.Value.Latitude;

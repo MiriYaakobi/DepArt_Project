@@ -131,13 +131,15 @@ internal static class Tools
         if (string.IsNullOrWhiteSpace(address))
             return null;
 
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+
         try
         {
             // encoding the address for URL
             string encodedAddress = HttpUtility.UrlEncode(address);
 
             // Building the LocationIQ API URL (Forward Geocoding)
-            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={apiKey}&q={encodedAddress}&format=json";
+            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={effectiveKey}&q={encodedAddress}&format=json";
 
             // Performing a synchronous web request using s_httpClient.GetAsync(apiUrl).Result
             // Throws an HttpRequestException if there is a network-level failure (e.g., Timeout)
@@ -157,8 +159,8 @@ internal static class Tools
                         // Extracting the coordinates (lat/lon)
                         if (firstResult.TryGetProperty("lat", out JsonElement latElement) &&
                             firstResult.TryGetProperty("lon", out JsonElement lonElement) &&
-                            double.TryParse(latElement.GetString(), out double latitude) &&
-                            double.TryParse(lonElement.GetString(), out double longitude))
+                            double.TryParse(latElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double latitude) &&
+                            double.TryParse(lonElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double longitude))
                         {
                             return (latitude, longitude);
                         }
@@ -168,22 +170,19 @@ internal static class Tools
 
             // If the status code was not successful (e.g., 400 Bad Request, 403 Forbidden)
             string errorContent = response.Content.ReadAsStringAsync().Result;
-            throw new InvalidOperationException($"ERROR: Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
+            throw new BO.BlInvalidOperationException($"ERROR: Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
         }
         catch (HttpRequestException ex)
         {
-            // Network error (e.g., no connection, Timeout), throw a transient system exception
-            throw new InvalidOperationException($"Network error connecting to Geocoding service: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"Network error connecting to Geocoding service: {ex.Message}", ex);
         }
-        catch (Exception ex) when (ex is JsonException || ex is InvalidOperationException)
+        catch (Exception ex) when (ex is System.Text.Json.JsonException || ex is InvalidOperationException)
         {
-            // JSON parsing errors or errors thrown from the API
-            throw;
+            throw new BO.BlInvalidOperationException($"Failed to parse Geocoding response: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            // Unexpected errors
-            throw new Exception($"An unexpected error occurred during geocoding: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"An unexpected error occurred during geocoding: {ex.Message}", ex);
         }
     }
 
@@ -204,36 +203,32 @@ internal static class Tools
     internal static (double ActualDistance, TimeSpan EstimatedTime)? GetActualDistanceAndEstimatedTimeSync(
           double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
     {
-        // Using the static instance we defined above: s_httpClient
-        var client = s_httpClient;
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
 
         // Determine the travel profile for the API based on the shipping type
-        string profile;
-        switch (shippingType)
+        string profile = shippingType switch
         {
-            case BO.DeliveryType.Car:
-            case BO.DeliveryType.Motorcycle:
-                profile = "driving"; // LocationIQ uses "driving" for vehicles
-                break;
-            case BO.DeliveryType.Bicycle:
-                profile = "cycling";
-                break;
-            case BO.DeliveryType.ByFoot:
-                profile = "foot";
-                break;
-            default:
-                throw new ArgumentException($"Unsupported shipping type for routing: {shippingType}.");
-        }
+            BO.DeliveryType.Car or BO.DeliveryType.Motorcycle => "driving",
+            BO.DeliveryType.Bicycle => "cycling",
+            _ => "walking"
+        };
 
         try
         {
             // Building the API URL for LocationIQ Routing
             // The location is in the format: lon1,lat1;lon2,lat2
-            string coordinates = $"{startLon},{startLat};{endLon},{endLat}";
-            string apiUrl = $"https://us1.locationiq.com/v1/directions/v2/route/{profile}/{coordinates}?key={apiKey}&overview=false";
+            string coordinates = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0},{1};{2},{3}", startLon, startLat, endLon, endLat);
+
+            string apiUrl = $"https://us1.locationiq.com/v1/directions/driving/{coordinates}?key={effectiveKey}&overview=false";
+
+            if (profile != "driving")
+                apiUrl = apiUrl.Replace("driving", profile);
+
+            //Console.WriteLine($"\n[DEBUG] New URL Format: {apiUrl}\n");
 
             // Performing a synchronous network read
-            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
+            HttpResponseMessage response = s_httpClient.GetAsync(apiUrl).Result;
 
             if (response.IsSuccessStatusCode)
             {
@@ -254,7 +249,7 @@ internal static class Tools
                         {
                             // Extracting the data
                             double actualDistanceMeters = distanceElement.GetDouble(); // meters
-                            double durationSeconds = durationElement.GetDouble();       // seconds
+                            double durationSeconds = durationElement.GetDouble(); // seconds
 
                             // Unit conversion: meters to kilometers, seconds to TimeSpan
                             double actualDistanceKm = actualDistanceMeters / 1000.0;
@@ -268,15 +263,16 @@ internal static class Tools
 
             // If we reach here, the API did not return a successful route
             string errorContent = response.Content.ReadAsStringAsync().Result;
-            throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
+            //throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
+            throw new BO.BlInvalidOperationException($"Routing API failed. Status: {response.StatusCode}. Details: {errorContent}");
         }
         catch (HttpRequestException ex)
         {
-            throw new InvalidOperationException($"Network error connecting to Routing service: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"Network error connecting to Routing service: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            throw new Exception($"An unexpected error occurred during routing: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"An unexpected error occurred during routing: {ex.Message}", ex);
         }
     }
 

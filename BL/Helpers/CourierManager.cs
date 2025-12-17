@@ -25,11 +25,11 @@ internal static class CourierManager
         try
         {
             s_dal.Courier.Read(courier.Id);
-            throw new DO.DalDoesNotExistException($"Courier with ID {courier.Id} already exists.");
+            throw new BO.BlAlreadyExistsException($"Courier with ID {courier.Id} already exists in the system.");
         }
         catch (DO.DalDoesNotExistException)
         {
-
+           
         }
 
         // Mapping BO to DO and creating the courier
@@ -356,16 +356,13 @@ internal static class CourierManager
     /// <exception cref="InvalidOperationException"></exception>
     internal static DO.Courier GetExistingCourier(int courierId)
     {
-        try
+        // retrieve the courier from DAL
+        var courier = s_dal.Courier.Read(courierId);
+        if (courier == null)
         {
-            // retrieve existing courier
-            return s_dal.Courier.Read(courierId)!;
+            throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist in the system.");
         }
-        catch (DO.DalDoesNotExistException)
-        {
-            // courier not found
-            throw;
-        }
+        return courier;
     }
 
     /// <summary>
