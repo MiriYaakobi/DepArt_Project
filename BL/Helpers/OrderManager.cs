@@ -5,15 +5,19 @@ namespace Helpers;
 /// <summary>
 /// Manages order-related operations.
 /// </summary>
+/// <remarks>
+/// static class containing methods for creating, reading, updating, deleting,
+/// </remarks>
 internal static class OrderManager
 {
+    //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// Creates a new order after validating input and geocoding the address.
+    /// creates a new order after validating input and geocoding the address.
     /// </summary>
-    /// <param name="order">BO.Order entity to create.</param>
-    /// <exception cref="ArgumentException">If the order data is invalid (including address not found).</exception>
+    /// <param name="order"></param>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
     internal static void CreateOrder(BO.Order order)
     {
         // verify input validity
@@ -46,8 +50,11 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Reads a single order by ID, calculating its statuses and related data.
+    /// gets a full order by ID, calculating its statuses and related data.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     internal static BO.Order ReadOrder(int orderId)
     {
         // retrieve existing order
@@ -97,31 +104,27 @@ internal static class OrderManager
             TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
             Description = doOrder.Description,
             Address = doOrder.Address,
-
             Latitude = doOrder.Latitude,
             Longitude = doOrder.Longitude,
             AirDistance = airDistance,
-
             CustomerName = doOrder.CustomerName,
             CustomerPhone = doOrder.CustomerPhone,
             PackageDetails = doOrder.PackageDetails,
             OrderOpeningTime = doOrder.OrderOpeningTime,
-
             ExpectedDeliveryTime = expectedDeliveryTime,
-
             MaxDeliveryTime = maxDeliveryTime,
             StatusOfOrder = statusOfOrder,
             TimeLinessStatus = timeLinessStatus,
-
             RemainingDeliveryTime = remainingDeliveryTime,
-
             DeliveryList = deliveryList
         };
     }
 
     /// <summary>
-    /// Reads all orders, calculating their statuses and related data for each.
+    /// Reads all orders, calculating their statuses and related data for listing.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <returns></returns>
     internal static IEnumerable<BO.OrderInList> ReadAllOrders()
     {
         var dalOrders = s_dal.Order.ReadAll().ToList();
@@ -184,10 +187,11 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Updates an existing order after validating its status and input data.
+    /// updates an existing order in the system.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
     /// <param name="order"></param>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static void UpdateOrder(BO.Order order)
     {
         // check for existing order and validate input
@@ -197,9 +201,7 @@ internal static class OrderManager
         // check order status
         BO.OrderStatus currentStatus = CalculateOrderStatus(order.Id);
         if (currentStatus == BO.OrderStatus.Delivered || currentStatus == BO.OrderStatus.Refused || currentStatus == BO.OrderStatus.Cancelled)
-        {
             throw new BO.BlInvalidOperationException($"Cannot update Order {order.Id}. Status is {currentStatus}.");
-        }
 
         // update fields
         DO.Order updatedOrder = existingOrder with
@@ -217,17 +219,16 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Deletes an order from the system, only if it is not associated with any delivery records.
+    /// deletes an order if no deliveries are associated with it.
     /// </summary>
-    /// <param name="orderId">The ID of the order to delete.</param>
-    /// <exception cref="InvalidOperationException">If the order is not found or is associated with deliveries.</exception>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlCannotDeleteException"></exception>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
     internal static void DeleteOrder(int orderId)
     {
         // check for existing deliveries
         if (s_dal.Delivery.ReadAll(d => d.OrderId == orderId).Any())
-        {
             throw new BO.BlCannotDeleteException($"Cannot delete Order {orderId}: order is associated with existing deliveries (history).");
-        }
 
         // attempt deletion
         try
@@ -241,13 +242,14 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Helper method to calculates the estimated duration of a delivery for an active order using courier type and routing service.
+    /// calculates the estimated delivery duration for an ongoing delivery.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <param name="doDelivery">The DO.Delivery entity which is currently in progress.</param>
-    /// <param name="doOrder">The target DO.Order entity.</param>
-    /// <returns>The estimated duration (TimeSpan) of the delivery from company to destination.</returns>
-    /// <exception cref="BO.BlDoesNotExistException">Thrown if courier or order are not found.</exception>
-    /// <exception cref="BO.BlInvalidOperationException">Thrown if routing service fails.</exception>
+    /// <param name="doDelivery"></param>
+    /// <param name="doOrder"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static TimeSpan CalculateEstimatedDeliveryDuration(DO.Delivery doDelivery, DO.Order doOrder)
     {
         // find the courier details
@@ -275,21 +277,19 @@ internal static class OrderManager
         );
 
         if (!routingResult.HasValue)
-        {
             // routing service failed
             throw new BO.BlInvalidOperationException($"Routing service failed to estimate time for order {doOrder.Id} and courier {doCourier.Id}.");
-        }
 
         // Return the estimated time
         return routingResult.Value.estimatedTime;
     }
 
     /// <summary>
-    /// Calculates the maximum allowed delivery time for a given order.
+    /// calculates the maximum delivery time for an order based on its opening time and configured max range.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <param name="orderId">The ID of the order.</param>
-    /// <returns>DateTime representing the maximum end time.</returns>
-    /// <exception cref="InvalidOperationException">If the order is not found.</exception>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     internal static DateTime CalculateMaxDeliveryTime(int orderId)
     {
         // get existing order
@@ -303,65 +303,66 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Gets the last delivery end time for a given order.
+    /// gets the end time of the last closed delivery for an order.
     /// </summary>
-    /// <param name="orderId">The ID of the order.</param>
-    /// <returns>DateTime representing the last delivery end time.</returns>
-    /// <exception cref="InvalidOperationException">If there are no closed deliveries for this order.</exception>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static DateTime GetLastDeliveryEndTime(int orderId)
     {
         var closedDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue);
 
         if (!closedDeliveries.Any())
-        {
             throw new BO.BlInvalidOperationException($"Order ID={orderId} has no closed deliveries.");
-        }
 
         return closedDeliveries.Max(d => d.DeliveryEndTime!.Value);
     }
 
     /// <summary>
-    /// Calculates the schedule status (OnTime/InRisk/Late) of the order.
+    /// calculates the schedule status of an order based on its delivery records and timing.
     /// </summary>
-    /// <param name="orderId">The ID of the order.</param>
-    /// <returns>BO.ScheduleStatus</returns>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     internal static BO.ScheduleStatus CalculateScheduleStatus(int orderId)
     {
-        // first read: ensure order exists
-        s_dal.Order.Read(orderId);
+        //read existing order
+        DO.Order? order = s_dal.Order.Read(orderId);
 
-        // check for current open delivery
-        DO.Delivery? currentDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime == null).FirstOrDefault();
+        //if order not found, return OnTime by default
+        if (order == null)
+            return BO.ScheduleStatus.OnTime;
 
-        DateTime maxDeliveryTime = CalculateMaxDeliveryTime(orderId);
-        DateTime now = AdminManager.Now; // use current clock time
-        TimeSpan riskTimeSpan = s_dal.Config.RiskRange; // risk time span from config
+        // calculate max delivery time
+        DateTime maxDeliveryTime = order.OrderOpeningTime.AddDays(7);
 
-        // check if order is closed or open
-        if (currentDelivery == null && s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue).Any())
+        // get risk range and current clock from config
+        TimeSpan riskRange = s_dal.Config.RiskRange;
+        DateTime now = AdminManager.Now;
+
+        // check for finished delivery
+        DO.Delivery? finishedDelivery = s_dal.Delivery
+            .ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime != null)
+            .FirstOrDefault();
+
+        //if finished delivery exists, determine status based on its end time
+        if (finishedDelivery != null)
         {
-            DateTime timeOfEnd = GetLastDeliveryEndTime(orderId);
+            if (finishedDelivery.DeliveryEndTime > maxDeliveryTime)
+                return BO.ScheduleStatus.Late;
 
-            if (timeOfEnd > maxDeliveryTime)
-            {
-                return BO.ScheduleStatus.Late; // provided late
-            }
-            return BO.ScheduleStatus.OnTime; // provided on time
+            return BO.ScheduleStatus.OnTime;
         }
-        //if order is still open
+
+        // no finished delivery, check current time against max delivery time
         else
         {
-            TimeSpan timeRemaining = maxDeliveryTime - now;
+            if (now > maxDeliveryTime)
+                return BO.ScheduleStatus.Late;
 
-            if (timeRemaining.TotalSeconds <= 0)
-            {
-                return BO.ScheduleStatus.Late; // Exceeded maximum delivery time
-            }
-            if (timeRemaining <= riskTimeSpan)
-            {
-                return BO.ScheduleStatus.InRisk; // in risk of being late
-            }
-            return BO.ScheduleStatus.OnTime; // there is sufficient time remaining
+            if (maxDeliveryTime - now <= riskRange)
+                return BO.ScheduleStatus.InRisk;
+
+            return BO.ScheduleStatus.OnTime;
         }
     }
 
@@ -377,10 +378,9 @@ internal static class OrderManager
 
         // find current open delivery
         DO.Delivery? currentDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime == null).FirstOrDefault();
+        
         if (currentDelivery != null)
-        {
             return BO.OrderStatus.InProgress; // there is an ongoing delivery
-        }
 
         // find last closed delivery
         DO.Delivery? lastClosedDelivery = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue)
@@ -389,31 +389,23 @@ internal static class OrderManager
 
         // determine status based on last closed delivery
         if (lastClosedDelivery == null)
-        {
             return BO.OrderStatus.Open; // no deliveries yet- order is open
-        }
 
-        switch (lastClosedDelivery.OrderClosedStatus)
+        return lastClosedDelivery.OrderClosedStatus switch
         {
-            case DO.OrderEndStatus.Delivered:
-                return BO.OrderStatus.Delivered;
-            case DO.OrderEndStatus.Refused:
-                return BO.OrderStatus.Refused;
-            case DO.OrderEndStatus.Cancelled:
-                return BO.OrderStatus.Cancelled;
-
-            case DO.OrderEndStatus.InviterNotFound:
-            case DO.OrderEndStatus.Failed:
-                // These statuses imply the order is still open for future delivery attempts
-                return BO.OrderStatus.Open;
-            default:
-                return BO.OrderStatus.Open;
-        }
+            DO.OrderEndStatus.Delivered => BO.OrderStatus.Delivered,
+            DO.OrderEndStatus.Refused => BO.OrderStatus.Refused,
+            DO.OrderEndStatus.Cancelled => BO.OrderStatus.Cancelled,
+            _ => BO.OrderStatus.Open
+        };
     }
 
     /// <summary>
-    /// Maps delivery records for a given order into BO.DeliveryPerOrderInList objects.
+    /// maps the list of closed deliveries for a specific order.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.DeliveryPerOrderInList> MapDeliveryListForOrder(int orderId)
     {
         var closedDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue);
@@ -442,8 +434,11 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// helper method to get existing order or throw exception if not found.
+    /// gets an existing order or throws if not found.
     /// </summary>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
     internal static DO.Order GetExistingOrder(int orderId)
     {
         try
@@ -457,12 +452,11 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Asserts that the requesting user has permission to read the full order details.
-    /// Permissions: Admin, Courier assigned to the open delivery, or the Customer who placed the order.
+    /// asserts that the requesting user is authorized to read the specified order. 
     /// </summary>
-    /// <remarks>
-    /// Note: Customer check is commented out as DO.Order structure is missing the CustomerId field.
-    /// </remarks>
+    /// <param name="requestingUserId"></param>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlNotAuthorizedException"></exception>
     internal static void AssertReadAuthorization(int requestingUserId, int orderId)
     {
         DO.Order doOrder = GetExistingOrder(orderId);
@@ -485,16 +479,16 @@ internal static class OrderManager
 
         // If there is an open delivery and requestingUserId is the assigned courier
         if (openDelivery != null && openDelivery.CourierId == requestingUserId)
-        {
             return;
-        }
 
         throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to view Order ID {doOrder.Id}.");
     }
 
     /// <summary>
-    /// helper method to validate order input data.
+    /// asserts the validity of order input data.
     /// </summary>
+    /// <param name="order"></param>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
     private static void AssertOrderInputValidity(BO.Order order)
     {
         if (string.IsNullOrEmpty(order.CustomerName) || order.CustomerName.Length < 2)
@@ -506,8 +500,9 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// helper method to get company coordinates from config.
+    /// gets the company coordinates from config or defaults.
     /// </summary>
+    /// <returns></returns>
     internal static (double Latitude, double Longitude) GetCompanyCoordinates()
     {
         // try to get from dal config
@@ -516,18 +511,15 @@ internal static class OrderManager
 
         // if not set, return default hardcoded values
         if (lat == null || lon == null || lat == 0 || lon == 0)
-        {
             return (32.0641632, 34.7692375); // Default company coordinates
-        }
 
         return (lat.Value, lon.Value);
     }
 
     /// <summary>
-    /// Helper method to calculates an array representing the summary quantities of orders, 
-    /// grouped by a combination of OrderStatus and ScheduleStatus.
+    /// gets a summary array of order quantities by status and schedule status.
     /// </summary>
-    /// <returns>An array of integers where the index corresponds to the combined status.</returns>
+    /// <returns></returns>
     internal static int[] GetOrderSummaryQuantities()
     {
         // get all order IDs
@@ -561,17 +553,19 @@ internal static class OrderManager
         {
             // safety check for array bounds
             if (result.CombinedKey >= 0 && result.CombinedKey < totalSummarySize)
-            {
                 summaryArray[result.CombinedKey] = result.Count;
-            }
         }
 
         return summaryArray;
     }
 
     /// <summary>
-    /// Sorts a collection of orders based on the specified field.
+    /// sorts a collection of orders based on the specified OrderFieldSort.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="orders"></param>
+    /// <param name="sortBy"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.OrderInList> SortOrdersBy(IEnumerable<BO.OrderInList> orders, BO.OrderFieldSort sortBy)
     {
         return sortBy switch
@@ -589,9 +583,14 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Filters a collection of orders based on the specified OrderFieldSort and object value.
-    /// This method handles casting the filter value based on the required property type.
+    /// filters a collection of orders based on the specified OrderFieldSort and filter value.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="orders"></param>
+    /// <param name="filterBy"></param>
+    /// <param name="filterValue"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
     internal static IEnumerable<BO.OrderInList> FilterOrdersBy(IEnumerable<BO.OrderInList> orders, BO.OrderFieldSort filterBy, object filterValue)
     {
         // if no filter value is provided, return the original collection
@@ -671,8 +670,11 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// Cancels the order by creating a dummy delivery (if Open) or updating the open delivery (if InProgress).
+    /// cancels an order based on its current status.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static void CancelOrder(int orderId)
     {
         // retrieve existing order and current status
@@ -683,9 +685,7 @@ internal static class OrderManager
 
         // logic check: cannot cancel if already Delivered, Refused, or Cancelled
         if (currentStatus == BO.OrderStatus.Delivered || currentStatus == BO.OrderStatus.Refused || currentStatus == BO.OrderStatus.Cancelled)
-        {
             throw new BO.BlInvalidOperationException($"Order {orderId} cannot be cancelled because its current status is {currentStatus}.");
-        }
 
         // handle cancellation based on current status
         if (currentStatus == BO.OrderStatus.Open)

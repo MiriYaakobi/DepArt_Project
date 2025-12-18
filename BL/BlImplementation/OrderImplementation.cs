@@ -1,10 +1,15 @@
 ﻿namespace BlImplementation;
 using BLApi;
-using DalApi;
 using Helpers;
 using System;
 
-internal class OrderImplementation : BLApi.IOrder
+/// <summary>
+/// a business logic implementation for order-related operations.
+/// </summary>
+/// <remarks>
+/// ensures proper authorization, validation, and error handling.
+/// </remarks>
+internal class OrderImplementation : IOrder
 {
     /// <summary>
     /// cancels an existing order in the system.
@@ -36,106 +41,60 @@ internal class OrderImplementation : BLApi.IOrder
             throw new BO.BlInvalidOperationException(ex.Message, ex);
         }
     }
-
+   
     /// <summary>
-    /// Assigns an 'Open' order to a specific courier, creating a new Delivery record in the system.
+    /// courier chooses an open order to deliver.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <param name="requestingUserId">The ID of the user attempting the operation (Admin or Courier).</param>
-    /// <param name="courierId">The ID of the courier selected to handle the delivery.</param>
-    /// <param name="orderId">The ID of the order to be assigned.</param>
-    /// <exception cref="BlNotAuthorizedException">Thrown if the requesting user is neither the Admin nor the target Courier.</exception>
-    /// <exception cref="BlDoesNotExistException">Thrown if the Order or Courier is not found.</exception>
-    /// <exception cref="BlInvalidOperationException">Thrown if the Order is not 'Open' or the Courier is inactive.</exception>
+    /// <param name="requestingUserId"></param>
+    /// <param name="courierId"></param>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void ChooseOrder(int requestingUserId, int courierId, int orderId)
     {
-        //Only Admin or the Courier himself can assign the order.
+        // access control: only Admin or the courier himself can choose an order
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
-        // order existence and status check
-        BO.Order boOrder;
-        try
-        {
-            // ReadOrder handles DAL-level existence check and maps the full BO entity
-            boOrder = OrderManager.ReadOrder(orderId);
-        }
-        catch (BO.BlDoesNotExistException ex)
-        {
-            // Translates exception if the order does not exist
-            throw new BO.BlDoesNotExistException($"Order ID {orderId} was not found.", ex);
-        }
+        // validate order status
+        BO.Order boOrder = OrderManager.ReadOrder(orderId);
 
-        // check if the order is not in 'Open' status, it cannot be chosen.
+        // only 'Open' orders can be assigned
         if (boOrder.StatusOfOrder != BO.OrderStatus.Open)
-        {
-            throw new BO.BlInvalidOperationException($"Order {orderId} cannot be chosen: current status is {boOrder.StatusOfOrder}. Only 'Open' orders are eligible for assignment.");
-        }
+            throw new BO.BlInvalidOperationException($"Order {orderId} is not available. Only 'Open' orders can be assigned.");
 
-        // courier existence and status check
-        BO.Courier boCourier;
-        try
-        {
-            // ReadCourier handles DAL-level existence check and maps the full BO entity
-            boCourier = CourierManager.ReadCourier(courierId);
-        }
-        catch (BO.BlDoesNotExistException ex)
-        {
-            // Translates exception if the courier does not exist
-            throw new BO.BlDoesNotExistException($"Courier ID {courierId} was not found.", ex);
-        }
+        // validate courier status
+        BO.Courier boCourier = CourierManager.ReadCourier(courierId);
 
-        // Courier must be active to accept a new delivery.
+        // only active couriers can choose orders
         if (!boCourier.IsActive)
-        {
-            throw new BO.BlInvalidOperationException($"Courier {courierId} is currently inactive and cannot accept new orders.");
-        }
+            throw new BO.BlInvalidOperationException($"Courier {courierId} is inactive.");
 
-        // All validations passed, proceed to create the Delivery record.
-        // The helper handles Routing, Geocoding, and DO.Delivery creation using AdminManager.Now.
-        try
-        {
-            // The helper handles Routing, Geocoding, and DO.Delivery creation using AdminManager.Now.
-            DeliveryManager.CreateNewDeliveryForOrder(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // translate any internal exception to BL exception
-            throw new BO.BlInvalidOperationException($"Failed to assign order {orderId} to courier {courierId}.", ex);
-        }
+        // call to DeliveryManager to create the delivery record
+        DeliveryManager.CreateNewDeliveryForOrder(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
     }
 
     /// <summary>
-    /// Updates a delivery record to 'Delivered' status upon successful completion by the courier.
+    /// completes an ongoing delivery by a specific courier.
     /// </summary>
-    public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, double endLat, double endLon)
+    /// <param name="requestingUserId"></param>
+    /// <param name="courierId"></param>
+    /// <param name="deliveryId"></param>
+    public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId)
     {
-        // control access: only the assigned courier can report completion
+        // access control: only Admin or the courier himself can complete a delivery
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
-        // call to Manager
-        try
-        {
-            // DeliveryManager handles:
-            // - Existence check for the delivery.
-            // - Status check to ensure it's open.
-            // - Update of the delivery record.
-            DeliveryManager.CompleteDeliveryUpdate(deliveryId, courierId, BO.OrderEndStatus.Delivered, endLat, endLon);
-        }
-        catch (BO.BlDoesNotExistException)
-        {
-            throw; // thrown if delivery does not exist
-        }
-        catch (BO.BlInvalidOperationException)
-        {
-            throw; // thrown if delivery is already closed or courier does not match
-        }
+        // call to DeliveryManager to complete the delivery
+        DeliveryManager.CompleteDeliveryUpdate(courierId, deliveryId);
     }
 
     /// <summary>
-    /// Creates a new order in the system after validating input and geocoding the address.
+    /// creates a new order in the system.
     /// </summary>
-    /// <param name="requestingUserId">The ID of the user requesting the operation.</param>
-    /// <param name="boOrder">The BO.Order object to create.</param>
-    /// <exception cref="BO.BlInvalidDataException">If input data or the address is invalid.</exception>
+    /// <param name="requestingUserId"></param>
+    /// <param name="boOrder"></param>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Create(int requestingUserId, BO.Order boOrder)
     {
         // call to Manager
@@ -157,22 +116,24 @@ internal class OrderImplementation : BLApi.IOrder
     }
 
     /// <summary>
-    /// Deletes an order from the system. (Intended for use in testing only).
+    /// deletes an existing order from the system.
     /// </summary>
-    /// <remarks>The business logic dictates that orders should not be permanently deleted in the live system;
-    /// this method throws a BlInvalidOperationException to enforce this policy.</remarks>
+    /// <param name="requestingUserId"></param>
+    /// <param name="orderId"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Delete(int requestingUserId, int orderId)
     {
         // justification: only Admin can attempt deletion
         AdminManager.AssertAdmin(requestingUserId);
 
         // conform to business logic: orders cannot be deleted, only cancelled
-        throw new BO.BlInvalidOperationException($"Order ID {orderId} cannot be deleted from the system due to business logic (only cancellation is allowed).");
+        throw new BO.BlInvalidOperationException($"Orders cannot be removed from the system.");
 
     }
 
     /// <summary>
-    /// Retrieves a list of closed deliveries for a specific courier, with optional filtering and sorting.
+    /// gets a list of closed deliveries for a specific courier, with optional filtering and sorting.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
@@ -202,6 +163,11 @@ internal class OrderImplementation : BLApi.IOrder
         return closedDeliveries;
     }
 
+    /// <summary>
+    /// gets summary quantities of orders by status.
+    /// </summary>
+    /// <param name="requestingUserId"></param>
+    /// <returns></returns>
     public int[] GetOrderSummaryQuantities(int requestingUserId)
     {
         // ensure only Admin can access this summary data
@@ -212,11 +178,12 @@ internal class OrderImplementation : BLApi.IOrder
     }
 
     /// <summary>
-    /// Retrieves the full logical details of a single order.
+    /// gets the details of a specific order by its ID, with authorization checks.
     /// </summary>
-    /// <param name="requestingUserId">The ID of the user requesting the operation.</param>
-    /// <param name="orderId">The ID of the order to retrieve.</param>
-    /// <returns>A full BO.Order object.</returns>
+    /// <param name="requestingUserId"></param>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public BO.Order Read(int requestingUserId, int orderId)
     {
         try
@@ -253,7 +220,7 @@ internal class OrderImplementation : BLApi.IOrder
     }
 
     /// <summary>
-    /// Reads all orders with optional sorting and filtering.
+    /// gets a list of orders with optional filtering and sorting.
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="sortBy"></param>
@@ -264,6 +231,7 @@ internal class OrderImplementation : BLApi.IOrder
     {
         AdminManager.AssertAdmin(requestingUserId);
 
+        // call to Manager: get the raw mapped list
         IEnumerable<BO.OrderInList> orders = OrderManager.ReadAllOrders();
 
         if (filterBy.HasValue && filterValue != null)
@@ -283,10 +251,14 @@ internal class OrderImplementation : BLApi.IOrder
     }
 
     /// <summary>
-    /// Retrieves a filtered and sorted list of 'Open' orders that are available for a specific courier to choose.
-    /// The list is restricted by the courier's maximum allowed distance.
+    /// gets all open orders available for a specific courier, with optional filtering and sorting.
     /// </summary>
-    public IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.OpenOrderFieldSort? sortBy = null)
+    /// <param name="requestingUserId"></param>
+    /// <param name="courierId"></param>
+    /// <param name="filterByType"></param>
+    /// <param name="sortBy"></param>
+    /// <returns></returns>
+    public IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType, BO.OpenOrderFieldSort? sortBy)
     {
         // access control: only Admin or the courier himself can view available open orders
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
@@ -300,19 +272,18 @@ internal class OrderImplementation : BLApi.IOrder
             openOrders = DeliveryManager.SortOpenOrders(openOrders, sortBy.Value);
         else
             // default sort by TimeLinessStatus
-            openOrders = openOrders.OrderBy(o => o.TimeLinessStatus);
+            openOrders = openOrders.OrderByDescending(o => o.TimeLinessStatus);
 
         return openOrders;
     }
 
     /// <summary>
-    /// Updates the changeable details of an existing order.
+    /// updates an existing order in the system.
     /// </summary>
-    /// <param name="requestingUserId">The ID of the user requesting the update.</param>
-    /// <param name="boOrder">The BO.Order object containing the updated fields.</param>
-    /// <exception cref="BO.BlNotAuthorizedException">If the user is not authorized (Admin only).</exception>
-    /// <exception cref="BO.BlDoesNotExistException">If the order ID is not found.</exception>
-    /// <exception cref="BO.BlInvalidOperationException">If the order is already closed (Delivered/Refused/Cancelled).</exception>
+    /// <param name="requestingUserId"></param>
+    /// <param name="boOrder"></param>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Update(int requestingUserId, BO.Order boOrder)
     {
         // update only allowed by Admin

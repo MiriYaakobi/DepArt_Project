@@ -135,9 +135,12 @@ public enum ClosedDeliveryFieldSort
     TimeOfEnd,
     TotalHandlingTime
 }
+
 /// <summary>
-/// 
+/// specifies the fields by which open order data can be sorted.
 /// </summary>
+/// <remarks>This enumeration is used to define the sorting criteria for open order-related operations. Each member
+/// </remarks>
 public enum OpenOrderFieldSort
 {
     Id,

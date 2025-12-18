@@ -1,5 +1,4 @@
-﻿using BO;
-using System.Collections;
+﻿using System.Collections;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Text;
@@ -18,19 +17,17 @@ internal static class Tools
 {
     // Static HttpClient instance for making HTTP requests
     private static readonly HttpClient s_httpClient = new HttpClient();
+
     // LocationIQ API key for geocoding and routing services
     private const string apiKey = "pk.b0ca8983fc24d5c07a7173ce946693f3";
 
     /// <summary>
-    /// Generates a string representation of the properties and their values for the specified object.
-    /// In writing this method, we used AI for accurate and correct use of Reflection.
+    /// generates a string representation of an object's public properties and their values using reflection.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <remarks>This method uses reflection to retrieve the properties of the object.  It is suitable for
-    /// debugging or logging purposes where a quick overview of an object's state is needed.</remarks>
-    /// <typeparam name="T">The type of the object whose properties are to be represented as a string.</typeparam>
-    /// <param name="t">The object instance to be converted to a string. Cannot be null.</param>
-    /// <returns>A string containing the names and values of the properties of the object.  If the object is null, returns
-    /// "Object is null".</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="t"></param>
+    /// <returns></returns>
     public static string ToStringProperty<T>(this T t)
     {
         // Handle null case
@@ -41,7 +38,7 @@ internal static class Tools
         StringBuilder sb = new StringBuilder(); // StringBuilder for efficient string concatenation
 
         // Header for the details
-        sb.AppendLine($"--- {type.Name} Details ---");
+        sb.AppendLine($"\n\n--- {type.Name} Details ---");
 
         // Get all public properties of the object
         PropertyInfo[] properties = type.GetProperties();
@@ -86,8 +83,10 @@ internal static class Tools
     }
 
     /// <summary>
-    /// Converts degrees to radians.
+    /// converts degrees to radians.
     /// </summary>
+    /// <param name="degrees"></param>
+    /// <returns></returns>
     private static double ToRadians(double degrees)
     {
         return degrees * (Math.PI / 180);
@@ -124,13 +123,18 @@ internal static class Tools
     /// <summary>
     /// Gets the geographical coordinates (latitude and longitude) for a given address using the LocationIQ API.
     /// The code to perform the synchronous network read and decode the JSON from the Geocoding/Routing service (LocationIQ)
-    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling).
+    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling)
     /// </summary>
+    /// <param name="address"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static (double Latitude, double Longitude)? GetCoordinatesOfAddressSync(string address)
     {
+        // Validate input
         if (string.IsNullOrWhiteSpace(address))
             return null;
 
+        // Use default API key if none provided
         string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
 
         try
@@ -150,8 +154,10 @@ internal static class Tools
                 // Parsing the JSON response
                 string resultJson = response.Content.ReadAsStringAsync().Result;
 
+                // The response is expected to be a JSON array of results
                 using (JsonDocument doc = JsonDocument.Parse(resultJson))
                 {
+                    // Check if we have at least one result
                     if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
                     {
                         JsonElement firstResult = doc.RootElement[0];
@@ -220,20 +226,22 @@ internal static class Tools
             string coordinates = string.Format(System.Globalization.CultureInfo.InvariantCulture,
                         "{0},{1};{2},{3}", startLon, startLat, endLon, endLat);
 
+            // Constructing the full API URL
             string apiUrl = $"https://us1.locationiq.com/v1/directions/driving/{coordinates}?key={effectiveKey}&overview=false";
 
+            // Replace "driving" with the appropriate profile if needed
             if (profile != "driving")
                 apiUrl = apiUrl.Replace("driving", profile);
-
-            //Console.WriteLine($"\n[DEBUG] New URL Format: {apiUrl}\n");
 
             // Performing a synchronous network read
             HttpResponseMessage response = s_httpClient.GetAsync(apiUrl).Result;
 
+            // Checking for successful response
             if (response.IsSuccessStatusCode)
             {
                 string resultJson = response.Content.ReadAsStringAsync().Result;
 
+                // Parsing the JSON response
                 using (JsonDocument doc = JsonDocument.Parse(resultJson))
                 {
                     // LocationIQ returns JSON with a "routes" field (array)
@@ -242,6 +250,7 @@ internal static class Tools
                     {
                         JsonElement route = routesElement[0];
 
+                        // Extracting distance and duration
                         if (route.TryGetProperty("distance", out JsonElement distanceElement) &&
                             route.TryGetProperty("duration", out JsonElement durationElement) &&
                             distanceElement.ValueKind == JsonValueKind.Number &&
@@ -286,7 +295,7 @@ internal static class Tools
     {
         if (string.IsNullOrEmpty(password))
         {
-            throw new BlInvalidDataException("Password cannot be empty");
+            throw new BO.BlInvalidDataException("Password cannot be empty");
         }
 
         //use SHA256 to hash the password

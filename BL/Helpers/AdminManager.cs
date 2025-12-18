@@ -1,5 +1,4 @@
-﻿//using BO;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Helpers;
 
@@ -184,9 +183,7 @@ internal static class AdminManager //stage 4
     public static void AssertAdmin(int requestingUserId)
     {
         if (requestingUserId != s_dal.Config.AdminId)
-        {
             throw new BO.BlNotAuthorizedException($"User ID {requestingUserId} is not authorized to perform this administrative action.");
-        }
     }
 
     /// <summary>

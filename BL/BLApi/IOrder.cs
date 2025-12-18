@@ -3,6 +3,7 @@
 /// <summary>
 /// Defines the operations available for managing order entities within the system.
 /// </summary>
+/// <remarks>This interface provides methods for creating, reading, updating, deleting, and managing orders.
 public interface IOrder
 {
     void Create(int requestingUserId, BO.Order boOrder);
@@ -12,7 +13,7 @@ public interface IOrder
     void Delete(int requestingUserId, int orderId);
     void Cancel(int requestingUserId, int orderId);
     int[] GetOrderSummaryQuantities(int requestingUserId);
-    void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, double endLat, double endLon);
+    void CompleteDelivery(int requestingUserId, int courierId, int deliveryId);
     void ChooseOrder(int requestingUserId, int courierId, int orderId);
     IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null);
     IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.OpenOrderFieldSort? sortBy = null);

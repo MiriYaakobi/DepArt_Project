@@ -2,6 +2,12 @@
 using BLApi;
 using Helpers;
 
+/// <summary>
+/// a courier implementation of the business logic layer
+/// </summary>
+/// <remarks>
+/// encapsulates all courier-related business logic operations
+/// </remarks>
 internal class CourierImplementation : ICourier
 {
     /// <summary>
@@ -20,6 +26,7 @@ internal class CourierImplementation : ICourier
 
         try
         {
+            //create the courier
             CourierManager.CreateCourier(boCourier);
         }
 
@@ -30,10 +37,11 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// deletes a courier from the system
+    /// deletes an existing courier from the system
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
+    /// <exception cref="BO.BlCannotDeleteException"></exception>
     /// <exception cref="BO.BlDoesNotExistException"></exception>
     public void Delete(int requestingUserId, int courierId)
     {
@@ -42,12 +50,11 @@ internal class CourierImplementation : ICourier
 
         // check if the courier has handled any orders
         if (CourierManager.IsCourierUsed(courierId))
-        {
             throw new BO.BlCannotDeleteException($"Cannot delete courier {courierId} because they have handled or are currently handling orders.");
-        }
 
         try
         {
+            //delete the courier
             CourierManager.DeleteCourier(courierId);
         }
 
@@ -58,7 +65,7 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// logs in a courier using their ID and password
+    /// logins a courier using their ID and password
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="password"></param>
@@ -79,11 +86,12 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// reads the details of a specific courier
+    /// gets the details of a specific courier
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
     /// <returns></returns>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
     public BO.Courier? Read(int requestingUserId, int courierId)
     {
         //access control: only admin or the courier themselves can read the details
@@ -94,15 +102,13 @@ internal class CourierImplementation : ICourier
 
         //handle case where courier does not exist
         if (boCourier == null)
-        {
             throw new BO.BlDoesNotExistException($"Courier with ID {courierId} does not exist.");
-        }
 
         return boCourier;
     }
 
     /// <summary>
-    /// reads all couriers with optional filtering and sorting
+    /// gets a list of couriers with optional filtering and sorting.
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="isActive"></param>
@@ -126,7 +132,7 @@ internal class CourierImplementation : ICourier
     }
 
     /// <summary>
-    /// updates the details of a specific courier
+    /// updates the details of an existing courier
     /// </summary>
     /// <param name="requestingUserId"></param>
     /// <param name="boCourier"></param>
