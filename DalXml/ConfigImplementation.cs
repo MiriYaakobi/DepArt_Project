@@ -51,15 +51,7 @@ internal class ConfigImplementation : IConfig
         Config.Reset();
     }
 
-    //We added for step 11, will we use later?
-    public int NextDeliveryId
-    {
-        get => Config.NextDeliveryId;
-    }
-    public int NextOrderId
-    { 
-        get => Config.NextOrderId; 
-    }
+    
     public int AdminId
     {
         get => Config.AdminId;

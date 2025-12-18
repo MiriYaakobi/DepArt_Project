@@ -1,5 +1,4 @@
-﻿using BO;
-using System.Collections;
+﻿using System.Collections;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Text;
@@ -18,19 +17,17 @@ internal static class Tools
 {
     // Static HttpClient instance for making HTTP requests
     private static readonly HttpClient s_httpClient = new HttpClient();
+
     // LocationIQ API key for geocoding and routing services
-    private const string apiKey = "912f217174197978d7da19cf22005ef920a4772b8c3df456d156f7d7cbb7fea5";
+    private const string apiKey = "pk.b0ca8983fc24d5c07a7173ce946693f3";
 
     /// <summary>
-    /// Generates a string representation of the properties and their values for the specified object.
-    /// In writing this method, we used AI for accurate and correct use of Reflection.
+    /// generates a string representation of an object's public properties and their values using reflection.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <remarks>This method uses reflection to retrieve the properties of the object.  It is suitable for
-    /// debugging or logging purposes where a quick overview of an object's state is needed.</remarks>
-    /// <typeparam name="T">The type of the object whose properties are to be represented as a string.</typeparam>
-    /// <param name="t">The object instance to be converted to a string. Cannot be null.</param>
-    /// <returns>A string containing the names and values of the properties of the object.  If the object is null, returns
-    /// "Object is null".</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="t"></param>
+    /// <returns></returns>
     public static string ToStringProperty<T>(this T t)
     {
         // Handle null case
@@ -41,7 +38,7 @@ internal static class Tools
         StringBuilder sb = new StringBuilder(); // StringBuilder for efficient string concatenation
 
         // Header for the details
-        sb.AppendLine($"--- {type.Name} Details ---");
+        sb.AppendLine($"\n\n--- {type.Name} Details ---");
 
         // Get all public properties of the object
         PropertyInfo[] properties = type.GetProperties();
@@ -54,21 +51,24 @@ internal static class Tools
 
             // Handle null values
             if (value == null)
-                sb.AppendLine($"    {property.Name}: null");
+                sb.AppendLine($"    {property.Name}: *****");
 
             //check if the property is a collection
-            if (value is IEnumerable enumerable && value is not string)
+            else if (value is IEnumerable enumerable && value is not string)
             {
+                //get the count of items in the collection
+                int count = (enumerable is ICollection collection) ? collection.Count : enumerable.Cast<object>().Count();
+
                 //create a collection representation
                 sb.AppendLine($"    {property.Name}: (Collection of {property.PropertyType.GetGenericArguments().FirstOrDefault()?.Name} - Count: {((ICollection)enumerable).Count})");
 
-                int count = 0;
+                int itemIndex = 0;
 
                 //iterate through the collection items
                 foreach (var item in enumerable)
                 {
-                    sb.AppendLine($"        [{count}]: {item}");
-                    count++;
+                    sb.AppendLine($"        [{itemIndex}]: {item}");
+                    itemIndex++;
                 }
             }
 
@@ -83,8 +83,10 @@ internal static class Tools
     }
 
     /// <summary>
-    /// Converts degrees to radians.
+    /// converts degrees to radians.
     /// </summary>
+    /// <param name="degrees"></param>
+    /// <returns></returns>
     private static double ToRadians(double degrees)
     {
         return degrees * (Math.PI / 180);
@@ -121,12 +123,19 @@ internal static class Tools
     /// <summary>
     /// Gets the geographical coordinates (latitude and longitude) for a given address using the LocationIQ API.
     /// The code to perform the synchronous network read and decode the JSON from the Geocoding/Routing service (LocationIQ)
-    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling).
+    /// was created with the help of AI and adapted to the project requirements (use of .Result, exception handling)
     /// </summary>
+    /// <param name="address"></param>
+    /// <returns></returns>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static (double Latitude, double Longitude)? GetCoordinatesOfAddressSync(string address)
     {
+        // Validate input
         if (string.IsNullOrWhiteSpace(address))
             return null;
+
+        // Use default API key if none provided
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
 
         try
         {
@@ -134,7 +143,7 @@ internal static class Tools
             string encodedAddress = HttpUtility.UrlEncode(address);
 
             // Building the LocationIQ API URL (Forward Geocoding)
-            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={apiKey}&q={encodedAddress}&format=json";
+            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={effectiveKey}&q={encodedAddress}&format=json";
 
             // Performing a synchronous web request using s_httpClient.GetAsync(apiUrl).Result
             // Throws an HttpRequestException if there is a network-level failure (e.g., Timeout)
@@ -145,8 +154,10 @@ internal static class Tools
                 // Parsing the JSON response
                 string resultJson = response.Content.ReadAsStringAsync().Result;
 
+                // The response is expected to be a JSON array of results
                 using (JsonDocument doc = JsonDocument.Parse(resultJson))
                 {
+                    // Check if we have at least one result
                     if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
                     {
                         JsonElement firstResult = doc.RootElement[0];
@@ -154,8 +165,8 @@ internal static class Tools
                         // Extracting the coordinates (lat/lon)
                         if (firstResult.TryGetProperty("lat", out JsonElement latElement) &&
                             firstResult.TryGetProperty("lon", out JsonElement lonElement) &&
-                            double.TryParse(latElement.GetString(), out double latitude) &&
-                            double.TryParse(lonElement.GetString(), out double longitude))
+                            double.TryParse(latElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double latitude) &&
+                            double.TryParse(lonElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double longitude))
                         {
                             return (latitude, longitude);
                         }
@@ -165,22 +176,19 @@ internal static class Tools
 
             // If the status code was not successful (e.g., 400 Bad Request, 403 Forbidden)
             string errorContent = response.Content.ReadAsStringAsync().Result;
-            throw new InvalidOperationException($"Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
+            throw new BO.BlInvalidOperationException($"ERROR: Geocoding service returned status code {response.StatusCode} for '{address}'. Error: {errorContent}");
         }
         catch (HttpRequestException ex)
         {
-            // Network error (e.g., no connection, Timeout), throw a transient system exception
-            throw new InvalidOperationException($"Network error connecting to Geocoding service: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"Network error connecting to Geocoding service: {ex.Message}", ex);
         }
-        catch (Exception ex) when (ex is JsonException || ex is InvalidOperationException)
+        catch (Exception ex) when (ex is System.Text.Json.JsonException || ex is InvalidOperationException)
         {
-            // JSON parsing errors or errors thrown from the API
-            throw;
+            throw new BO.BlInvalidOperationException($"Failed to parse Geocoding response: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            // Unexpected errors
-            throw new Exception($"An unexpected error occurred during geocoding: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"An unexpected error occurred during geocoding: {ex.Message}", ex);
         }
     }
 
@@ -201,41 +209,39 @@ internal static class Tools
     internal static (double ActualDistance, TimeSpan EstimatedTime)? GetActualDistanceAndEstimatedTimeSync(
           double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
     {
-        // Using the static instance we defined above: s_httpClient
-        var client = s_httpClient;
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
 
         // Determine the travel profile for the API based on the shipping type
-        string profile;
-        switch (shippingType)
+        string profile = shippingType switch
         {
-            case BO.DeliveryType.Car:
-            case BO.DeliveryType.Motorcycle:
-                profile = "driving"; // LocationIQ uses "driving" for vehicles
-                break;
-            case BO.DeliveryType.Bicycle:
-                profile = "cycling";
-                break;
-            case BO.DeliveryType.ByFoot:
-                profile = "foot";
-                break;
-            default:
-                throw new ArgumentException($"Unsupported shipping type for routing: {shippingType}.");
-        }
+            BO.DeliveryType.Car or BO.DeliveryType.Motorcycle => "driving",
+            BO.DeliveryType.Bicycle => "cycling",
+            _ => "walking"
+        };
 
         try
         {
             // Building the API URL for LocationIQ Routing
             // The location is in the format: lon1,lat1;lon2,lat2
-            string coordinates = $"{startLon},{startLat};{endLon},{endLat}";
-            string apiUrl = $"https://us1.locationiq.com/v1/directions/v2/route/{profile}/{coordinates}?key={apiKey}&overview=false";
+            string coordinates = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0},{1};{2},{3}", startLon, startLat, endLon, endLat);
+
+            // Constructing the full API URL
+            string apiUrl = $"https://us1.locationiq.com/v1/directions/driving/{coordinates}?key={effectiveKey}&overview=false";
+
+            // Replace "driving" with the appropriate profile if needed
+            if (profile != "driving")
+                apiUrl = apiUrl.Replace("driving", profile);
 
             // Performing a synchronous network read
-            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
+            HttpResponseMessage response = s_httpClient.GetAsync(apiUrl).Result;
 
+            // Checking for successful response
             if (response.IsSuccessStatusCode)
             {
                 string resultJson = response.Content.ReadAsStringAsync().Result;
 
+                // Parsing the JSON response
                 using (JsonDocument doc = JsonDocument.Parse(resultJson))
                 {
                     // LocationIQ returns JSON with a "routes" field (array)
@@ -244,6 +250,7 @@ internal static class Tools
                     {
                         JsonElement route = routesElement[0];
 
+                        // Extracting distance and duration
                         if (route.TryGetProperty("distance", out JsonElement distanceElement) &&
                             route.TryGetProperty("duration", out JsonElement durationElement) &&
                             distanceElement.ValueKind == JsonValueKind.Number &&
@@ -251,7 +258,7 @@ internal static class Tools
                         {
                             // Extracting the data
                             double actualDistanceMeters = distanceElement.GetDouble(); // meters
-                            double durationSeconds = durationElement.GetDouble();       // seconds
+                            double durationSeconds = durationElement.GetDouble(); // seconds
 
                             // Unit conversion: meters to kilometers, seconds to TimeSpan
                             double actualDistanceKm = actualDistanceMeters / 1000.0;
@@ -265,15 +272,16 @@ internal static class Tools
 
             // If we reach here, the API did not return a successful route
             string errorContent = response.Content.ReadAsStringAsync().Result;
-            throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
+            //throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
+            throw new BO.BlInvalidOperationException($"Routing API failed. Status: {response.StatusCode}. Details: {errorContent}");
         }
         catch (HttpRequestException ex)
         {
-            throw new InvalidOperationException($"Network error connecting to Routing service: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"Network error connecting to Routing service: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            throw new Exception($"An unexpected error occurred during routing: {ex.Message}");
+            throw new BO.BlInvalidOperationException($"An unexpected error occurred during routing: {ex.Message}", ex);
         }
     }
 
@@ -287,7 +295,7 @@ internal static class Tools
     {
         if (string.IsNullOrEmpty(password))
         {
-            throw new BlInvalidDataException("Password cannot be empty");
+            throw new BO.BlInvalidDataException("Password cannot be empty");
         }
 
         //use SHA256 to hash the password

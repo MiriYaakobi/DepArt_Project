@@ -15,13 +15,16 @@ internal class OrderImplementation : IOrder
     /// <param name="item"></param>
     public void Create(Order item)
     {
+        int nextId = Config.NextOrderId;
+        Order copy = item with { Id = nextId };
+
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
 
         // check if the order already exists
         if (orders.Exists(o => o.Id == item.Id))
             throw new DalAlreadyExistsException($"Order with ID={item.Id} already exists");
 
-        orders.Add(item);
+        orders.Add(copy);
         XMLTools.SaveListToXMLSerializer(orders, Config.s_orders_xml);
     }
 

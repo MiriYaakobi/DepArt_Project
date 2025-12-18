@@ -2,13 +2,19 @@
 
 namespace Helpers;
 
+/// <summary>
+/// a static class for managing delivery-related operations within the business logic layer.
+/// </summary>
 internal static class DeliveryManager
 {
+    //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
     /// <summary>
-    /// Reads a single delivery record (internal).
+    /// gets a specific delivery by its ID.
     /// </summary>
+    /// <param name="deliveryId"></param>
+    /// <returns></returns>
     internal static DO.Delivery ReadDelivery(int deliveryId)
     {
         // Validate existence by calling the helper method.
@@ -16,36 +22,52 @@ internal static class DeliveryManager
     }
 
     /// <summary>
-    /// Reads all delivery records, optionally filtered by a predicate (internal).
+    /// gets all delivery records, optionally filtered by a predicate.
     /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
     internal static IEnumerable<DO.Delivery> ReadAllDeliveries(Func<DO.Delivery, bool>? predicate = null)
     {
         return s_dal.Delivery.ReadAll(predicate);
     }
 
     /// <summary>
-    /// Creates a new Delivery record for an Open order and an available courier.
-    /// This includes performing the required routing calculation.
+    /// creates a new delivery record for the specified order and courier,
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
-    /// <param name="orderId">The ID of the order being assigned.</param>
-    /// <param name="courierId">The ID of the courier.</param>
-    /// <param name="orderLat">Order's latitude.</param>
-    /// <param name="orderLon">Order's longitude.</param>
-    /// <param name="shippingType">The courier's shipping type.</param>
+    /// <param name="orderId"></param>
+    /// <param name="courierId"></param>
+    /// <param name="orderLat"></param>
+    /// <param name="orderLon"></param>
+    /// <param name="shippingType"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static void CreateNewDeliveryForOrder(int orderId, int courierId, double orderLat, double orderLon, BO.DeliveryType shippingType)
     {
         // cordinates of the company (source)
         (double companyLat, double companyLon) = OrderManager.GetCompanyCoordinates();
 
+        if (orderLat == 0 || orderLon == 0)
+        {
+            // default address value in Israel for routing to work
+            orderLat = 32.07;
+            orderLon = 34.77;
+        }
+
         // calculate actual distance and estimated time
-        (double actualDistance, TimeSpan estimatedTime)? routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
-            companyLat, companyLon, orderLat, orderLon, shippingType
-        );
+        (double actualDistance, TimeSpan estimatedTime)? routingResult;
+        try
+        {
+            routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
+                companyLat, companyLon, orderLat, orderLon, shippingType
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new BO.BlInvalidOperationException($"Routing failed. Please check internet and coordinates. Internal error: {ex.Message}");
+        }
 
         if (!routingResult.HasValue)
-        {
             throw new BO.BlInvalidOperationException("Routing service failed to calculate distance and time for the selected order/courier.");
-        }
 
         // create new DO.Delivery record
         DateTime deliveryStartTime = AdminManager.Now;
@@ -69,75 +91,59 @@ internal static class DeliveryManager
     }
 
     /// <summary>
-    /// Performs the final update for a delivery upon reported completion.
+    /// completes an existing delivery by updating its end time and status.
     /// </summary>
-    /// <param name="deliveryId">The ID of the delivery record.</param>
-    /// <param name="courierId">The courier ID reporting the completion (for internal validation).</param>
-    /// <param name="completionStatus">The status upon completion (e.g., Delivered, Refused, etc.).</param>
-    /// <exception cref="BO.BlDoesNotExistException">If Delivery record is not found.</exception>
-    /// <exception cref="BO.BlInvalidOperationException">If the delivery is already closed or courier ID does not match.</exception>
-    internal static void CompleteDeliveryUpdate(int deliveryId, int courierId, BO.OrderEndStatus completionStatus, double endLat, double endLon)
+    /// <param name="courierId"></param>
+    /// <param name="deliveryId"></param>
+    /// <exception cref="BO.BlInvalidOperationException"></exception>
+    internal static void CompleteDeliveryUpdate(int courierId, int deliveryId)
     {
-        // retrieve existing entities
+        // validate delivery existence
         DO.Delivery doDelivery = GetExistingDelivery(deliveryId);
-        DO.Order doOrder = OrderManager.GetExistingOrder(doDelivery.OrderId);
-        DO.Courier doCourier = CourierManager.GetExistingCourier(courierId);
 
-        // check courier ID matches
+        // validate courier assignment
+        if (doDelivery.CourierId != courierId)
+            throw new BO.BlInvalidOperationException($"Courier {courierId} is not assigned to delivery {deliveryId}.");
+
+        // validate delivery is not already completed
         if (doDelivery.DeliveryEndTime.HasValue)
-        {
             throw new BO.BlInvalidOperationException($"Delivery {deliveryId} is already completed.");
-        }
 
-        // update delivery end time
-        DateTime deliveryEndTime = AdminManager.Now;
-
-        // retrieve company coordinates (source)
-        (double startLat, double startLon) = OrderManager.GetCompanyCoordinates();
-
-        // calculate actual distance from company to delivery end location
-        (double actualDistance, TimeSpan estimatedTime)? routingResult = 
-            Tools.GetActualDistanceAndEstimatedTimeSync(startLat, startLon, endLat, endLon,(BO.DeliveryType)doCourier.TypeOfDelivery);
-
-        if (!routingResult.HasValue)
-        {
-            throw new BO.BlInvalidOperationException("Routing service failed to calculate actual distance at delivery completion.");
-        }
-
-        // update DO.Delivery record
+        // update delivery record to mark as completed
         DO.Delivery updatedDelivery = doDelivery with
         {
-            ActualDistance = routingResult.Value.actualDistance,
-            OrderClosedStatus = (DO.OrderEndStatus)completionStatus,
-            DeliveryEndTime = deliveryEndTime
+            DeliveryEndTime = AdminManager.Now,
+            OrderClosedStatus = DO.OrderEndStatus.Delivered
         };
+
+        // save update to DAL
         s_dal.Delivery.Update(updatedDelivery);
     }
 
     /// <summary>
-    /// Helper method to get an existing delivery or throw an exception if it does not exist.
+    /// / gets an existing delivery or throws an exception if not found.
     /// </summary>
     /// <param name="deliveryId"></param>
     /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="BO.BlDoesNotExistException"></exception>
     private static DO.Delivery GetExistingDelivery(int deliveryId)
     {
-        try
-        {
-            return s_dal.Delivery.Read(deliveryId)!;
-        }
-        catch (DO.DalDoesNotExistException)
-        {
-            throw new InvalidOperationException($"Delivery with ID {deliveryId} does not exist.");
-        }
+        var delivery = s_dal.Delivery.Read(deliveryId);
+
+        // validate existence
+        if (delivery == null)
+            throw new BO.BlDoesNotExistException($"Delivery with ID {deliveryId} does not exist.");
+    
+        return delivery;
     }
 
     /// <summary>
-    /// Retrieves all closed deliveries for a specific courier, with optional filtering by order type.
+    /// gets all closed deliveries for a specific courier, optionally filtered by order type.
     /// </summary>
-    internal static IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(
-        int courierId,
-        BO.OrderType? filterByType = null)
+    /// <param name="courierId"></param>
+    /// <param name="filterByType"></param>
+    /// <returns></returns>
+    internal static IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int courierId, BO.OrderType? filterByType = null)
     {
         // retrieves all closed deliveries for a specific courier, with optional filtering by order type.
         var deliveries = s_dal.Delivery.ReadAll(d =>
@@ -172,10 +178,14 @@ internal static class DeliveryManager
     }
 
     /// <summary>
-    /// Sorts a collection of closed deliveries based on the specified field.
+    /// sorts a collection of closed deliveries based on the specified field.
     /// </summary>
+    /// <param name="deliveries"></param>
+    /// <param name="sortBy"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.ClosedDeliveryInList> SortClosedDeliveries(IEnumerable<BO.ClosedDeliveryInList> deliveries, BO.ClosedDeliveryFieldSort sortBy)
     {
+        // sorts a collection of closed deliveries based on the specified field.
         return sortBy switch
         {
             BO.ClosedDeliveryFieldSort.OrderId => deliveries.OrderBy(d => d.OrderId),
@@ -187,84 +197,102 @@ internal static class DeliveryManager
     }
 
     /// <summary>
-    /// Retrieves all open orders that are within the specified courier's maximum distance limit,
-    /// with optional filtering by order type.
+    /// gets all available open orders for a specific courier, optionally filtered by order type.
+    /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
+    /// <param name="courierId"></param>
+    /// <param name="filterByType"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.OpenOrderInList> GetAvailableOpenOrders(int courierId, BO.OrderType? filterByType = null)
     {
-        // retrieving courier's max distance
+        // gets all available open orders for a specific courier, optionally filtered by order type.
         DO.Courier doCourier = CourierManager.GetExistingCourier(courierId);
-        double maxDistance = doCourier.MaxDistance ?? double.MaxValue; // use a very large number if no limit
 
-        // retrieving company coordinates
+        // maximum distance restriction
+        double maxDistance = doCourier.MaxDistance ?? double.MaxValue;
+
+        // cordinates of the company (source)
         (double companyLat, double companyLon) = OrderManager.GetCompanyCoordinates();
 
-        // retrieving all open orders
-        var allOpenOrders = s_dal.Order.ReadAll().Select(o => o.Id) // getting all order IDs
-            .Where(id => OrderManager.CalculateOrderStatus(id) == BO.OrderStatus.Open); // filtering open orders
+        // retrieve open orders within the courier's maximum distance
+        var availableOrders = s_dal.Order.ReadAll()
+            .Where(o => o != null)
+            .Where(o => filterByType == null || (BO.OrderType)o.TypeOfOrder == filterByType)
+            .Where(o => OrderManager.CalculateOrderStatus(o.Id) == BO.OrderStatus.Open)
 
-        // mapping and filtering
-        var availableOpenOrders = allOpenOrders.Select(orderId =>
-        {
-            DO.Order doOrder = OrderManager.GetExistingOrder(orderId);
-
-            // calculate air distance
-            double airDistance = Tools.GetAirDistance(companyLat, companyLon, doOrder.Latitude, doOrder.Longitude);
-
-            // calculate time-liness status and remaining time
-            BO.ScheduleStatus timeLinessStatus = OrderManager.CalculateScheduleStatus(orderId);
-            DateTime maxDeliveryTime = OrderManager.CalculateMaxDeliveryTime(orderId);
-            TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
-
-            // calculate actual distance and estimated time using routing service
-            (double actualDistance, TimeSpan estimatedTime)? routingResult = Tools
-                .GetActualDistanceAndEstimatedTimeSync(companyLat, companyLon, doOrder.Latitude, doOrder.Longitude, (BO.DeliveryType)doCourier.TypeOfDelivery);
-
-            // mapping to BO.OpenOrderInList
-            double? finalActualDistance = routingResult?.actualDistance;
-            TimeSpan? finalEstimatedDuration = routingResult?.estimatedTime;
-
-            return new BO.OpenOrderInList
+            // calculate air distance and filter by max distance
+            .Select(o => new
             {
-                // basic order data
-                OrderId = doOrder.Id,
-                TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
-                Address = doOrder.Address,
-                AirDistance = airDistance,
+                Order = o,
+                AirDistance = Tools.GetAirDistance(companyLat, companyLon, o.Latitude, o.Longitude)
+            })
+            .Where(item => item.AirDistance <= maxDistance)
 
-                // logistic data
-                TimeLinessStatus = timeLinessStatus,
-                RemainingTime = remainingTime,
-                MaxDeliveryTime = maxDeliveryTime,
+            .Select(item =>
+            {
+                // map to BO.OpenOrderInList
+                DO.Order doOrder = item.Order;
+                double airDistance = item.AirDistance;
 
-                // data from routing calculation
-                ActualDistance = finalActualDistance,
-                ActualTimeExtension = finalEstimatedDuration,
-            };
-        })
-        // filter by max distance
-        .Where(bOrder => bOrder.AirDistance <= maxDistance)
-        // filter by type if needed
-        .Where(bOrder => !filterByType.HasValue || bOrder.TypeOfOrder == filterByType.Value);
+                // calculate timeliness status and remaining time
+                BO.ScheduleStatus timeLinessStatus = OrderManager.CalculateScheduleStatus(doOrder.Id);
+                DateTime maxDeliveryTime = OrderManager.CalculateMaxDeliveryTime(doOrder.Id);
+                TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
 
-        return availableOpenOrders;
+                // calculate actual distance and estimated time
+                (double actualDistance, TimeSpan estimatedTime)? routingResult = null;
+                
+                try
+                {
+                    // attempt to get routing info
+                    routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
+                        companyLat, companyLon,
+                        doOrder.Latitude, doOrder.Longitude,
+                        (BO.DeliveryType)doCourier.TypeOfDelivery
+                    );
+                }
+                catch
+                {
+                    // if routing fails, we simply leave routingResult as null
+                }
+
+                // return the mapped BO.OpenOrderInList
+                return new BO.OpenOrderInList
+                {
+                    Id = doOrder.Id,
+                    OrderId = doOrder.Id,
+                    TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
+                    Address = doOrder.Address,
+                    AirDistance = airDistance,
+                    TimeLinessStatus = timeLinessStatus,
+                    RemainingTime = remainingTime,
+                    MaxDeliveryTime = maxDeliveryTime,
+                    ActualDistance = routingResult?.actualDistance,
+                    ActualTimeExtension = routingResult?.estimatedTime
+                };
+            });
+
+        return availableOrders;
     }
 
     /// <summary>
-    /// Sorts a collection of open orders based on the specified field.
+    /// sorts a collection of open orders based on the specified field.
     /// </summary>
+    /// <param name="orders"></param>
+    /// <param name="sortBy"></param>
+    /// <returns></returns>
     internal static IEnumerable<BO.OpenOrderInList> SortOpenOrders(IEnumerable<BO.OpenOrderInList> orders, BO.OpenOrderFieldSort sortBy)
     {
+        // sorts a collection of open orders based on the specified field.
         return sortBy switch
         {
             BO.OpenOrderFieldSort.Id => orders.OrderBy(o => o.OrderId),
-            BO.OpenOrderFieldSort.TimeLinessStatus => orders.OrderBy(o => o.TimeLinessStatus),
+            BO.OpenOrderFieldSort.TimeLinessStatus => orders.OrderByDescending(o => o.TimeLinessStatus),
             BO.OpenOrderFieldSort.ExpectedDeliveryTime => orders.OrderBy(o => o.ActualTimeExtension),
             BO.OpenOrderFieldSort.MaxDeliveryTime => orders.OrderBy(o => o.RemainingTime), // sorting by remaining time until max delivery time
             BO.OpenOrderFieldSort.AirDistance => orders.OrderBy(o => o.AirDistance),
             BO.OpenOrderFieldSort.ActualDistance => orders.OrderBy(o => o.ActualDistance),
-            _ => orders.OrderBy(o => o.TimeLinessStatus)
+            _ => orders.OrderByDescending(o => o.TimeLinessStatus)
         };
     }
 }
-
