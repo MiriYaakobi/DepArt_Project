@@ -310,10 +310,13 @@ internal class OrderImplementation : IOrder
 
     public void AddObserver(Action listObserver) =>
        OrderManager.Observers.AddListObserver(listObserver);
+
     public void AddObserver(int id, Action observer) =>
         OrderManager.Observers.AddObserver(id, observer);
+
     public void RemoveObserver(Action listObserver) =>
         OrderManager.Observers.RemoveListObserver(listObserver);
+
     public void RemoveObserver(int id, Action observer) =>
         OrderManager.Observers.RemoveObserver(id, observer);
 }

@@ -159,10 +159,13 @@ internal class CourierImplementation : ICourier
 
     public void AddObserver(Action listObserver) =>
         CourierManager.Observers.AddListObserver(listObserver);
+
     public void AddObserver(int id, Action observer) =>
         CourierManager.Observers.AddObserver(id, observer);
+
     public void RemoveObserver(Action listObserver) =>
         CourierManager.Observers.RemoveListObserver(listObserver);
+
     public void RemoveObserver(int id, Action observer) =>
         CourierManager.Observers.RemoveObserver(id, observer);
 }

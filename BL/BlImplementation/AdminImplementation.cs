@@ -35,22 +35,31 @@ internal class AdminImplementation : IAdmin
         AdminManager.UpdateClock(newClock);
     }
 
-    public DateTime GetClock() => AdminManager.Now;
+    public DateTime GetClock() =>
+        AdminManager.Now;
 
-    public BO.Config GetConfig() => AdminManager.GetConfig();
+    public BO.Config GetConfig() =>
+        AdminManager.GetConfig();
 
-    public void InitializeDB()
-    {
+    public void InitializeDB() =>
         AdminManager.InitializeDB();
-    }
 
-    public void ResetDB()
-    {
+    public void ResetDB() =>
         AdminManager.ResetDB();
-    }
 
-    public void SetConfig(BO.Config config)
-    {
+    public void SetConfig(BO.Config config) =>
         AdminManager.SetConfig(config);
-    }
+
+    public void AddClockObserver(Action clockObserver) =>
+        AdminManager.ClockUpdatedObservers += clockObserver;
+
+    public void RemoveClockObserver(Action clockObserver) =>
+        AdminManager.ClockUpdatedObservers -= clockObserver;
+
+    public void AddConfigObserver(Action configObserver) =>
+        AdminManager.ConfigUpdatedObservers += configObserver;
+
+    public void RemoveConfigObserver(Action configObserver) =>
+        AdminManager.ConfigUpdatedObservers -= configObserver;
+
 }
