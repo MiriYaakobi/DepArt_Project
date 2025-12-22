@@ -1,4 +1,4 @@
-﻿namespace BLApi;
+﻿namespace BlApi;
 
 /// <summary>
 /// Defines the operations available for managing courier entities within the system.

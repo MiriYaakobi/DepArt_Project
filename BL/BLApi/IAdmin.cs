@@ -1,4 +1,4 @@
-﻿namespace BLApi;
+﻿namespace BlApi;
 
 /// <summary>
 /// Provides administrative operations for managing the database and system configuration.
