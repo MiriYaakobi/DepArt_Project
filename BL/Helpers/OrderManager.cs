@@ -13,6 +13,9 @@ internal static class OrderManager
     //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
+    //an observer manager for order-related observers
+    internal static ObserverManager Observers = new();
+
     /// <summary>
     /// creates a new order after validating input and geocoding the address.
     /// </summary>

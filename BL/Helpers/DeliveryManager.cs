@@ -10,6 +10,10 @@ internal static class DeliveryManager
     //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
+    //an observer manager for delivery-related events
+    internal static ObserverManager Observers = new();
+
+
     /// <summary>
     /// gets a specific delivery by its ID.
     /// </summary>

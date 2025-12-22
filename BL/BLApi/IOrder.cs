@@ -4,7 +4,7 @@
 /// Defines the operations available for managing order entities within the system.
 /// </summary>
 /// <remarks>This interface provides methods for creating, reading, updating, deleting, and managing orders.
-public interface IOrder
+public interface IOrder : IObservable
 {
     void Create(int requestingUserId, BO.Order boOrder);
     BO.Order Read(int requestingUserId, int orderId);

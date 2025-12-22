@@ -15,6 +15,10 @@ internal static class CourierManager
     //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
+    //an observer manager for courier-related changes
+    internal static ObserverManager Observers = new();
+
+
     /// <summary>
     /// creates a new courier after validating input and checking for duplicates.
     /// </summary>
