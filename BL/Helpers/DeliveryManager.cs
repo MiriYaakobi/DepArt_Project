@@ -92,6 +92,9 @@ internal static class DeliveryManager
 
         // add to DAL
         s_dal.Delivery.Create(newDelivery);
+
+        // Notify observers about the new delivery
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -122,6 +125,10 @@ internal static class DeliveryManager
 
         // save update to DAL
         s_dal.Delivery.Update(updatedDelivery);
+
+        // Notify observers about the update
+        Observers.NotifyItemUpdated(deliveryId);
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>

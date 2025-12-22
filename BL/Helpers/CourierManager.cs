@@ -56,6 +56,9 @@ internal static class CourierManager
             MaxDistance: courier.MaxDistance
         );
         s_dal.Courier.Create(doCourier);
+
+        // Notify observers about the new courier
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -153,6 +156,9 @@ internal static class CourierManager
 
         // perform the update
         s_dal.Courier.Update(updatedCourier);
+
+        Observers.NotifyItemUpdated(courier.Id);
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -175,6 +181,9 @@ internal static class CourierManager
         {
             throw;
         }
+
+        // notify observers about the deletion
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
