@@ -39,7 +39,7 @@ internal static class CourierManager
         }
         catch (DO.DalDoesNotExistException)
         {
-           
+            // Expected path if courier does not exist
         }
 
         // Mapping BO to DO and creating the courier
@@ -226,6 +226,9 @@ internal static class CourierManager
                 if (lastActivityTime.HasValue && newClock - lastActivityTime.Value > inactivityTimeSpan)
                 {
                     s_dal.Courier.Update(doCourier with { IsActive = false });
+
+                    // notify observers about the update
+                    Observers.NotifyItemUpdated(doCourier.Id);
                 }
             }
         }

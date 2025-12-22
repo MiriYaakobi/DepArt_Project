@@ -730,5 +730,9 @@ internal static class OrderManager
                 DeliveryEndTime = cancellationTime
             });
         }
+
+        // Notify observers about the update
+        Observers.NotifyItemUpdated(orderId);
+        Observers.NotifyListUpdated();
     }
 }
