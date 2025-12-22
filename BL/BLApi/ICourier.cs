@@ -1,4 +1,4 @@
-﻿namespace BLApi;
+﻿namespace BlApi;
 
 /// <summary>
 /// Defines the operations available for managing courier entities within the system.
@@ -6,7 +6,7 @@
 /// <remarks>This interface provides methods for logging in, reading, updating, deleting, and creating courier
 /// records. Implementations should ensure that appropriate authorization checks are performed based on the requesting
 /// user's role.</remarks>
-public interface ICourier
+public interface ICourier : IObservable
 {
     BO.UserRole Login(int userId, string password);
     void Create(int requestingUserId, BO.Courier boCourier);

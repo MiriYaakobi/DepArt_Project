@@ -1,5 +1,5 @@
 ﻿namespace BlImplementation;
-using BLApi;
+using BlApi;
 using Helpers;
 using System;
 
@@ -307,4 +307,16 @@ internal class OrderImplementation : IOrder
             throw new BO.BlInvalidOperationException(ex.Message, ex);
         }
     }
+
+    public void AddObserver(Action listObserver) =>
+       OrderManager.Observers.AddListObserver(listObserver);
+
+    public void AddObserver(int id, Action observer) =>
+        OrderManager.Observers.AddObserver(id, observer);
+
+    public void RemoveObserver(Action listObserver) =>
+        OrderManager.Observers.RemoveListObserver(listObserver);
+
+    public void RemoveObserver(int id, Action observer) =>
+        OrderManager.Observers.RemoveObserver(id, observer);
 }

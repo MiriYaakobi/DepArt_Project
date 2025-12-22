@@ -15,6 +15,10 @@ internal static class CourierManager
     //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
+    //an observer manager for courier-related changes
+    internal static ObserverManager Observers = new();
+
+
     /// <summary>
     /// creates a new courier after validating input and checking for duplicates.
     /// </summary>
@@ -35,7 +39,7 @@ internal static class CourierManager
         }
         catch (DO.DalDoesNotExistException)
         {
-           
+            // Expected path if courier does not exist
         }
 
         // Mapping BO to DO and creating the courier
@@ -52,6 +56,9 @@ internal static class CourierManager
             MaxDistance: courier.MaxDistance
         );
         s_dal.Courier.Create(doCourier);
+
+        // Notify observers about the new courier
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -149,6 +156,9 @@ internal static class CourierManager
 
         // perform the update
         s_dal.Courier.Update(updatedCourier);
+
+        Observers.NotifyItemUpdated(courier.Id);
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -171,6 +181,9 @@ internal static class CourierManager
         {
             throw;
         }
+
+        // notify observers about the deletion
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -213,6 +226,9 @@ internal static class CourierManager
                 if (lastActivityTime.HasValue && newClock - lastActivityTime.Value > inactivityTimeSpan)
                 {
                     s_dal.Courier.Update(doCourier with { IsActive = false });
+
+                    // notify observers about the update
+                    Observers.NotifyItemUpdated(doCourier.Id);
                 }
             }
         }

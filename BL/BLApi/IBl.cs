@@ -1,4 +1,4 @@
-﻿namespace BLApi;
+﻿namespace BlApi;
 
 /// <summary>
 /// Provides access to business logic components for managing couriers, orders, and administrative tasks.

@@ -13,6 +13,9 @@ internal static class OrderManager
     //an object for accessing the DAL methods
     private static IDal s_dal = Factory.Get;
 
+    //an observer manager for order-related observers
+    internal static ObserverManager Observers = new();
+
     /// <summary>
     /// creates a new order after validating input and geocoding the address.
     /// </summary>
@@ -47,6 +50,9 @@ internal static class OrderManager
         );
 
         s_dal.Order.Create(doOrder);
+
+        // Notify observers about the new order
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -216,6 +222,10 @@ internal static class OrderManager
 
         // save updates
         s_dal.Order.Update(updatedOrder);
+
+        // Notify observers about the update
+        Observers.NotifyListUpdated();
+        Observers.NotifyItemUpdated(order.Id);
     }
 
     /// <summary>
@@ -239,6 +249,10 @@ internal static class OrderManager
         {
             throw new BO.BlDoesNotExistException($"Order with ID {orderId} does not exist and cannot be deleted.", ex);
         }
+
+        // Notify observers about the update
+        Observers.NotifyItemUpdated(orderId);
+        Observers.NotifyListUpdated();
     }
 
     /// <summary>
@@ -716,5 +730,9 @@ internal static class OrderManager
                 DeliveryEndTime = cancellationTime
             });
         }
+
+        // Notify observers about the update
+        Observers.NotifyItemUpdated(orderId);
+        Observers.NotifyListUpdated();
     }
 }

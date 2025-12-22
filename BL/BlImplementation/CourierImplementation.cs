@@ -1,5 +1,5 @@
 ﻿namespace BlImplementation;
-using BLApi;
+using BlApi;
 using Helpers;
 
 /// <summary>
@@ -156,4 +156,16 @@ internal class CourierImplementation : ICourier
             throw new BO.BlDoesNotExistException($"Courier with ID {boCourier.Id} does not exist.", ex);
         }
     }
+
+    public void AddObserver(Action listObserver) =>
+        CourierManager.Observers.AddListObserver(listObserver);
+
+    public void AddObserver(int id, Action observer) =>
+        CourierManager.Observers.AddObserver(id, observer);
+
+    public void RemoveObserver(Action listObserver) =>
+        CourierManager.Observers.RemoveListObserver(listObserver);
+
+    public void RemoveObserver(int id, Action observer) =>
+        CourierManager.Observers.RemoveObserver(id, observer);
 }

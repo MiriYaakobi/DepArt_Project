@@ -1,4 +1,4 @@
-﻿namespace BLApi;
+﻿namespace BlApi;
 
 /// <summary>
 /// a factory class for creating instances of the business logic layer
