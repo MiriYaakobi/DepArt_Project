@@ -3,10 +3,375 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PL"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Delivery System Dashboard" Height="850" Width="1250"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI" FlowDirection="LeftToRight">
 
+    <Window.Resources>
+        <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
+        <SolidColorBrush x:Key="GhostWhite" Color="#F8F8FF"/>
+        <SolidColorBrush x:Key="AliceBlue" Color="#F0F8FF"/>
+        <SolidColorBrush x:Key="Seashell" Color="#FFF5EE"/>
+        <SolidColorBrush x:Key="Lavender" Color="#E6E6FA"/>
+        <SolidColorBrush x:Key="TextDark" Color="#4A4A6A"/>
+        <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
+
+        <Style TargetType="Control">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+
+        <Style TargetType="Expander">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+
+        <Style TargetType="Border" x:Key="BaseCard">
+            <Setter Property="CornerRadius" Value="15"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#8986CC" BlurRadius="15" ShadowDepth="4" Opacity="0.15"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="MenuButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#9A97D9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.95" ScaleY="0.95" CenterX="100" CenterY="20"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="TimeBtnStyle">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.90" ScaleY="0.90" CenterX="15" CenterY="15"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBox" x:Key="ConfigBox">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DeepPurple}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="ConfigLabel">
+            <Setter Property="Foreground" Value="{StaticResource TextDark}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource AliceBlue}">
+        <ContentControl x:Name="MainContentControl" Panel.ZIndex="10" Visibility="Collapsed"/>
+
+        <Grid x:Name="DashboardGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
+                <StackPanel Margin="20,40,20,20">
+                    <Border Width="90" Height="90" CornerRadius="45" Background="{StaticResource Seashell}" Margin="0,0,0,15">
+                        <TextBlock Text="👤" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
+
+                    <Button Content="Main Dashboard" Click="BtnDashboard_Click" Style="{StaticResource MenuButton}" Background="#9A97D9"/>
+                    <Button Content="List Management" Click="BtnList_Click" Style="{StaticResource MenuButton}"/>
+                    <Button Content="Courier Management" Click="BtnCouriers_Click" Style="{StaticResource MenuButton}"/>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="320"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource BaseCard}" Background="{StaticResource Seashell}" Height="130" Margin="0,0,20,0">
+                        <Grid>
+                            <TextBlock Text="🖥️ Simulator View (Stage 7)" FontSize="24" Foreground="{StaticResource DeepPurple}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource BaseCard}" Background="{StaticResource Lavender}">
+                        <Grid Margin="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock x:Name="txtClockTime" Text="12:30:45" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtClockDate" Text="01/01/2024" FontSize="16" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                                <Expander Header="Manage Time" HorizontalAlignment="Center" Width="180" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                        <Button Content="+H" Click="BtnAddHour_Click" Style="{StaticResource TimeBtnStyle}"/>
+                                        <Button Content="+D" Click="BtnAddDay_Click" Style="{StaticResource TimeBtnStyle}"/>
+                                        <Button Content="+Y" Click="BtnAddYear_Click" Style="{StaticResource TimeBtnStyle}"/>
+                                    </StackPanel>
+                                </Expander>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,0,0,20">
+                    <Border Style="{StaticResource BaseCard}" Background="{StaticResource GhostWhite}" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊 Orders Overview" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDark}"/>
+                                <TextBlock Text="(Live Quantities)" FontSize="14" Foreground="Gray" VerticalAlignment="Bottom" Margin="10,0,0,2"/>
+                            </StackPanel>
+
+                            <UniformGrid Grid.Row="1" Columns="5" VerticalAlignment="Bottom" Height="220" Margin="10,20">
+                                <StackPanel VerticalAlignment="Bottom" Margin="15,0">
+                                    <Grid Height="150" VerticalAlignment="Bottom">
+                                        <Border x:Name="barOpen" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.8" VerticalAlignment="Bottom"/>
+                                        <TextBlock x:Name="valOpen" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    </Grid>
+                                    <TextBlock Text="Open" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Bottom" Margin="15,0">
+                                    <Grid Height="150" VerticalAlignment="Bottom">
+                                        <Border x:Name="barInProgress" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.6" VerticalAlignment="Bottom"/>
+                                        <TextBlock x:Name="valInProgress" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    </Grid>
+                                    <TextBlock Text="In Progress" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Bottom" Margin="15,0">
+                                    <Grid Height="150" VerticalAlignment="Bottom">
+                                        <Border x:Name="barDelivered" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="1.0" VerticalAlignment="Bottom"/>
+                                        <TextBlock x:Name="valDelivered" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    </Grid>
+                                    <TextBlock Text="Delivered" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold" FontSize="15" Foreground="{StaticResource DeepPurple}"/>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Bottom" Margin="15,0">
+                                    <Grid Height="150" VerticalAlignment="Bottom">
+                                        <Border x:Name="barRefused" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.4" VerticalAlignment="Bottom"/>
+                                        <TextBlock x:Name="valRefused" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    </Grid>
+                                    <TextBlock Text="Refused" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Bottom" Margin="15,0">
+                                    <Grid Height="150" VerticalAlignment="Bottom">
+                                        <Border x:Name="barCancelled" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.3" VerticalAlignment="Bottom"/>
+                                        <TextBlock x:Name="valCancelled" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                    </Grid>
+                                    <TextBlock Text="Cancelled" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
+                                </StackPanel>
+                            </UniformGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="2" Height="Auto">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <Button Click="BtnInit_Click" Height="55" Margin="0,0,0,15" Background="{StaticResource DeepPurple}" Foreground="White" BorderThickness="0" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="15">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="🚀" FontSize="20" Margin="0,0,10,0"/>
+                                            <TextBlock Text="Initialize" FontWeight="Bold" FontSize="20"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="0.95" ScaleY="0.95" CenterX="100" CenterY="27"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.9"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Click="BtnReset_Click" Height="55" Background="{StaticResource Seashell}" Foreground="{StaticResource DeepPurple}" BorderBrush="{StaticResource DeepPurple}" BorderThickness="2" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="15">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="♻️" FontSize="20" Margin="0,0,10,0"/>
+                                            <TextBlock Text="Reset" FontWeight="Bold" FontSize="20"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="0.95" ScaleY="0.95" CenterX="100" CenterY="27"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#FFE0E0F0"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Style="{StaticResource BaseCard}" Background="{StaticResource GhostWhite}" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="⚙️ System Configuration" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDark}" Margin="0,0,0,15"/>
+
+                            <UniformGrid Grid.Row="1" Columns="4">
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="👤 Admin ID" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtAdminId" IsReadOnly="True" Opacity="0.5" Text="Loading..." Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🔑 Password" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtPassword" Text="******" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🏢 Address" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtAddress" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="📏 Max Dist." Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtMaxDist" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🔋 Range" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtRange" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="⚠️ Risk Range" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtRiskRange" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🚗 Car Speed" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtCarSpeed" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🏍️ Moto Speed" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtMotoSpeed" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🚴 Bike Speed" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtBikeSpeed" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="🏃 Foot Speed" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtFootSpeed" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="💤 Inactivity" Style="{StaticResource ConfigLabel}"/>
+                                    <TextBox x:Name="txtInactivity" Style="{StaticResource ConfigBox}"/>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <Button Click="BtnSaveConfig_Click" Grid.Row="2" HorizontalAlignment="Right" Background="{StaticResource DeepPurple}" Foreground="White" Padding="30,8" Margin="0,10,0,0" BorderThickness="0" Height="35" Width="126" Cursor="Hand" FocusVisualStyle="{x:Null}" Focusable="False">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="💾" Margin="0,0,10,0" FontSize="16"/>
+                                                <TextBlock Text="Save Config" FontSize="16" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <ScaleTransform ScaleX="0.95" ScaleY="0.95" CenterX="63" CenterY="17"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.9"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
