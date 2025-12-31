@@ -3,10 +3,90 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PL.Courier"
+        xmlns:converters="clr-namespace:PL.Converters"
         mc:Ignorable="d"
-        Title="CourierWindow" Height="450" Width="800">
+        Title="Courier Details" Height="450" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize" Background="{StaticResource AliceBlue}">
+
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#8986CC"/>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#4A4A6A"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource DeepPurple}">
+            <TextBlock Text="{Binding Id, Converter={StaticResource IdToContentConverterKey}, StringFormat='{}{0} Courier'}" 
+                       Foreground="White" FontSize="22" FontWeight="Bold" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <StackPanel Grid.Row="1" Margin="40,20">
+            <TextBlock Text="ID Number:"/>
+            <TextBox Text="{Binding Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsReadOnly="{Binding Id, Converter={StaticResource IdToIsReadOnlyConverterKey}, Mode=OneWay}"/>
+
+            <TextBlock Text="Name:"/>
+            <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Email:"/>
+            <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Phone:"/>
+            <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Vehicle Type:"/>
+            <ComboBox x:Name="cmbVehicle" SelectedItem="{Binding TypeOfDelivery, Mode=TwoWay}"
+                      Height="35" FontSize="14" VerticalContentAlignment="Center"
+                      FocusVisualStyle="{x:Null}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="{Binding Id, Converter={StaticResource IdToContentConverterKey}}" 
+                    Click="BtnAddUpdate_Click"
+                    Width="120" Height="40" Margin="10"
+                    Background="{StaticResource DeepPurple}" Foreground="White" FontWeight="Bold"
+                    BorderThickness="0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+            <Button Content="Cancel" IsCancel="True"
+                    Width="120" Height="40" Margin="10"
+                    Background="White" Foreground="{StaticResource DeepPurple}" FontWeight="Bold"
+                    BorderBrush="{StaticResource DeepPurple}" BorderThickness="2" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="10"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

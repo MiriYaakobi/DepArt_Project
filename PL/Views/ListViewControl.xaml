@@ -191,11 +191,16 @@
             <Border Grid.Row="0" Style="{StaticResource BaseCard}" Margin="0,0,0,20" Padding="15">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="🔍 Filter by Category:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-
-                    <Border Background="White" CornerRadius="8" BorderBrush="{StaticResource DeepPurple}" BorderThickness="1" Padding="2">
+                    <Border CornerRadius="8" BorderBrush="{StaticResource DeepPurple}" BorderThickness="1" Padding="2" Height="39" Width="208">
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#FFF0F0F0"/>
+                                <GradientStop Color="#FFE5E5E5" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
                         <ComboBox x:Name="CategorySelector" 
-                                  Width="200" 
-                                  Height="35" 
+                                  Width="199" 
+                                  Height="34" 
                                   Background="Transparent" 
                                   BorderThickness="0" 
                                   VerticalContentAlignment="Center" 
@@ -261,7 +266,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="On Time" Width="80">
+                                <GridViewColumn Header="On Time Deliveries" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding TotalOnTimeDeliveries}" HorizontalAlignment="Center"/>

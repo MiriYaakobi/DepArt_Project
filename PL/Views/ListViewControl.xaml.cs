@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using BO;
+using PL.Courier; // לוודא שזה קיים כדי להכיר את CourierWindow
 
 namespace PL.Views
 {
@@ -26,23 +27,16 @@ namespace PL.Views
         {
             InitializeComponent();
 
-            // --- 1. בניית רשימת הסינון (All + Enum) ---
             var filterOptions = new List<object>();
-            filterOptions.Add("All"); // הוספת "All" ידנית
+            filterOptions.Add("All");
             filterOptions.AddRange(Enum.GetValues(typeof(BO.DeliveryType)).Cast<object>());
 
             CategorySelector.ItemsSource = filterOptions;
-
-            // שימי לב: מחקתי מפה את השורה שבוחרת את האינדקס 0
-            // כדי למנוע קריאה לשרת לפני שיש לנו ID
         }
 
         public void Initialize(int adminId)
         {
             _adminId = adminId;
-
-            // --- 2. עכשיו בטוח לבחור "All" ולטעון נתונים ---
-            // זה יפעיל את ה-SelectionChanged שיקרא ל-RefreshList
             CategorySelector.SelectedIndex = 0;
         }
 
@@ -50,9 +44,7 @@ namespace PL.Views
         {
             try
             {
-                // הגנה נוספת: אם משום מה אין ID, לא לפנות לשרת
                 if (_adminId == 0) return;
-
                 CourierList = s_bl.Courier.ReadAll(_adminId);
             }
             catch (Exception ex)
@@ -63,7 +55,6 @@ namespace PL.Views
 
         private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
         {
-            // אם לא נבחר כלום או "All", מציגים הכל
             if (CategorySelector.SelectedItem == null || CategorySelector.SelectedItem.ToString() == "All")
             {
                 RefreshList();
@@ -74,19 +65,16 @@ namespace PL.Views
             {
                 if (CategorySelector.SelectedItem is BO.DeliveryType selectedType)
                 {
-                    // הגנה: וודא שיש ID לפני קריאה
                     if (_adminId == 0) return;
-
                     var allCouriers = s_bl.Courier.ReadAll(_adminId);
                     CourierList = from item in allCouriers
                                   where item.TypeOfDelivery == selectedType
                                   select item;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                CustomMessageBox.Show($"Filter Error: {ex.Message}", "Error");
-                RefreshList(); // חזרה למצב ברירת מחדל במקרה תקלה
+                RefreshList();
             }
         }
 
@@ -97,12 +85,14 @@ namespace PL.Views
 
         private void BtnListManagement_Click(object sender, RoutedEventArgs e)
         {
-            CategorySelector.SelectedIndex = 0; // חזרה ל-"All"
+            CategorySelector.SelectedIndex = 0;
         }
 
+        // --- הפונקציה הנכונה (וודאי שאין עוד אחת בשם הזה בקובץ) ---
         private void BtnAddCourier_Click(object sender, RoutedEventArgs e)
         {
-            CustomMessageBox.Show("Add Courier Window will be implemented in Stage 6!", "Coming Soon");
+            new CourierWindow().ShowDialog();
+            RefreshList();
         }
     }
 }

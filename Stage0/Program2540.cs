@@ -13,7 +13,7 @@
         private static void Welcome2540()
         {
             Console.Write("Enter your name: ");
-            string name = Console.ReadLine();
+            string? name = Console.ReadLine();
             Console.Write("{0}, wlcome to my first console application", name);
         }
     }

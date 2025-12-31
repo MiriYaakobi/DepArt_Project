@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace PL.Converters
 {
-    class StatusToColorConverter : IValueConverter
+   public class StatusToColorConverter : IValueConverter
     {
         // המרה מהנתונים (האם פעיל?) לצבע (Brush)
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

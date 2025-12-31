@@ -5,6 +5,15 @@
              xmlns:converters="clr-namespace:PL.Converters" 
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
+        <SolidColorBrush x:Key="GhostWhite" Color="#F8F8FF"/>
+        <SolidColorBrush x:Key="AliceBlue" Color="#F0F8FF"/>
+        <SolidColorBrush x:Key="Seashell" Color="#FFF5EE"/>
+        <SolidColorBrush x:Key="TextDark" Color="#4A4A6A"/>
+        <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
+
         <converters:StatusToColorConverter x:Key="StatusToColorConverterKey"/>
+        <converters:IdToContentConverter x:Key="IdToContentConverterKey"/>
+        <converters:IdToIsReadOnlyConverter x:Key="IdToIsReadOnlyConverterKey"/>
     </Application.Resources>
 </Application>

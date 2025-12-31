@@ -180,6 +180,12 @@ namespace PL
             // Future implementation
         }
 
+        private void BtnAddMinute_Click(object sender, RoutedEventArgs e)
+        {
+            s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
+            LoadData();
+        }
+
         private void BtnAddHour_Click(object sender, RoutedEventArgs e)
         {
             s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
@@ -189,6 +195,12 @@ namespace PL
         private void BtnAddDay_Click(object sender, RoutedEventArgs e)
         {
             s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
+            LoadData();
+        }
+
+        private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
+        {
+            s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
             LoadData();
         }
 
