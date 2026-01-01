@@ -260,7 +260,7 @@
                             </Button.Template>
                         </Button>
 
-                        <Button Click="BtnReset_Click" Height="55" Background="{StaticResource DeepPurple}" Foreground="{StaticResource Seashell}" BorderBrush="{StaticResource DeepPurple}" BorderThickness="2" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                        <Button Click="BtnReset_Click" Height="55" Margin="0,0,0,15" Background="{StaticResource DeepPurple}" Foreground="{StaticResource Seashell}" BorderThickness="0" Cursor="Hand" FocusVisualStyle="{x:Null}">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="15">

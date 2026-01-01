@@ -4,7 +4,6 @@ namespace PL
 {
     public partial class CustomMessageBox : Window
     {
-        // משתנה לשמירת התוצאה (האם המשתמש לחץ כן/אישור)
         public bool Result { get; private set; } = false;
 
         public CustomMessageBox(string message, string title, bool isQuestion)

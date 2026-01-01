@@ -11,7 +11,7 @@ public enum DeliveryType
     Car,
     Motorcycle,
     Bicycle,
-    ByFoot
+    ByFoot,
 }
 
 /// <summary>

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+// using PL.Courier; // ודאי שהשורה הזו קיימת או שה-Namespace מלא
 
 namespace PL
 {
@@ -154,7 +155,9 @@ namespace PL
 
         private void ShowDashboard()
         {
+            // הסתרת הפקד של הרשימה והצגת הדשבורד מחדש
             MainContentControl.Visibility = Visibility.Collapsed;
+            MainContentControl.Content = null; // ניקוי הזיכרון
             DashboardGrid.Visibility = Visibility.Visible;
             LoadData();
         }
@@ -164,13 +167,19 @@ namespace PL
             ShowDashboard();
         }
 
+        // --- התיקון הגדול כאן ---
         private void BtnCouriers_Click(object sender, RoutedEventArgs e)
         {
-            var courierView = new Views.ListViewControl();
-            courierView.Initialize(_adminId);
-            courierView.RequestDashboard += (s, args) => ShowDashboard();
+            // 1. יצירת החלון (UserControl) עם שליחת ה-ID
+            var courierList = new PL.Courier.CourierListWindow(_adminId);
 
-            MainContentControl.Content = courierView;
+            // 2. הרשמה לאירוע חזרה (שימוש בשם הפונקציה הקיים אצלך: ShowDashboard)
+            courierList.RequestDashboard += (s, args) => ShowDashboard();
+
+            // 3. הכנסה לתוך הפקד (שימוש בשם הקיים אצלך: MainContentControl)
+            MainContentControl.Content = courierList;
+
+            // 4. החלפת תצוגה
             MainContentControl.Visibility = Visibility.Visible;
             DashboardGrid.Visibility = Visibility.Collapsed;
         }
