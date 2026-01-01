@@ -102,10 +102,11 @@ public static class Initialization
     /// <returns></returns>
     private static Courier? PickCourierForDistance(List<Courier> allCouriers, double distKm)
     {
-        // Filter couriers who can handle the distance
+        // Filter couriers who can handle the distance AND are active
         var pool = allCouriers
-            .Where(c => c.MaxDistance == null || c.MaxDistance.Value >= distKm)
+            .Where(c => c.IsActive && (c.MaxDistance == null || c.MaxDistance.Value >= distKm))
             .ToList();
+
         if (pool.Count == 0) return null;
         return pool[s_rand.Next(pool.Count)];
     }

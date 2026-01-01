@@ -7,6 +7,7 @@ namespace PL.Courier;
 public partial class CourierWindow : Window
 {
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
     private int _currentAdminId;
 
     // משתנה שקובע פעם אחת ולתמיד: האם החלון הזה הוא לעדכון?
@@ -31,19 +32,22 @@ public partial class CourierWindow : Window
 
         try { _currentAdminId = s_bl.Admin.GetConfig().AdminId; } catch { _currentAdminId = 1; }
 
-        if (courierId == null)
+        if (courierId == null) //add mode
         {
-            // === מצב הוספה ===
-            IsUpdateMode = false; // קובעים שזה מצב הוספה
+            IsUpdateMode = false;
             CurrentCourier = new BO.Courier();
         }
-        else
+
+        else //update mode
         {
-            // === מצב עדכון ===
-            IsUpdateMode = true; // קובעים שזה מצב עדכון
+            IsUpdateMode = true;
+
             try
             {
                 CurrentCourier = s_bl.Courier.Read(_currentAdminId, courierId.Value)!;
+
+                //save the password to not be null
+                CurrentCourier.Password = "********";
             }
             catch
             {
@@ -58,15 +62,41 @@ public partial class CourierWindow : Window
     {
         try
         {
+            // ולידציה בסיסית לשדות חובה אחרים
+            if (string.IsNullOrEmpty(CurrentCourier.Name) || string.IsNullOrEmpty(CurrentCourier.Phone))
+            {
+                CustomMessageBox.Show("Please fill in all required fields.", "Validation Error");
+                return;
+            }
+
             if (IsUpdateMode)
             {
-                // לוגיקה ברורה של עדכון
+                // === התיקון הלוגי ===
+                // בדיקה: האם המשתמש השאיר את הסיסמה ריקה?
+                if (string.IsNullOrEmpty(CurrentCourier.Password))
+                {
+                    // אם כן, זה אומר שהוא רוצה לשמור על הסיסמה הישנה.
+                    // נשלוף את השליח המקורי שוב מה-BL (כולל הסיסמה המוצפנת/התקינה שיש שם)
+                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(_currentAdminId, CurrentCourier.Id)!;
+
+                    // נעתיק את הסיסמה מהמסד לאובייקט שאנחנו שולחים לעדכון
+                    CurrentCourier.Password = originalCourierFromDb!.Password;
+                }
+
+                // כעת ב-CurrentCourier.Password יש או את מה שהמשתמש הקליד,
+                // או את הסיסמה הישנה והתקינה מהמסד. אפשר לשלוח בבטחה.
                 s_bl.Courier.Update(_currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier updated successfully!", "Success");
             }
             else
             {
-                // לוגיקה ברורה של הוספה
+                // בהוספה חובה להזין סיסמה (כי אין "ישנה")
+                if (string.IsNullOrEmpty(CurrentCourier.Password))
+                {
+                    CustomMessageBox.Show("Password is required for new courier.", "Validation Error");
+                    return;
+                }
+
                 s_bl.Courier.Create(_currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier added successfully!", "Success");
             }
@@ -74,6 +104,8 @@ public partial class CourierWindow : Window
         }
         catch (Exception ex)
         {
+            // אם העדכון נכשל, ננקה שוב את הסיסמה כדי שהמשתמש לא יראה פתאום את ההצפנה
+            if (IsUpdateMode) CurrentCourier.Password = "********+";
             CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
         }
     }
