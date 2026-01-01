@@ -17,4 +17,9 @@
     <ProjectReference Include="..\BL\BL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Admin\" />
+    <Folder Include="Order\" />
+  </ItemGroup>
+
 </Project>
