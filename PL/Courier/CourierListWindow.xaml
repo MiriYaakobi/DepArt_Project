@@ -3,13 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:converters="clr-namespace:PL"
+             xmlns:converters="clr-namespace:PL" 
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1000"
              FlowDirection="LeftToRight"
              Background="{StaticResource AliceBlue}"
              DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}">
-
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
@@ -20,6 +19,71 @@
         <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
 
         <converters:StatusToColorConverter x:Key="StatusToColorConverterKey"/>
+        <converters:DeleteVisibilityConverter x:Key="DeleteVisibilityConverterKey"/>
+
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextDark}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="5,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border x:Name="HeaderBorder" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{StaticResource DeepPurple}" 
+                                BorderThickness="0,0,0,1" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#E6E6FA"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#D8D8F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TrashButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="50" Width="26" Height="26">
+                            <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" 
+                                  Fill="#FFF43939" 
+                                  Stretch="Uniform" 
+                                  HorizontalAlignment="Center" 
+                                  VerticalAlignment="Center" 
+                                  Width="14" Height="14"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FFEEEE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.9" ScaleY="0.9" CenterX="13" CenterY="13"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="ModernComboBoxItem" TargetType="ComboBoxItem">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -88,7 +152,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItem}"/>
         </Style>
-        
+
         <Style TargetType="Border" x:Key="BaseCard">
             <Setter Property="CornerRadius" Value="15"/>
             <Setter Property="Background" Value="{StaticResource GhostWhite}"/>
@@ -107,6 +171,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -137,6 +202,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -165,15 +231,18 @@
 
         <Style TargetType="ListViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="Padding" Value="5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Background" Value="{Binding IsActive, Converter={StaticResource StatusToColorConverterKey}}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
                         <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="5" Padding="{TemplateBinding Padding}">
-                            <GridViewRowPresenter Content="{TemplateBinding Content}" Columns="{TemplateBinding GridView.ColumnCollection}"/>
+                            <GridViewRowPresenter Content="{TemplateBinding Content}" Columns="{TemplateBinding GridView.ColumnCollection}" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -217,15 +286,35 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Style="{StaticResource BaseCard}" Margin="0,0,0,20" Padding="15">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="🔍 Filter by Category:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🚚 Delivery Mode:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <ComboBox x:Name="CategorySelector" 
-                              Style="{StaticResource PurpleComboBox}"
-                              Width="200" Height="40" 
-                              VerticalContentAlignment="Center"
-                              SelectionChanged="ComboBox_SelectionChanged"/>
-                </StackPanel>
+                                  Style="{StaticResource PurpleComboBox}"
+                                  Width="180" Height="35" 
+                                  VerticalContentAlignment="Center"
+                                  SelectionChanged="Filter_Changed"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🔍 Search Name:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Border Background="White" BorderBrush="#8986CC" BorderThickness="1" CornerRadius="8" Width="200" Height="35">
+                            <TextBox x:Name="SearchBox" 
+                                     Background="Transparent" 
+                                     BorderThickness="0" 
+                                     VerticalContentAlignment="Center" 
+                                     Padding="10,0" 
+                                     FontSize="14"
+                                     TextChanged="Filter_Changed"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <Border Grid.Row="1" Style="{StaticResource BaseCard}" Padding="15">
@@ -236,17 +325,17 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="📋 Couriers List" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DeepPurple}" Margin="0,0,0,10"/>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="15" Foreground="{StaticResource TextDark}">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="ID" Width="80">
+                                <GridViewColumn Header="ID" Width="100">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Id}" HorizontalAlignment="Center"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Name" Width="120">
+                                <GridViewColumn Header="Name" Width="125">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}" HorizontalAlignment="Center"/>
@@ -274,10 +363,10 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Current Order" Width="100">
+                                <GridViewColumn Header="Current Order" Width="110">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding CurrentOrder.Id, FallbackValue='--'}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding CurrentOrderId, FallbackValue='--'}" HorizontalAlignment="Center"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -295,6 +384,17 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+
+                                <GridViewColumn Header="" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource TrashButtonStyle}" 
+                                                    Click="BtnDelete_Click" 
+                                                    Visibility="{Binding Converter={StaticResource DeleteVisibilityConverterKey}}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
                             </GridView>
                         </ListView.View>
                     </ListView>

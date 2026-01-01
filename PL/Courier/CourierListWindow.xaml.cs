@@ -7,13 +7,14 @@ using BO;
 
 namespace PL.Courier;
 
-// שינוי קריטי: יורש מ-UserControl ולא מ-Window
 public partial class CourierListWindow : UserControl
 {
     static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
     private readonly int AdminID;
 
-    // אירוע לחזרה לדשבורד (אופציונלי, כדי שהכפתור יעבוד)
+    // תיקון אזהרה 1: הוספנו '?' כדי לאפשר ערך ריק (null) בהתחלה
+    private IEnumerable<BO.CourierInList>? AllCouriers;
+
     public event EventHandler? RequestDashboard;
 
     public IEnumerable<BO.CourierInList> CourierList
@@ -35,76 +36,107 @@ public partial class CourierListWindow : UserControl
         filterOptions.AddRange(Enum.GetValues(typeof(BO.DeliveryType)).Cast<object>());
 
         CategorySelector.ItemsSource = filterOptions;
+
+        LoadData();
         CategorySelector.SelectedIndex = 0;
     }
 
-    private void RefreshList()
+    private void LoadData()
     {
         try
         {
             if (AdminID == 0) return;
-            CourierList = s_bl.Courier.ReadAll(AdminID);
+
+            // טעינת הנתונים לזיכרון
+            AllCouriers = s_bl.Courier.ReadAll(AdminID);
+
+            // הפעלת הסינון
+            ApplyFilters();
         }
         catch (Exception ex)
         {
-            CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
+            MessageBox.Show($"Error loading data: {ex.Message}", "Error");
         }
     }
 
-    private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ApplyFilters()
     {
-        if (CategorySelector.SelectedItem == null || CategorySelector.SelectedItem.ToString() == "All")
-        {
-            RefreshList();
-            return;
-        }
-        try
-        {
-            if (CategorySelector.SelectedItem is BO.DeliveryType selectedType)
-            {
-                if (AdminID == 0)
-                    return;
+        // אם הרשימה הראשית ריקה, אין מה לסנן
+        if (AllCouriers == null) return;
 
-                var allCouriers = s_bl.Courier.ReadAll(AdminID);
-                CourierList = from item in allCouriers
-                              where item.TypeOfDelivery == selectedType
-                              select item;
-            }
-        }
-        catch
+        var tempAddList = AllCouriers;
+
+        // 1. סינון לפי קטגוריה
+        if (CategorySelector.SelectedItem is BO.DeliveryType selectedType)
         {
-            RefreshList();
+            tempAddList = tempAddList.Where(item => item.TypeOfDelivery == selectedType);
         }
+
+        // 2. סינון לפי טקסט חיפוש
+        string searchText = SearchBox.Text;
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            // תיקון אזהרה 2: בודקים ש-item.Name לא ריק לפני שעושים עליו חיפוש
+            tempAddList = tempAddList.Where(item =>
+                !string.IsNullOrEmpty(item.Name) &&
+                item.Name.ToLower().Contains(searchText.ToLower()));
+        }
+
+        // עדכון התצוגה (המרה לרשימה בסוף התהליך)
+        CourierList = tempAddList.ToList();
+    }
+
+    private void Filter_Changed(object sender, RoutedEventArgs e)
+    {
+        ApplyFilters();
     }
 
     private void BtnAddCourier_Click(object sender, RoutedEventArgs e)
     {
-        OpenCourierWindow(null); // שליחת null = הוספה
-        CategorySelector.SelectedIndex = 0; // איפוס הפילטר
+        OpenCourierWindow(null);
+        SearchBox.Text = "";
+        CategorySelector.SelectedIndex = 0;
+    }
+
+    private void BtnDelete_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is BO.CourierInList courierToDelete)
+        {
+            if (MessageBox.Show($"Are you sure you want to delete {courierToDelete.Name}?",
+                                "Delete Courier",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    s_bl.Courier.Delete(courierToDelete.Id, AdminID);
+                    LoadData(); // טעינה מחדש מהמסד כדי לרענן גם את ה-Cache
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to delete: {ex.Message}", "Error");
+                }
+            }
+        }
     }
 
     private void BtnDashboard_Click(object sender, RoutedEventArgs e)
     {
-        // קריאה לאירוע חזרה
         RequestDashboard?.Invoke(this, EventArgs.Empty);
     }
 
     private void BtnListManagement_Click(object sender, RoutedEventArgs e)
     {
+        SearchBox.Text = "";
         CategorySelector.SelectedIndex = 0;
     }
 
     private void OpenCourierWindow(int? id = null)
     {
-        // יצירת החלון
-        // אם id הוא null - זה הוספה. אם יש מספר - זה עדכון.
         var window = new CourierWindow(id);
-
-        // פתיחת החלון בהמתנה (הקוד יעצור כאן עד שהחלון ייסגר)
-        window.ShowDialog();
-
-        // ברגע שהחלון נסגר - מרעננים את הרשימה מהבסיס נתונים
-        RefreshList();
+        // כשהחלון הזה ייסגר מתישהו בעתיד - תבצע רענון לרשימה
+        window.Closed += (s, args) => LoadData();
+        window.Show();
     }
 
     private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

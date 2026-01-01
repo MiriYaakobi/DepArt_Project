@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using BO;
 
 namespace PL;
 
@@ -57,10 +58,7 @@ public class IdToIsReadOnlyConverter : IValueConverter
         return true;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
 // ממיר 3: הסתרת שדות (החדש)
@@ -76,10 +74,7 @@ public class IdToVisibilityConverter : IValueConverter
         return Visibility.Collapsed;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
 // ממיר שמציג מחרוזת ריקה אם המספר הוא 0 (מונע את הופעת ה-0 בהתחלה)
@@ -107,13 +102,10 @@ public class BooleanToButtonTitleConverter : IValueConverter
         return "Add";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
-// ממיר חדש: בודק אם אובייקט הוא NULL.
+// בודק אם אובייקט הוא NULL.
 // אם האובייקט קיים (לא NULL) -> מחזיר Visible.
 // אם האובייקט ריק (NULL) -> מחזיר Collapsed.
 public class NullToVisibilityConverter : IValueConverter
@@ -123,10 +115,7 @@ public class NullToVisibilityConverter : IValueConverter
         return value == null ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
 public class NotEmptyValidationRule : ValidationRule
@@ -138,5 +127,33 @@ public class NotEmptyValidationRule : ValidationRule
             return new ValidationResult(false, "Field is required.");
         }
         return ValidationResult.ValidResult;
+    }
+}
+
+public class DeleteVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is CourierInList courier)
+        {
+            // שליח עם משלוחים בעבר - אי אפשר למחוק
+            bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
+
+            // שליח פעיל כרגע - אי אפשר למחוק
+            // (במקום לבדוק CurrentOrder שאין לך, נבדוק אם יש לו משלוח פעיל לפי הנתונים שיש)
+            // נניח שאין גישה ל-CurrentOrder, נסתמך כרגע רק על ההיסטוריה כי זה בטוח
+            // או שנבדוק IsActive אם זה אומר שהוא זמין או לא
+
+            if (!hasHistory)
+            {
+                return Visibility.Visible; // אפשר למחוק
+            }
+        }
+        return Visibility.Collapsed; // אי אפשר למחוק
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }
