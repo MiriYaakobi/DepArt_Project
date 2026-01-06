@@ -12,6 +12,7 @@
     <Window.Resources>
         <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
 
+        <converters:DeleteVisibilityConverter x:Key="DeleteVisibilityConverterKey"/>
         <converters:ZeroToEmptyStringConverter x:Key="ZeroToEmptyConverterKey"/>
         <converters:BooleanToButtonTitleConverter x:Key="BoolToTitleConverterKey"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisConverter"/>
@@ -356,7 +357,7 @@
 
             <Button Grid.Column="0"
                     Click="BtnDelete_Click"
-                    Visibility="{Binding IsUpdateMode, Converter={StaticResource BoolToVisConverter}}"
+                    Visibility="{Binding CurrentCourier, Converter={StaticResource DeleteVisibilityConverterKey}}"
                     Style="{StaticResource TrashButtonStyle}"
                     HorizontalAlignment="Left" 
                     Margin="25,0,0,0"

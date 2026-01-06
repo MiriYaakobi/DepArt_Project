@@ -21,13 +21,13 @@ namespace PL
 
         private void BtnYes_Click(object sender, RoutedEventArgs e)
         {
-            Result = true;
+            this.DialogResult = true;
             this.Close();
         }
 
         private void BtnNo_Click(object sender, RoutedEventArgs e)
         {
-            Result = false;
+            this.DialogResult = false;
             this.Close();
         }
 

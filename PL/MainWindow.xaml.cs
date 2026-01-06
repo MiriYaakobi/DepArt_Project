@@ -3,7 +3,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-// using PL.Courier; // ודאי שהשורה הזו קיימת או שה-Namespace מלא
 
 namespace PL
 {
@@ -166,8 +165,6 @@ namespace PL
         {
             ShowDashboard();
         }
-
-        // --- התיקון הגדול כאן ---
         private void BtnCouriers_Click(object sender, RoutedEventArgs e)
         {
             // 1. יצירת החלון (UserControl) עם שליחת ה-ID

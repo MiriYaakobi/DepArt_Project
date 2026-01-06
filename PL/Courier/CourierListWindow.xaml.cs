@@ -100,21 +100,28 @@ public partial class CourierListWindow : UserControl
 
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
+        // בדיקה שאכן נלחץ כפתור ושייך לשליח
         if (sender is Button btn && btn.DataContext is BO.CourierInList courierToDelete)
         {
-            if (MessageBox.Show($"Are you sure you want to delete {courierToDelete.Name}?",
-                                "Delete Courier",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            // === שלב 1: יצירת חלון השאלה ===
+            CustomMessageBox customMsg = new CustomMessageBox($"Are you sure you want to delete {courierToDelete.Name}?", "Delete Courier", true);
+
+            // === שלב 2: הצגת החלון ובדיקת התשובה ===
+            if (customMsg.ShowDialog() == true)
             {
                 try
                 {
-                    s_bl.Courier.Delete(courierToDelete.Id, AdminID);
-                    LoadData(); // טעינה מחדש מהמסד כדי לרענן גם את ה-Cache
+                    // ביצוע המחיקה
+                    s_bl.Courier.Delete(AdminID, courierToDelete.Id);
+
+                    // רענון הרשימה והסינונים
+                    LoadData();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to delete: {ex.Message}", "Error");
+                    // === שלב 3: טיפול בשגיאה ===
+                    // הפרמטר השלישי הוא 'false' כי זו רק הודעה (בלי שאלות)
+                    new CustomMessageBox($"Failed to delete: {ex.Message}", "Error", false).ShowDialog();
                 }
             }
         }

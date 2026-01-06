@@ -132,28 +132,69 @@ public class NotEmptyValidationRule : ValidationRule
 
 public class DeleteVisibilityConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (value is CourierInList courier)
-        {
-            // שליח עם משלוחים בעבר - אי אפשר למחוק
-            bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
+    //public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //{
+    //    if (value is CourierInList courier)
+    //    {
+    //        // שליח עם משלוחים בעבר - אי אפשר למחוק
+    //        bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
 
-            // שליח פעיל כרגע - אי אפשר למחוק
-            // (במקום לבדוק CurrentOrder שאין לך, נבדוק אם יש לו משלוח פעיל לפי הנתונים שיש)
-            // נניח שאין גישה ל-CurrentOrder, נסתמך כרגע רק על ההיסטוריה כי זה בטוח
-            // או שנבדוק IsActive אם זה אומר שהוא זמין או לא
+    //        // שליח פעיל כרגע - אי אפשר למחוק
+    //        // (במקום לבדוק CurrentOrder שאין לך, נבדוק אם יש לו משלוח פעיל לפי הנתונים שיש)
+    //        // נניח שאין גישה ל-CurrentOrder, נסתמך כרגע רק על ההיסטוריה כי זה בטוח
+    //        // או שנבדוק IsActive אם זה אומר שהוא זמין או לא
 
-            if (!hasHistory)
-            {
-                return Visibility.Visible; // אפשר למחוק
-            }
-        }
-        return Visibility.Collapsed; // אי אפשר למחוק
-    }
+    //        if (!hasHistory)
+    //        {
+    //            return Visibility.Visible; // אפשר למחוק
+    //        }
+    //    }
+    //    return Visibility.Collapsed; // אי אפשר למחוק
+    //}
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
+
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        // אפשרות 1: שימוש ברשימה (CourierInList) - מה שעשינו בחלון הקודם
+        if (value is BO.CourierInList courierList)
+        {
+            bool hasHistory = (courierList.TotalOnTimeDeliveries + courierList.TotalLateDeliveries) > 0;
+            bool hasActiveOrder = courierList.CurrentOrderId is not null && courierList.CurrentOrderId != 0; // בדיקה לפי ID
+
+            if (hasHistory || hasActiveOrder)
+            {
+                return Visibility.Collapsed;
+            }
+            return Visibility.Visible;  
+        }
+
+        // אפשרות 2: שימוש בחלון פרטים (BO.Courier) - התיקון לחלון הנוכחי
+        if (value is BO.Courier courier)
+        {
+            // אם זה שליח חדש (עוד לא נשמר, ID=0) - אין מה למחוק
+            if (courier.Id == 0) return Visibility.Collapsed;
+
+            // בדיקת היסטוריה
+            bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
+
+            // בדיקת הזמנה פעילה (ב-BO.Courier זה אובייקט שלם)
+            bool hasActiveOrder = courier.CurrentOrder != null;
+
+            // אם אין היסטוריה ואין הזמנה פעילה - תציג את הפח
+            if (!hasHistory && !hasActiveOrder) return Visibility.Visible;
+        }
+
+        // אחרת - תסתיר
+        return Visibility.Collapsed;
+    }
+
+    //public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //{
+    //    throw new NotImplementedException();
+    //}
 }

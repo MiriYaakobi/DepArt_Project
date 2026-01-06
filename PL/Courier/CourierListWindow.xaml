@@ -267,9 +267,14 @@
 
         <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
             <StackPanel Margin="20,40,20,20">
-                <Border Width="90" Height="90" CornerRadius="45" Background="{StaticResource Seashell}" Margin="0,0,0,15">
-                    <TextBlock Text="👤" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+                    </Border.Effect>
+                    <Image Source="/Images/logo.png" Stretch="Uniform"/>
                 </Border>
+
                 <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 
                 <Button Content="Main Dashboard" Click="BtnDashboard_Click" Style="{StaticResource MenuButton}"/>
@@ -294,7 +299,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="🚚 Delivery Mode:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="🚚 Vehicle Type:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <ComboBox x:Name="CategorySelector" 
                                   Style="{StaticResource PurpleComboBox}"
                                   Width="180" Height="35" 
@@ -303,7 +308,7 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="🔍 Search Name:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="🔍 Search Courier:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <Border Background="White" BorderBrush="#8986CC" BorderThickness="1" CornerRadius="8" Width="200" Height="35">
                             <TextBox x:Name="SearchBox" 
                                      Background="Transparent" 
@@ -325,17 +330,17 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="📋 Couriers List" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DeepPurple}" Margin="0,0,0,10"/>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="15" Foreground="{StaticResource TextDark}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="ID" Width="100">
+                                <GridViewColumn Header="ID" Width="80">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Id}" HorizontalAlignment="Center"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Name" Width="125">
+                                <GridViewColumn Header="Name" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}" HorizontalAlignment="Center"/>
@@ -363,7 +368,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Current Order" Width="110">
+                                <GridViewColumn Header="Current Order" Width="100">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding CurrentOrderId, FallbackValue='--'}" HorizontalAlignment="Center"/>
@@ -384,8 +389,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-
-                                <GridViewColumn Header="" Width="60">
+                                <GridViewColumn Header="zevel" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource TrashButtonStyle}" 

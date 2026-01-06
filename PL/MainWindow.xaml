@@ -124,9 +124,14 @@
 
             <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
                 <StackPanel Margin="20,40,20,20">
-                    <Border Width="90" Height="90" CornerRadius="45" Background="{StaticResource Seashell}" Margin="0,0,0,15">
-                        <TextBlock Text="👤" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+                        </Border.Effect>
+                        <Image Source="/Images/logo.png" Stretch="Uniform"/>
                     </Border>
+
                     <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 
                     <Button Content="Main Dashboard" Click="BtnDashboard_Click" Style="{StaticResource MenuButton}" Background="#9A97D9"/>

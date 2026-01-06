@@ -145,7 +145,7 @@ public partial class CourierWindow : Window
             Height = 550,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             ResizeMode = ResizeMode.NoResize,
-            Background = (System.Windows.Media.Brush)FindResource("DeepPurple"), // מסגרת סגולה
+            Background = (System.Windows.Media.Brush)FindResource("DeepPurple"),
 
             // התוכן הוא ההזמנה עצמה
             Content = CurrentCourier.CurrentOrder,
