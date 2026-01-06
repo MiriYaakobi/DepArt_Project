@@ -2,18 +2,18 @@
 <config>
   <NextDeliveryId>1026</NextDeliveryId>
   <NextOrderId>1050</NextOrderId>
-  <Clock>2026-01-01T16:06:39.9814505+02:00</Clock>
+  <Clock>2026-01-06T20:15:21.7019566+02:00</Clock>
   <AdminId>123456782</AdminId>
   <AdminPassword>Deafult1234$</AdminPassword>
   <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>
   <CompenyLatitude>32.0641632</CompenyLatitude>
   <CompenyLongitude>34.7692375</CompenyLongitude>
-  <AverageVehicleSpeedKmH>0</AverageVehicleSpeedKmH>
-  <AverageMotorcycleSpeedKmH>0</AverageMotorcycleSpeedKmH>
-  <AverageBicycleSpeedKmH>0</AverageBicycleSpeedKmH>
-  <AverageByFootSpeedKmH>0</AverageByFootSpeedKmH>
-  <MaxDeliveryRange>00:00:00</MaxDeliveryRange>
-  <RiskRange>00:00:00</RiskRange>
-  <InactivityTimeRange>00:00:00</InactivityTimeRange>
-  <DeliveryMaxDistance>286</DeliveryMaxDistance>
+  <AverageVehicleSpeedKmH>100</AverageVehicleSpeedKmH>
+  <AverageMotorcycleSpeedKmH>130</AverageMotorcycleSpeedKmH>
+  <AverageBicycleSpeedKmH>50</AverageBicycleSpeedKmH>
+  <AverageByFootSpeedKmH>10</AverageByFootSpeedKmH>
+  <MaxDeliveryRange>168.00:00:00</MaxDeliveryRange>
+  <RiskRange>03:00:00</RiskRange>
+  <InactivityTimeRange>60.00:00:00</InactivityTimeRange>
+  <DeliveryMaxDistance>150</DeliveryMaxDistance>
 </config>
