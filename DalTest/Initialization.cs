@@ -33,18 +33,40 @@ public static class Initialization
     private static string RandomPassword(string Name) => $"{Name.Replace(" ", "#").ToLower()}{s_rand.Next(0, 21):D2}";
 
     /// <summary>
-    /// generates a random DateTime within the last 5 years at a random hour between 7 AM and 9 PM
+    /// generates a random date and time within the past 5 years from the specified reference time.
     /// </summary>
     /// <param name="Time"></param>
     /// <returns></returns>
-    private static DateTime RandomTime(DateTime Time)
+    private static DateTime RandomHistoryTime(DateTime Time)
     {
-        int daysBack = s_rand.Next(0, 1095);
+        int daysBack = s_rand.Next(0, 1827);
+        return GenerateRandomTime(Time, daysBack);
+    }
+
+    /// <summary>
+    /// Generates a random date and time within the past 60 days from the specified reference time.
+    /// </summary>
+    /// <param name="Time">The reference <see cref="DateTime"/> from which the random time is calculated.</param>
+    /// <returns>A <see cref="DateTime"/> representing a randomly selected time within the past 60 days from the specified
+    /// reference time.</returns>
+    private static DateTime RandomRecentTime(DateTime Time)
+    {
+        int daysBack = s_rand.Next(0, 60);
+        return GenerateRandomTime(Time, daysBack);
+    }
+
+    /// <summary>
+    /// generates a random DateTime based on a base time and days back at a random hour between 7 AM and 9 PM
+    /// </summary>
+    /// <param name="BaseTime"></param>
+    /// <param name="daysBack"></param>
+    /// <returns></returns>
+    private static DateTime GenerateRandomTime(DateTime BaseTime, int daysBack)
+    {
         int hoursOffset = s_rand.Next(7, 21);
         int minutesOffset = s_rand.Next(0, 61);
         int secondsOffset = s_rand.Next(0, 61);
-
-        return Time.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
+        return BaseTime.AddDays(-daysBack).AddHours(hoursOffset).AddMinutes(minutesOffset).AddSeconds(secondsOffset);
     }
 
     /// <summary>
@@ -158,7 +180,7 @@ public static class Initialization
             string password = RandomPassword(name);
             bool isActive = s_rand.Next(0, 100) < 80; // 80% chance to be active
             DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4); // Random delivery type
-            DateTime startWorkTime = RandomTime(s_dal!.Config.Clock); // Random start work time
+            DateTime startWorkTime = RandomHistoryTime(s_dal!.Config.Clock); // Random start work time
             double? maxDist = getRandomMaxDistance(deliveryType, s_rand); // Random max distance
 
             // Create and add the courier to the DAL
@@ -218,7 +240,7 @@ public static class Initialization
             OrderType orderTypes = (OrderType)s_rand.Next(0, 3);
             var name = customerNames[i];
             string phone = RandomPhoneNumber();
-            DateTime OpeningTime = RandomTime(s_dal!.Config.Clock);
+            DateTime OpeningTime = RandomRecentTime(s_dal!.Config.Clock);
             string details = PackageDetails[i % PackageDetails.Length];
             string descrip = Descriptions[i % Descriptions.Length];
 
@@ -231,12 +253,14 @@ public static class Initialization
     }
 
     /// <summary>
-    /// creates deliveries for some of the orders in the DAL - written as a base by AI and rewritten and corrected by us
+    /// creates deliveries for some of the orders in the DAL - Improved for maximum utilization
     /// </summary>
     private static void createDeliveries()
     {
-        // Read all orders and couriers
+        // Read all orders and active couriers
         var allOrders = s_dal!.Order.ReadAll().ToList();
+
+        // Read only active couriers
         var allCouriers = s_dal!.Courier.ReadAll(c => c.IsActive).ToList();
 
         // If no orders or couriers, exit
@@ -251,127 +275,125 @@ public static class Initialization
         foreach (var c in allCouriers)
             courierSchedule[c.Id] = new List<(DateTime, DateTime?)>();
 
-        // Determine how many orders to mark as finished and running
-        int finishedTarget = Math.Min(20, availableOrders.Count);
-        int runningTarget = Math.Min(10, Math.Max(0, availableOrders.Count - finishedTarget));
+        // Count of active couriers
+        int activeCouriersCount = allCouriers.Count;
+
+        // Determine how many orders can be running based on active couriers
+        int runningTarget = Math.Min(activeCouriersCount, availableOrders.Count);
+
+        // Determine how many orders can be finished
+        int finishedTarget = availableOrders.Count - runningTarget;
 
         // Shuffle available orders randomly
         var shuffledOrders = availableOrders.OrderBy(_ => s_rand.Next()).ToList();
 
         // Select orders to be finished and running
-        var finished = shuffledOrders.Take(finishedTarget).ToList();
-        var running = shuffledOrders.Skip(finishedTarget).Take(runningTarget).ToList();
+        var running = shuffledOrders.Take(runningTarget).ToList();
+        var finished = shuffledOrders.Skip(runningTarget).Take(finishedTarget).ToList();
 
         DateTime now = s_dal!.Config.Clock;
 
-        // Process finished orders
+        //create finished deliveries first
         foreach (var order in finished.ToList())
         {
-            // Calculate distance from company to order location
             double dist = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
                     s_dal!.Config.CompenyLatitude!.Value, s_dal!.Config.CompenyLongitude!.Value);
+
+            //find a courier who can handle this distance
             var courier = PickCourierForDistance(allCouriers, dist);
 
-            // If no suitable courier found, skip this order
             if (courier == null)
                 continue;
 
-            // Determine earliest possible start time
             DateTime earliestStart = order.OrderOpeningTime.AddMinutes(5);
-            if (earliestStart < order.OrderOpeningTime) earliestStart = order.OrderOpeningTime;
-            if (earliestStart > now) earliestStart = now;
 
-            // Try to place the delivery in the courier's schedule
+            // Ensure the earliest start time is not before the order opening time and not in the future
+            if (earliestStart < order.OrderOpeningTime)
+                earliestStart = order.OrderOpeningTime;
+
+            // Ensure the earliest start time is not in the future
+            if (earliestStart > now)
+                earliestStart = now;
+
+            // Try to find a non-overlapping time slot
             DateTime start = earliestStart;
             bool placed = false;
 
-            // Attempt up to 50 times to find a non-overlapping time slot
+            // Try up to 50 times to find a valid time slot
             for (int attempt = 0; attempt < 50; attempt++)
             {
-                // Randomly select a start time within the allowed window
+                //for finished orders, we can pick any time between earliestStart and now
                 int maxMinutesWindow = (int)Math.Max(1, (now - earliestStart).TotalMinutes);
                 int addMinutes = (maxMinutesWindow == 0) ? 0 : s_rand.Next(0, maxMinutesWindow);
                 start = earliestStart.AddMinutes(addMinutes);
 
-                // Randomly determine a delivery duration between 20 and 180 minutes
                 int durationMinutes = s_rand.Next(20, 180);
                 DateTime end = start.AddMinutes(durationMinutes);
 
-                // Ensure the end time does not exceed the current time
-                if (end > now) end = start.AddMinutes(s_rand.Next(10, Math.Min(60, durationMinutes)));
+                // Ensure end time is not in the future
+                if (end > now)
+                    end = start.AddMinutes(s_rand.Next(10, Math.Min(60, durationMinutes)));
 
-                // Check for schedule overlap
+                // Check for overlap in courier's schedule
                 if (!HasOverlap(courierSchedule[courier.Id], start, end))
                 {
-                    // No overlap found, schedule the delivery
                     courierSchedule[courier.Id].Add((start, end));
 
-                    // Randomly select a closed status for the order
-                    var closedStatuses = new[]
-                    {
-                    OrderEndStatus.Delivered,
-                    OrderEndStatus.Refused,
-                    OrderEndStatus.Cancelled,
-                    OrderEndStatus.InviterNotFound,
-                    OrderEndStatus.Failed
-                    };
-
-                    // Pick a random closed status
+                    // Randomly pick a closed status
+                    var closedStatuses = new[] { OrderEndStatus.Delivered, OrderEndStatus.Delivered, OrderEndStatus.Delivered, OrderEndStatus.Refused };
                     var endStatus = closedStatuses[s_rand.Next(closedStatuses.Length)];
 
-                    // Create the delivery record
                     s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, endStatus, end));
                     availableOrders.RemoveAll(o => o.Id == order.Id);
-
-                    // Mark as placed and exit the loop
                     placed = true;
                     break;
                 }
             }
-
-            // If not placed after all attempts, continue to the next order
-            if (!placed)
-                continue;
+            if (!placed) continue;
         }
 
-        // Process running orders
+        //create running deliveries next
         foreach (var order in running.ToList())
         {
-            // Calculate distance from company to order location
+            //calculate distance from company to order location
             double dist = CalculateDistanceFromCompany(order.Latitude, order.Longitude,
                     s_dal!.Config.CompenyLatitude!.Value, s_dal!.Config.CompenyLongitude!.Value);
 
-            var courier = PickCourierForDistance(allCouriers, dist);
+            //filter couriers who are currently available (not engaged in active deliveries)
+            var availableCouriersForNow = allCouriers.Where(c =>
+                !courierSchedule[c.Id].Any(slot => slot.End == null)
+            ).ToList();
 
-            // If no suitable courier found, skip this order
+            //pick a courier who can handle this distance
+            var courier = PickCourierForDistance(availableCouriersForNow, dist);
+
+            //if no courier found, skip this order
             if (courier == null)
                 continue;
 
-            // Determine earliest possible start time
             DateTime earliestStart = order.OrderOpeningTime.AddMinutes(5);
 
-            // Ensure earliest start is not before order opening time
-            if (earliestStart > now) earliestStart = now;
+            // Ensure the earliest start time is not before the order opening time
+            if (earliestStart > now)
+                earliestStart = now;
 
-            // Try to place the delivery in the courier's schedule
             DateTime start = earliestStart;
             bool placed = false;
 
-            // Attempt up to 50 times to find a non-overlapping time slot
+            // Try to find a non-overlapping time slot
             for (int attempt = 0; attempt < 50; attempt++)
             {
-                // Randomly select a start time within the allowed window
+                //for running orders, we can pick any time between earliestStart and now
                 int maxMinutesWindow = (int)Math.Max(1, (now - earliestStart).TotalMinutes);
                 int addMinutes = (maxMinutesWindow == 0) ? 0 : s_rand.Next(0, maxMinutesWindow);
                 start = earliestStart.AddMinutes(addMinutes);
-                DateTime? end = null;
+                DateTime? end = null; // running deliveries have no end time
 
-                // Check for schedule overlap
+                // Check for overlap in courier's schedule
                 if (!HasOverlap(courierSchedule[courier.Id], start, end))
                 {
-                    courierSchedule[courier.Id].Add((start, null));
+                    courierSchedule[courier.Id].Add((start, null)); //mark as running delivery
 
-                    // Create the delivery record
                     s_dal!.Delivery.Create(new DO.Delivery(0, order.Id, courier.Id, order.TypeOfOrder, start, dist, null, null));
 
                     availableOrders.RemoveAll(o => o.Id == order.Id);
@@ -379,10 +401,7 @@ public static class Initialization
                     break;
                 }
             }
-
-            // If not placed after all attempts, continue to the next order
-            if (!placed)
-                continue;
+            if (!placed) continue;
         }
     }
 
