@@ -385,5 +385,56 @@
                 </Grid>
             </Grid>
         </Grid>
+        <Grid x:Name="LoadingOverlay" Visibility="Collapsed" Background="#40000000">
+            <Border Background="White" 
+            CornerRadius="15" 
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Center" 
+            Padding="40,30"
+            MinWidth="250">
+
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
+                </Border.Effect>
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <Grid Width="60" Height="60" HorizontalAlignment="Center">
+                        <Ellipse Stroke="#7C4DFF" 
+                         StrokeThickness="5" 
+                         StrokeDashArray="1 1.5" 
+                         StrokeDashCap="Round" 
+                         RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="0" />
+                            </Ellipse.RenderTransform>
+                            <Ellipse.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                     From="0" To="360" Duration="0:0:1" RepeatBehavior="Forever" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Ellipse.Triggers>
+                        </Ellipse>
+                    </Grid>
+
+                    <TextBlock Text="Processing..." 
+                       FontSize="18" 
+                       FontWeight="Bold" 
+                       Foreground="#333333" 
+                       Margin="0,20,0,0" 
+                       HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Please wait a moment" 
+                       FontSize="14" 
+                       Foreground="Gray" 
+                       Margin="0,5,0,0" 
+                       HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

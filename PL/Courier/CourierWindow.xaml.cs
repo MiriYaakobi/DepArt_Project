@@ -159,4 +159,9 @@ public partial class CourierWindow : Window
 
         orderWindow.ShowDialog(); // פתיחה כחלון מודאלי (חוסם את החלון שמתחתיו)
     }
+
+    private void BtnCancel_Click(object sender, RoutedEventArgs e)
+    {
+        this.Close();
+    }
 }

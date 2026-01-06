@@ -11,16 +11,70 @@ namespace PL
         private BlApi.IBl s_bl = BlApi.Factory.Get();
         private int _adminId;
 
+        // =================================================================
+        // הוספה לדרישות שלב 5: תכונות תלות (Dependency Properties)
+        // =================================================================
+
+        // 1. הגדרת תכונת התלות עבור השעון
+        public DateTime CurrentTime
+        {
+            get { return (DateTime)GetValue(CurrentTimeProperty); }
+            set { SetValue(CurrentTimeProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentTimeProperty =
+            DependencyProperty.Register("CurrentTime", typeof(DateTime), typeof(MainWindow), new PropertyMetadata(DateTime.Now));
+
+        // 2. הגדרת תכונת התלות עבור הקונפיגורציה
+        public BO.Config Configuration
+        {
+            get { return (BO.Config)GetValue(ConfigurationProperty); }
+            set { SetValue(ConfigurationProperty, value); }
+        }
+
+        public static readonly DependencyProperty ConfigurationProperty =
+            DependencyProperty.Register("Configuration", typeof(BO.Config), typeof(MainWindow), new PropertyMetadata(null));
+
+        // =================================================================
+
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this; // נדרש כדי שה-Binding יעבוד בעתיד
             LoadData();
         }
+
+        // =================================================================
+        // הוספה לדרישות שלב 5: מתודות השקפה (Observers)
+        // =================================================================
+
+        // "מתודת השקפה על השעון" - תזומן ע"י ObserverManager
+        private void clockObserver()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                CurrentTime = s_bl.Admin.GetClock();
+            });
+        }
+
+        // "מתודת ההשקפה על משתני התצורה" - תזומן ע"י ObserverManager
+        private void configObserver()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Configuration = s_bl.Admin.GetConfig();
+            });
+        }
+        // =================================================================
 
         private void LoadData()
         {
             try
             {
+                // כאן אנחנו משתמשים בפונקציות החדשות כדי לאתחל את הנתונים בפעם הראשונה
+                clockObserver();
+                configObserver();
+
                 BO.Config config = s_bl.Admin.GetConfig();
                 _adminId = config.AdminId;
 
@@ -116,39 +170,79 @@ namespace PL
             }
         }
 
-        private void BtnInit_Click(object sender, RoutedEventArgs e)
+        private async void BtnInit_Click(object sender, RoutedEventArgs e)
         {
-            bool confirm = CustomMessageBox.ShowQuestion("Initialize DB? Current data will be lost.", "Initialize");
-            if (confirm)
+            // שאלת אישור
+            if (!CustomMessageBox.ShowQuestion("Initialize Database with dummy data?", "Initialize")) return;
+
+            try
             {
-                try
+                // 1. מציגים את הטעינה
+                LoadingOverlay.Visibility = Visibility.Visible;
+
+                // 2. עבודה ברקע (Async) - זה הסטנדרט המקצועי!
+                // המסך נשאר חי ומגיב, והספינר מסתובב חלק.
+                await Task.Run(() =>
                 {
+                    // מנגנון בטיחות 1: מחכים רבע שנייה לשחרור קבצים ודאי
+                    System.Threading.Thread.Sleep(250);
+
+                    // הפעולה הכבדה (5 שניות)
                     s_bl.Admin.InitializeDB();
-                    CustomMessageBox.Show("Database initialized.", "Done");
-                    LoadData();
-                }
-                catch (Exception ex)
-                {
-                    CustomMessageBox.Show(ex.Message, "Error");
-                }
+
+                    // מנגנון בטיחות 2: מוודאים שהקובץ נכתב ונסגר סופית
+                    System.Threading.Thread.Sleep(250);
+                });
+
+                // 3. חוזרים לחוט הראשי לעדכן נתונים
+                LoadData();
+
+                // 4. מעלימים את הטעינה *לפני* ההודעה
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                CustomMessageBox.Show("Database initialized successfully.", "Done");
+            }
+            catch (Exception ex)
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                CustomMessageBox.Show("Error: " + ex.Message, "Error");
             }
         }
 
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        private async void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            bool confirm = CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset");
-            if (confirm)
+            if (!CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset")) return;
+
+            try
             {
-                try
+                // 1. טעינה
+                LoadingOverlay.Visibility = Visibility.Visible;
+
+                // 2. עבודה ברקע
+                await Task.Run(() =>
                 {
+                    // בטיחות: מוודאים שאין שום דבר אחר שנוגע בקובץ כרגע
+                    System.Threading.Thread.Sleep(250);
+
+                    // מחיקה
                     s_bl.Admin.ResetDB();
-                    CustomMessageBox.Show("Database reset.", "Done");
-                    LoadData();
-                }
-                catch (Exception ex)
-                {
-                    CustomMessageBox.Show(ex.Message, "Error");
-                }
+
+                    // השהייה קטנה ל"הרגשה טובה" (UX)
+                    System.Threading.Thread.Sleep(250);
+                });
+
+                // 3. עדכון UI
+                LoadData();
+
+                // 4. סגירת טעינה
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                CustomMessageBox.Show("Database reset successfully.", "Done");
+            }
+            catch (Exception ex)
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                CustomMessageBox.Show("Error: " + ex.Message, "Error");
             }
         }
 

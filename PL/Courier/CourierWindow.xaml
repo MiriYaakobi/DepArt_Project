@@ -377,9 +377,10 @@
                 </Button>
 
                 <Button Content="Cancel" IsCancel="True"
-                        Width="140" Height="45" Margin="10"
-                        Background="White" Foreground="{StaticResource DeepPurple}" FontWeight="Bold" FontSize="16"
-                        BorderBrush="{StaticResource DeepPurple}" BorderThickness="2" Cursor="Hand">
+        Click="BtnCancel_Click" 
+        Width="140" Height="45" Margin="10"
+        Background="White" Foreground="{StaticResource DeepPurple}" FontWeight="Bold" FontSize="16"
+        BorderBrush="{StaticResource DeepPurple}" BorderThickness="2" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="22"/>
