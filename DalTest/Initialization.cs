@@ -39,7 +39,7 @@ public static class Initialization
     /// <returns></returns>
     private static DateTime RandomTime(DateTime Time)
     {
-        int daysBack = s_rand.Next(0, 1827);
+        int daysBack = s_rand.Next(0, 1095);
         int hoursOffset = s_rand.Next(7, 21);
         int minutesOffset = s_rand.Next(0, 61);
         int secondsOffset = s_rand.Next(0, 61);
@@ -237,7 +237,7 @@ public static class Initialization
     {
         // Read all orders and couriers
         var allOrders = s_dal!.Order.ReadAll().ToList();
-        var allCouriers = s_dal!.Courier.ReadAll().ToList();
+        var allCouriers = s_dal!.Courier.ReadAll(c => c.IsActive).ToList();
 
         // If no orders or couriers, exit
         if (allOrders.Count == 0 || allCouriers.Count == 0)
