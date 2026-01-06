@@ -47,6 +47,16 @@ internal static class DeliveryManager
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static void CreateNewDeliveryForOrder(int orderId, int courierId, double orderLat, double orderLon, BO.DeliveryType shippingType)
     {
+        DO.Courier? courierToCheck = s_dal.Courier.Read(courierId);
+
+        // validate courier existence and status
+        if (courierToCheck == null)
+            throw new BO.BlDoesNotExistException($"Courier {courierId} does not exist.");
+
+        // only active couriers can be assigned
+        if (!courierToCheck.IsActive)
+            throw new BO.BlInvalidOperationException($"Cannot assign order to inactive courier {courierId}.");
+
         // cordinates of the company (source)
         (double companyLat, double companyLon) = OrderManager.GetCompanyCoordinates();
 

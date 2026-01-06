@@ -36,21 +36,27 @@ static internal class Config
     /// </summary>
     internal static void Reset()
     {
-        nextDeliveryId = StartDeliveryId;
-        nextOrderId = StartOrderId;
+        nextDeliveryId = NextDeliveryId;
+        nextOrderId = NextOrderId;
+
         Clock = DateTime.Now;
+
         AdminId = 123456782;
         AdminPassword = "Deafult1234$";
-        CompenyAddress = null;
+
+        CompenyAddress = "Ahad Ha'am St 9 Tel-Aviv";
         CompenyLatitude = 32.0641632;
         CompenyLongitude = 34.7692375;
-        DeliveryMaxDistance = null;
-        AverageVehicleSpeedKmH = 0.0;
-        AverageMotorcycleSpeedKmH = 0.0;
-        AverageBicycleSpeedKmH = 0.0;
-        AverageByFootSpeedKmH = 0.0;
-        MaxDeliveryRange = TimeSpan.Zero;
-        RiskRange = TimeSpan.Zero;
-        InactivityTimeRange = TimeSpan.Zero;
+
+        DeliveryMaxDistance = 150.0;
+
+        AverageVehicleSpeedKmH = 80.0;
+        AverageMotorcycleSpeedKmH = 100.0;
+        AverageBicycleSpeedKmH = 20.0;
+        AverageByFootSpeedKmH = 5.0;
+
+        MaxDeliveryRange = TimeSpan.FromHours(4);
+        RiskRange = TimeSpan.FromHours(3);
+        InactivityTimeRange = TimeSpan.FromDays(60);
     }
 }

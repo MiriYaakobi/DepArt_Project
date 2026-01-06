@@ -140,6 +140,14 @@ internal static class CourierManager
         // retrieve existing courier or throw if not found by calling helper method
         DO.Courier existingCourier = GetExistingCourier(courierId: courier.Id);
 
+        if (courier.IsActive == false)
+        {
+            if (courier.CurrentOrder != null)
+            {
+                throw new Exception("Cannot deactivate courier while they have an active order assigned.");
+            }
+        }
+
         // determine password to store
         string passwordToStore = string.IsNullOrEmpty(courier.Password) ? existingCourier.Password : Tools.HashPassword(courier.Password);
 
@@ -150,6 +158,7 @@ internal static class CourierManager
             Phone = courier.Phone!,
             Email = courier.Email!,
             Password = passwordToStore,
+            IsActive = courier.IsActive,
             TypeOfDelivery = (DO.DeliveryType)courier.TypeOfDelivery,
             MaxDistance = courier.MaxDistance
         };
@@ -213,7 +222,8 @@ internal static class CourierManager
         // check all couriers for inactivity
         var allCouriers = s_dal.Courier.ReadAll().ToList();
         TimeSpan inactivityTimeSpan = s_dal.Config.InactivityTimeRange;
-        if (inactivityTimeSpan == TimeSpan.Zero) return;
+        if (inactivityTimeSpan == TimeSpan.Zero)
+            return;
 
         //check each courier for inactivity and update status if needed
         foreach (var doCourier in allCouriers)

@@ -126,20 +126,20 @@ internal class CourierImplementation : ICourier
     /// <returns></returns>
     private Courier? ConvertXElementToCourier(XElement? element)
     {
-        if (element == null) return null;
+        if (element == null)
+            return null;
 
-        return new Courier
-        {
-            Id = element.ToIntNullable("Id") ?? 0,
-            Name = element.ToStringNullable("Name") ?? string.Empty,
-            Phone = element.ToStringNullable("Phone") ?? string.Empty,
-            Email = element.ToStringNullable("Email") ?? string.Empty,
-            Password = element.ToStringNullable("Password") ?? string.Empty,
-            IsActive = element.ToBoolNullable("IsActive") ?? false,
-            TypeOfDelivery = element.ToEnumNullable<DeliveryType>("TypeOfDelivery") ?? DeliveryType.ByFoot,
-            StartWorkTime = element.ToDateTimeNullable("StartWorkTime") ?? DateTime.Now,
-            MaxDistance = element.ToDoubleNullable("MaxDistance")
-        };
+        return new Courier(
+            Id: element.ToIntNullable("Id") ?? 0,
+            Name: element.ToStringNullable("Name") ?? string.Empty,
+            Phone: element.ToStringNullable("Phone") ?? string.Empty,
+            Email: element.ToStringNullable("Email") ?? string.Empty,
+            Password: element.ToStringNullable("Password") ?? string.Empty,
+            IsActive: element.ToBoolNullable("IsActive") ?? false,
+            TypeOfDelivery: element.ToEnumNullable<DeliveryType>("TypeOfDelivery") ?? DeliveryType.ByFoot,
+            StartWorkTime: element.ToDateTimeNullable("StartWorkTime") ?? DateTime.Now,
+            MaxDistance: element.ToDoubleNullable("MaxDistance")
+        );
     }
 
     /// <summary>

@@ -95,19 +95,25 @@ internal static class Config
     {
         NextDeliveryId = 1000;
         NextOrderId = 1000;
+
         Clock = DateTime.Now;
+
         AdminId = 123456782;
         AdminPassword = "Deafult1234$";
+
         CompenyAddress = "Ahad Ha'am St 9 Tel-Aviv";
         CompenyLatitude = 32.0641632;
         CompenyLongitude = 34.7692375;
-        DeliveryMaxDistance = 286;
-        AverageVehicleSpeedKmH = 0.0;
-        AverageMotorcycleSpeedKmH = 0.0;
-        AverageBicycleSpeedKmH = 0.0;
-        AverageByFootSpeedKmH = 0.0;
-        MaxDeliveryRange = TimeSpan.Zero;
-        RiskRange = TimeSpan.Zero;
-        InactivityTimeRange = TimeSpan.Zero;
+
+        DeliveryMaxDistance = 150.0;
+
+        AverageVehicleSpeedKmH = 80.0;
+        AverageMotorcycleSpeedKmH = 100.0;
+        AverageBicycleSpeedKmH = 20.0;
+        AverageByFootSpeedKmH = 5.0;
+
+        MaxDeliveryRange = TimeSpan.FromHours(4);
+        RiskRange = TimeSpan.FromHours(3);
+        InactivityTimeRange = TimeSpan.FromDays(60);
     }
 }
