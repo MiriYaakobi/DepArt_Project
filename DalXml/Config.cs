@@ -114,6 +114,6 @@ internal static class Config
 
         MaxDeliveryRange = TimeSpan.FromHours(4);
         RiskRange = TimeSpan.FromHours(3);
-        InactivityTimeRange = TimeSpan.FromDays(60);
+        InactivityTimeRange = TimeSpan.FromHours(1440);
     }
 }

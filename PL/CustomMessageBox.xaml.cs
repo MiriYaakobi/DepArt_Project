@@ -21,6 +21,7 @@ namespace PL
 
         private void BtnYes_Click(object sender, RoutedEventArgs e)
         {
+            this.Result = true;
             this.DialogResult = true;
             this.Close();
         }
