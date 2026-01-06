@@ -222,7 +222,8 @@ internal static class CourierManager
         // check all couriers for inactivity
         var allCouriers = s_dal.Courier.ReadAll().ToList();
         TimeSpan inactivityTimeSpan = s_dal.Config.InactivityTimeRange;
-        if (inactivityTimeSpan == TimeSpan.Zero) return;
+        if (inactivityTimeSpan == TimeSpan.Zero)
+            return;
 
         //check each courier for inactivity and update status if needed
         foreach (var doCourier in allCouriers)
