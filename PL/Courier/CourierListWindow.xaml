@@ -268,13 +268,18 @@
         <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
             <StackPanel Margin="20,40,20,20">
 
-                <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15">
+                <Border Width="110" Height="110" CornerRadius="55" Background="White" Margin="0,0,0,15">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
                     </Border.Effect>
-                    <Image Source="/Images/logo.png" Stretch="Uniform"/>
-                </Border>
 
+                    <TextBlock Text="👤" 
+                            FontSize="50" 
+                            Foreground="{StaticResource DeepPurple}"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"/>
+                </Border>
+                
                 <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 
                 <Button Content="Main Dashboard" Click="BtnDashboard_Click" Style="{StaticResource MenuButton}"/>
@@ -368,7 +373,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Current Order" Width="100">
+                                <GridViewColumn Header="Current Order" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding CurrentOrderId, FallbackValue='--'}" HorizontalAlignment="Center"/>
@@ -389,7 +394,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="zevel" Width="60">
+                                <GridViewColumn Header="" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource TrashButtonStyle}" 

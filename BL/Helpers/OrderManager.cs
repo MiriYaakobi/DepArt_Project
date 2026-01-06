@@ -312,9 +312,9 @@ internal static class OrderManager
         // get max delivery range from config
         TimeSpan maxTimeSpan = s_dal.Config.MaxDeliveryRange;
 
-        // default to 3 days if not set
+        // default to 7 days if not set
         if (maxTimeSpan == TimeSpan.Zero)
-            maxTimeSpan = TimeSpan.FromDays(14);
+            maxTimeSpan = TimeSpan.FromDays(7);
 
         // calculate maximum delivery time (opening time + max range)
         return doOrder.OrderOpeningTime.Add(maxTimeSpan);
