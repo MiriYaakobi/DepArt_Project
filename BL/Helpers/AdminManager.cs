@@ -47,8 +47,13 @@ internal static class AdminManager //stage 4
     }
 
     /// <summary>
-    /// Method for providing current configuration variables values for any BL class that may need it
+    /// Retrieves the current configuration settings for the application.
     /// </summary>
+    /// <remarks>This method returns a new instance of the <see cref="BO.Config"/> class populated with
+    /// configuration values sourced from the underlying data access layer (DAL). The method is thread-safe due to the
+    /// use of the <see cref="MethodImplOptions.Synchronized"/> attribute.</remarks>
+    /// <returns>A <see cref="BO.Config"/> object containing the application's configuration settings, such as administrative
+    /// details, delivery parameters, company information, and average speed metrics.</returns>
     [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
     internal static BO.Config GetConfig()
     => new BO.Config()
@@ -69,110 +74,146 @@ internal static class AdminManager //stage 4
     };
 
     /// <summary>
-    /// Method for setting current configuration variables values for any BL class that may need it
+    /// Updates the system configuration with the specified settings.   [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
     /// </summary>
-    [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
+    /// <remarks>This method validates the provided configuration values before applying them. The following
+    /// conditions must be met: <list type="bullet"> <item><description>The <paramref name="configuration"/> must have a
+    /// valid 9-digit <c>AdminId</c>.</description></item> <item><description>The <c>CompenyAddress</c> must not be
+    /// empty and must be a valid address.</description></item> <item><description>All speed values and the maximum
+    /// delivery distance must be positive.</description></item> <item><description>If an <c>AdminPassword</c> is
+    /// provided, it must be at least 8 characters long.</description></item> </list> If the company address is updated,
+    /// its geographic coordinates are recalculated. Observers are notified of configuration changes if any updates are
+    /// applied.</remarks>
+    /// <param name="configuration">The new configuration settings to apply. This includes administrative details, company address, delivery
+    /// parameters, and speed settings.</param>
+    /// <exception cref="BO.BlInvalidDataException">Thrown if any of the validation conditions are not met, such as an invalid <c>AdminId</c>, an empty or invalid
+    /// <c>CompenyAddress</c>, non-positive speed or distance values, or an <c>AdminPassword</c> that is too short.</exception>
+    /// <exception cref="BO.BlDoesNotExistException">Thrown if the provided <c>CompenyAddress</c> cannot be verified.</exception>
     internal static void SetConfig(BO.Config configuration)
     {
+        //admin ID
+        if (configuration.AdminId <= 100000000 || configuration.AdminId > 999999999)
+            throw new BO.BlInvalidDataException("ID must be a 9-digit number");
+
+        if (string.IsNullOrWhiteSpace(configuration.CompenyAddress))
+            throw new BO.BlInvalidDataException("Company address cannot be empty.");
+
+        //check positive distances
+        if (configuration.DeliveryMaxDistance <= 0)
+            throw new BO.BlInvalidDataException("Max delivery distance must be positive.");
+
+        //check positive speeds
+        if (configuration.AverageVehicleSpeedKmH <= 0 ||
+            configuration.AverageMotorcycleSpeedKmH <= 0 ||
+            configuration.AverageBicycleSpeedKmH <= 0 ||
+            configuration.AverageByFootSpeedKmH <= 0)
+        {
+            throw new BO.BlInvalidDataException("All speed values must be positive.");
+        }
+
+        if (!string.IsNullOrEmpty(configuration.AdminPassword) && configuration.AdminPassword.Length < 8)
+            throw new BO.BlInvalidDataException("Password must be at least 8 characters long.");
+
+
+        //update progress flag
         bool configChanged = false;
 
-        // update company address and its coordinates if changed
+        //update address if changed
         if (s_dal.Config.CompenyAddress != configuration.CompenyAddress)
         {
-            var coordinates = Tools.GetCoordinatesOfAddressSync(configuration.CompenyAddress ?? "");
+            //logic checks for address
+            if (configuration.CompenyAddress.Length < 3)
+                throw new BO.BlInvalidDataException("Address is too short to be valid.");
 
+            var coordinates = Tools.GetCoordinatesOfAddressSync(configuration.CompenyAddress);
             if (coordinates == null)
-                throw new BO.BlDoesNotExistException($"Company address '{configuration.CompenyAddress}' is invalid or could not be found.");
+                throw new BO.BlDoesNotExistException($"Address verification failed: '{configuration.CompenyAddress}' was not found.");
 
+            //update address and coordinates
             s_dal.Config.CompenyAddress = configuration.CompenyAddress;
             s_dal.Config.CompenyLatitude = coordinates.Value.Latitude;
             s_dal.Config.CompenyLongitude = coordinates.Value.Longitude;
             configChanged = true;
         }
 
-        // update other configuration parameters if changed
-        if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
+        //helper local function to reduce code duplication
+        void UpdateIfChanged<T>(T newValue, T currentValue, Action<T> updateAction)
         {
-            s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance;
-            configChanged = true;
-        }
-    
-        if (s_dal.Config.MaxDeliveryRange != configuration.MaxDeliveryRange)
-        {
-            s_dal.Config.MaxDeliveryRange = configuration.MaxDeliveryRange;
-            configChanged = true;
+            if (!EqualityComparer<T>.Default.Equals(newValue, currentValue))
+            {
+                updateAction(newValue);
+                configChanged = true;
+            }
         }
 
-        if (s_dal.Config.RiskRange != configuration.RiskRange)
+        //update other properties
+        UpdateIfChanged(configuration.AdminId, s_dal.Config.AdminId, val
+            => s_dal.Config.AdminId = val);
+       
+        UpdateIfChanged(configuration.MaxDeliveryRange, s_dal.Config.MaxDeliveryRange, val
+            => s_dal.Config.MaxDeliveryRange = val);
+        
+        UpdateIfChanged(configuration.RiskRange, s_dal.Config.RiskRange, val
+            => s_dal.Config.RiskRange = val);
+        
+        UpdateIfChanged(configuration.InactivityTimeRange, s_dal.Config.InactivityTimeRange,
+            val => s_dal.Config.InactivityTimeRange = val);
+        
+        UpdateIfChanged(configuration.DeliveryMaxDistance, s_dal.Config.DeliveryMaxDistance,
+            val => s_dal.Config.DeliveryMaxDistance = val);
+
+        UpdateIfChanged(configuration.AverageVehicleSpeedKmH, s_dal.Config.AverageVehicleSpeedKmH, val
+            => s_dal.Config.AverageVehicleSpeedKmH = val);
+
+        UpdateIfChanged(configuration.AverageMotorcycleSpeedKmH, s_dal.Config.AverageMotorcycleSpeedKmH, val
+            => s_dal.Config.AverageMotorcycleSpeedKmH = val);
+       
+        UpdateIfChanged(configuration.AverageBicycleSpeedKmH, s_dal.Config.AverageBicycleSpeedKmH, val
+            => s_dal.Config.AverageBicycleSpeedKmH = val);
+        
+        UpdateIfChanged(configuration.AverageByFootSpeedKmH, s_dal.Config.AverageByFootSpeedKmH, val
+            => s_dal.Config.AverageByFootSpeedKmH = val);
+
+        //update password if provided
+        if (!string.IsNullOrEmpty(configuration.AdminPassword))
         {
-            s_dal.Config.RiskRange = configuration.RiskRange;
-            configChanged = true;
+            UpdateIfChanged(configuration.AdminPassword, s_dal.Config.AdminPassword,
+                val => s_dal.Config.AdminPassword = val);
         }
 
-        if (s_dal.Config.InactivityTimeRange != configuration.InactivityTimeRange)
-        {
-            s_dal.Config.InactivityTimeRange = configuration.InactivityTimeRange;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.AdminId != configuration.AdminId)
-        {
-            s_dal.Config.AdminId = configuration.AdminId;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.DeliveryMaxDistance != configuration.DeliveryMaxDistance)
-        {
-            s_dal.Config.DeliveryMaxDistance = configuration.DeliveryMaxDistance;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.AverageVehicleSpeedKmH != configuration.AverageVehicleSpeedKmH)
-        {
-            s_dal.Config.AverageVehicleSpeedKmH = configuration.AverageVehicleSpeedKmH;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.AverageMotorcycleSpeedKmH != configuration.AverageMotorcycleSpeedKmH)
-        {
-            s_dal.Config.AverageMotorcycleSpeedKmH = configuration.AverageMotorcycleSpeedKmH;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.AverageBicycleSpeedKmH != configuration.AverageBicycleSpeedKmH)
-        {
-            s_dal.Config.AverageBicycleSpeedKmH = configuration.AverageBicycleSpeedKmH;
-            configChanged = true;
-        }
-
-        if (s_dal.Config.AverageByFootSpeedKmH != configuration.AverageByFootSpeedKmH)
-        {
-            s_dal.Config.AverageByFootSpeedKmH = configuration.AverageByFootSpeedKmH;
-            configChanged = true;
-        }
-
-        //Calling all the observers of configuration update
-        if (configChanged) // stage 5
-            ConfigUpdatedObservers?.Invoke(); // stage 5
+        if (configChanged)
+            ConfigUpdatedObservers?.Invoke();
     }
 
-    internal static void ResetDB() //stage 4-7
+    /// <summary>
+    /// Resets the database to its initial state and updates the system configuration.
+    /// </summary>
+    /// <remarks>This method performs a full reset of the database and ensures that the system clock  and
+    /// configuration are updated to reflect the current state. It is thread-safe and  should be used with caution as it
+    /// may result in data loss.</remarks>
+    internal static void ResetDB()
     {
         lock (BlMutex) //stage 7
         {
-            s_dal.ResetDB(); //stage 4
-            AdminManager.UpdateClock(AdminManager.Now); //stage 5 - needed since we want the label on Pl to be updated
-            AdminManager.SetConfig(AdminManager.GetConfig()); //stage 5 - needed to update PL 
+            s_dal.ResetDB();
+            AdminManager.UpdateClock(AdminManager.Now);
+            AdminManager.SetConfig(AdminManager.GetConfig());
         }
     }
 
-    internal static void InitializeDB() //stage 4-7
+    /// <summary>
+    /// Initializes the database and updates the system configuration.
+    /// </summary>
+    /// <remarks>This method performs the initial setup of the database by invoking the required
+    /// initialization routines. It also updates the system clock and applies the current configuration settings. The
+    /// method is thread-safe and ensures that only one initialization process occurs at a time.</remarks>
+    internal static void InitializeDB()
     {
         lock (BlMutex) //stage 7
         {
-            DalTest.Initialization.Do(); //stage 4
-            AdminManager.UpdateClock(AdminManager.Now);  //stage 5 - needed since we want the label on Pl to be updated           
-            AdminManager.SetConfig(AdminManager.GetConfig()); //stage 5 - needed for update the PL
+            DalTest.Initialization.Do();
+            AdminManager.UpdateClock(AdminManager.Now);         
+            AdminManager.SetConfig(AdminManager.GetConfig());
         }
     }
     /// <summary>
