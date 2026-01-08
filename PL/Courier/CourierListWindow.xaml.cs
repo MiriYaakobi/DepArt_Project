@@ -7,30 +7,53 @@ using BO;
 
 namespace PL.Courier;
 
+/// <summary>
+/// Represents a user control that displays and manages a list of couriers for an administrator.
+/// </summary>
+/// <remarks><para> <b>CourierListWindow</b> provides functionality for viewing, filtering, adding, and deleting
+/// couriers. The control supports filtering couriers by delivery type and by search text, and allows administrators to
+/// manage the courier list interactively. </para> <para> The control raises the <see cref="RequestDashboard"/> event to
+/// request navigation back to the dashboard. </para></remarks>
 public partial class CourierListWindow : UserControl
 {
+    // Reference to the business logic layer for courier operations.
     static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    // The ID of the current admin user.
     private readonly int AdminID;
 
-    // תיקון אזהרה 1: הוספנו '?' כדי לאפשר ערך ריק (null) בהתחלה
+    // The complete list of couriers loaded from the business logic layer.
     private IEnumerable<BO.CourierInList>? AllCouriers;
 
+    /// <summary>
+    /// Event raised to request navigation back to the dashboard.
+    /// </summary>
     public event EventHandler? RequestDashboard;
 
+    /// <summary>
+    /// Gets or sets the list of couriers to display.
+    /// </summary>
     public IEnumerable<BO.CourierInList> CourierList
     {
         get { return (IEnumerable<BO.CourierInList>)GetValue(CourierListProperty); }
         set { SetValue(CourierListProperty, value); }
     }
 
+    /// <summary>
+    /// Identifies the dependency property for the CourierList property.
+    /// </summary>
     public static readonly DependencyProperty CourierListProperty =
         DependencyProperty.Register("CourierList", typeof(IEnumerable<BO.CourierInList>), typeof(CourierListWindow), new PropertyMetadata(null));
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CourierListWindow"/> class.
+    /// </summary>
     public CourierListWindow(int adminId)
     {
         InitializeComponent();
         AdminID = adminId;
 
+        // Set up filter options for the category selector.
         var filterOptions = new List<object>();
         filterOptions.Add("All");
         filterOptions.AddRange(Enum.GetValues(typeof(BO.DeliveryType)).Cast<object>());
@@ -41,16 +64,16 @@ public partial class CourierListWindow : UserControl
         CategorySelector.SelectedIndex = 0;
     }
 
+    /// <summary>
+    /// Loads the courier data from the business logic layer.
+    /// </summary>
     private void LoadData()
     {
         try
         {
             if (AdminID == 0) return;
 
-            // טעינת הנתונים לזיכרון
             AllCouriers = s_bl.Courier.ReadAll(AdminID);
-
-            // הפעלת הסינון
             ApplyFilters();
         }
         catch (Exception ex)
@@ -59,38 +82,45 @@ public partial class CourierListWindow : UserControl
         }
     }
 
+    /// <summary>
+    /// Applies filters to the courier list based on user input.
+    /// </summary>
     private void ApplyFilters()
     {
-        // אם הרשימה הראשית ריקה, אין מה לסנן
-        if (AllCouriers == null) return;
+        if (AllCouriers == null) 
+            return;
 
         var tempAddList = AllCouriers;
 
-        // 1. סינון לפי קטגוריה
+        // Filter by selected delivery type
         if (CategorySelector.SelectedItem is BO.DeliveryType selectedType)
-        {
             tempAddList = tempAddList.Where(item => item.TypeOfDelivery == selectedType);
-        }
 
-        // 2. סינון לפי טקסט חיפוש
+
+        // Filter by search text
         string searchText = SearchBox.Text;
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            // תיקון אזהרה 2: בודקים ש-item.Name לא ריק לפני שעושים עליו חיפוש
+            // Case-insensitive search in courier names
             tempAddList = tempAddList.Where(item =>
                 !string.IsNullOrEmpty(item.Name) &&
                 item.Name.ToLower().Contains(searchText.ToLower()));
         }
 
-        // עדכון התצוגה (המרה לרשימה בסוף התהליך)
         CourierList = tempAddList.ToList();
     }
 
+    /// <summary>
+    /// Handles changes to the filter controls.
+    /// </summary>
     private void Filter_Changed(object sender, RoutedEventArgs e)
     {
         ApplyFilters();
     }
 
+    /// <summary>
+    /// Opens the courier window for adding a new courier.
+    /// </summary>
     private void BtnAddCourier_Click(object sender, RoutedEventArgs e)
     {
         OpenCourierWindow(null);
@@ -98,54 +128,62 @@ public partial class CourierListWindow : UserControl
         CategorySelector.SelectedIndex = 0;
     }
 
+    /// <summary>
+    /// Deletes the selected courier.
+    /// </summary>
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
-        // בדיקה שאכן נלחץ כפתור ושייך לשליח
+        // Confirm deletion
         if (sender is Button btn && btn.DataContext is BO.CourierInList courierToDelete)
         {
-            // === שלב 1: יצירת חלון השאלה ===
             CustomMessageBox customMsg = new CustomMessageBox($"Are you sure you want to delete {courierToDelete.Name}?", "Delete Courier", true);
 
-            // === שלב 2: הצגת החלון ובדיקת התשובה ===
+            // Show confirmation dialog
             if (customMsg.ShowDialog() == true)
             {
                 try
                 {
-                    // ביצוע המחיקה
                     s_bl.Courier.Delete(AdminID, courierToDelete.Id);
-
-                    // רענון הרשימה והסינונים
                     LoadData();
                 }
                 catch (Exception ex)
                 {
-                    // === שלב 3: טיפול בשגיאה ===
-                    // הפרמטר השלישי הוא 'false' כי זו רק הודעה (בלי שאלות)
                     new CustomMessageBox($"Failed to delete: {ex.Message}", "Error", false).ShowDialog();
                 }
             }
         }
     }
 
+    /// <summary>
+    /// Opens the dashboard window.
+    /// </summary>
     private void BtnDashboard_Click(object sender, RoutedEventArgs e)
     {
         RequestDashboard?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Opens the list management window.
+    /// </summary>
     private void BtnListManagement_Click(object sender, RoutedEventArgs e)
     {
         SearchBox.Text = "";
         CategorySelector.SelectedIndex = 0;
     }
 
+    /// <summary>
+    /// Opens the courier window for adding a new courier.
+    /// </summary>
     private void OpenCourierWindow(int? id = null)
     {
         var window = new CourierWindow(id);
-        // כשהחלון הזה ייסגר מתישהו בעתיד - תבצע רענון לרשימה
         window.Closed += (s, args) => LoadData();
         window.Show();
     }
 
+    /// <summary>
+    /// Handles double-click events on the courier list.
+    /// </summary>
     private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (sender is ListView listView && listView.SelectedItem is BO.CourierInList selectedCourier)

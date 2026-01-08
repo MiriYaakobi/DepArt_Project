@@ -8,193 +8,232 @@ using BO;
 
 namespace PL;
 
+/// <summary>
+/// Converts a status value to a corresponding color brush for UI representation.
+/// </summary>
+/// <remarks>This value converter is typically used in data binding scenarios to visually indicate status, such as
+/// active or inactive states, by mapping a boolean value to a <see cref="Brush"/>. For example, an inactive status may
+/// be displayed with a specific color, while other states use a default color.</remarks>
 public class StatusToColorConverter : IValueConverter
 {
-    // המרה מהנתונים (האם פעיל?) לצבע (Brush)
+    /// <summary>
+    /// Converts a boolean value indicating status to a corresponding color brush.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // אנחנו מצפים לקבל בוליאני (true/false)
         if (value is bool isActive)
         {
-            if (!isActive) // אם לא פעיל
-            {
-                // מחזירים צבע אדמדם/אפרפר בהיר לסימון
+            if (!isActive)
                 return Brushes.LavenderBlush;
-            }
         }
 
-        // אם פעיל - צבע רגיל (שקוף/לבן)
         return Brushes.Transparent;
     }
 
-    // המרה הפוכה (לא רלוונטי לצבעים, לכן זורקים שגיאה)
+    /// <summary>
+    /// Converts a color brush back to a boolean value indicating status.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
 }
 
-// ממיר 1: טקסט לכפתור
+/// <summary>
+/// Converts an ID value to a corresponding content string for UI representation.
+/// </summary>
 public class IdToContentConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts an ID value to a corresponding content string for UI representation.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int id && id == 0) return "Add";
+        if (value is int id && id == 0) 
+            return "Add";
         return "Update";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    /// <summary>
+    /// Converts a content string back to an ID value.
+    /// </summary>
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
-// ממיר 2: נעילת שדות
+/// <summary>
+/// Converts an ID value to a corresponding read-only state.
+/// </summary>
 public class IdToIsReadOnlyConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts an ID value to a corresponding read-only state.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int id && id == 0) return false;
+        if (value is int id && id == 0) 
+            return false;
         return true;
     }
 
+    /// <summary>
+    /// Converts a read-only state back to an ID value.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
-// ממיר 3: הסתרת שדות (החדש)
+/// <summary>
+/// Converts an ID value to a corresponding visibility state.
+/// </summary>
 public class IdToVisibilityConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts an ID value to a corresponding visibility state.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // אם ה-ID הוא 0 (הוספה) -> מציג
         if (value is int id && id == 0)
             return Visibility.Visible;
 
-        // אחרת (עדכון) -> מסתיר
         return Visibility.Collapsed;
     }
 
+    /// <summary>
+    /// Converts a visibility state back to an ID value.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
-// ממיר שמציג מחרוזת ריקה אם המספר הוא 0 (מונע את הופעת ה-0 בהתחלה)
+/// <summary>
+/// Converts a zero integer value to an empty string.
+/// </summary>
 public class ZeroToEmptyStringConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts a zero integer value to an empty string.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is int i && i == 0) return "";
+        if (value is int i && i == 0) 
+            return "";
         return value.ToString()!;
     }
 
+    /// <summary>
+    /// Converts a zero integer value to an empty string.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (string.IsNullOrWhiteSpace(value as string)) return 0;
-        if (int.TryParse(value as string, out int result)) return result;
+        if (string.IsNullOrWhiteSpace(value as string)) 
+            return 0;
+        if (int.TryParse(value as string, out int result)) 
+            return result;
         return 0;
     }
 }
 
+/// <summary>
+/// Converts a boolean value to a button title.
+/// </summary>
 public class BooleanToButtonTitleConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts a boolean value to a button title.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is bool isUpdate && isUpdate) return "Update";
+        if (value is bool isUpdate && isUpdate) 
+            return "Update";
         return "Add";
     }
 
+    /// <summary>
+    /// Converts a boolean value back to a button title.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
-// בודק אם אובייקט הוא NULL.
-// אם האובייקט קיים (לא NULL) -> מחזיר Visible.
-// אם האובייקט ריק (NULL) -> מחזיר Collapsed.
+/// <summary>
+/// Converts a null value to a visibility state.
+/// </summary>
 public class NullToVisibilityConverter : IValueConverter
 {
+    /// <summary>
+    /// Converts a null value to a visibility state.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value == null ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    /// <summary>
+    /// Converts a null value back to a visibility state.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
+/// <summary>
+/// Validation rule that checks if a field is not empty.
+/// </summary>
 public class NotEmptyValidationRule : ValidationRule
 {
+    /// <summary>
+    /// Validates that the field is not empty.
+    /// </summary>
     public override ValidationResult Validate(object value, CultureInfo cultureInfo)
     {
         if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
-        {
             return new ValidationResult(false, "Field is required.");
-        }
+
         return ValidationResult.ValidResult;
     }
 }
 
+/// <summary>
+/// Converts a boolean value to a button title.
+/// </summary>
 public class DeleteVisibilityConverter : IValueConverter
 {
-    //public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //{
-    //    if (value is CourierInList courier)
-    //    {
-    //        // שליח עם משלוחים בעבר - אי אפשר למחוק
-    //        bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
+    /// <summary>
+    /// Converts a boolean value to a button title.
+    /// </summary>
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        // Check if the value is of type CourierInList
+        if (value is BO.CourierInList courierList)
+        {
+            // If the courier has any delivery history or an active order, hide the delete button
+            bool hasHistory = (courierList.TotalOnTimeDeliveries + courierList.TotalLateDeliveries) > 0;
+            bool hasActiveOrder = courierList.CurrentOrderId is not null && courierList.CurrentOrderId != 0;
 
-    //        // שליח פעיל כרגע - אי אפשר למחוק
-    //        // (במקום לבדוק CurrentOrder שאין לך, נבדוק אם יש לו משלוח פעיל לפי הנתונים שיש)
-    //        // נניח שאין גישה ל-CurrentOrder, נסתמך כרגע רק על ההיסטוריה כי זה בטוח
-    //        // או שנבדוק IsActive אם זה אומר שהוא זמין או לא
+            if (hasHistory || hasActiveOrder)
+                return Visibility.Collapsed;
 
-    //        if (!hasHistory)
-    //        {
-    //            return Visibility.Visible; // אפשר למחוק
-    //        }
-    //    }
-    //    return Visibility.Collapsed; // אי אפשר למחוק
-    //}
+            return Visibility.Visible;  
+        }
 
+        // Check if the value is of type Courier
+        if (value is BO.Courier courier)
+        {
+            if (courier.Id == 0) 
+                return Visibility.Collapsed;
+
+            bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
+
+            bool hasActiveOrder = courier.CurrentOrder != null;
+
+            if (!hasHistory && !hasActiveOrder) 
+                return Visibility.Visible;
+        }
+
+        // Default to collapsed if conditions are not met
+        return Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Converts a boolean value back to a button title.
+    /// </summary>
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
-
-
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        // אפשרות 1: שימוש ברשימה (CourierInList) - מה שעשינו בחלון הקודם
-        if (value is BO.CourierInList courierList)
-        {
-            bool hasHistory = (courierList.TotalOnTimeDeliveries + courierList.TotalLateDeliveries) > 0;
-            bool hasActiveOrder = courierList.CurrentOrderId is not null && courierList.CurrentOrderId != 0; // בדיקה לפי ID
-
-            if (hasHistory || hasActiveOrder)
-            {
-                return Visibility.Collapsed;
-            }
-            return Visibility.Visible;  
-        }
-
-        // אפשרות 2: שימוש בחלון פרטים (BO.Courier) - התיקון לחלון הנוכחי
-        if (value is BO.Courier courier)
-        {
-            // אם זה שליח חדש (עוד לא נשמר, ID=0) - אין מה למחוק
-            if (courier.Id == 0) return Visibility.Collapsed;
-
-            // בדיקת היסטוריה
-            bool hasHistory = (courier.TotalOnTimeDeliveries + courier.TotalLateDeliveries) > 0;
-
-            // בדיקת הזמנה פעילה (ב-BO.Courier זה אובייקט שלם)
-            bool hasActiveOrder = courier.CurrentOrder != null;
-
-            // אם אין היסטוריה ואין הזמנה פעילה - תציג את הפח
-            if (!hasHistory && !hasActiveOrder) return Visibility.Visible;
-        }
-
-        // אחרת - תסתיר
-        return Visibility.Collapsed;
-    }
-
-    //public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //{
-    //    throw new NotImplementedException();
-    //}
 }

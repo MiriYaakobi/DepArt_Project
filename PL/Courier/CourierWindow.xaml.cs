@@ -4,35 +4,56 @@ using BO;
 
 namespace PL.Courier;
 
+/// <summary>
+/// Represents a window for adding, updating, viewing, or deleting courier information within the application.
+/// </summary>
+/// <remarks><para> The <see cref="CourierWindow"/> provides a user interface for managing courier records,
+/// supporting both creation of new couriers and modification or deletion of existing ones. The window adapts its
+/// behavior based on whether a courier ID is provided at construction time: </para> <list type="bullet">   <item>    
+/// <description>If <c>courierId</c> is <see langword="null"/>, the window operates in add mode, allowing entry of a new
+/// courier's details.</description>   </item>   <item>     <description>If <c>courierId</c> is specified, the window
+/// loads the corresponding courier for editing or deletion.</description>   </item> </list> <para> The window exposes
+/// properties for data binding, including the current courier being edited and available delivery types. It also
+/// provides feedback to the user for validation errors and operation results. </para></remarks>
 public partial class CourierWindow : Window
 {
+    // Reference to the business logic layer for courier operations.
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
 
+    // The ID of the current admin user performing operations.
     private int _currentAdminId;
 
-    // משתנה שקובע פעם אחת ולתמיד: האם החלון הזה הוא לעדכון?
+    // Indicates whether the window is in update mode (true) or add mode (false).
     public bool IsUpdateMode { get; private set; }
 
-    // רשימה עבור הקומבו-בוקס (במקום להשתמש ב-x:Name)
+    // Array of available delivery types for selection in the UI.
     public Array DeliveryTypes { get; } = Enum.GetValues(typeof(BO.DeliveryType));
 
-    // האובייקט שאליו אנחנו מבצעים Binding
+    /// The courier currently being added or edited.
     public BO.Courier CurrentCourier
     {
         get { return (BO.Courier)GetValue(CurrentCourierProperty); }
         set { SetValue(CurrentCourierProperty, value); }
     }
 
+    /// <summary>
+    /// Identifies the dependency property for the CurrentCourier property.
+    /// </summary>
     public static readonly DependencyProperty CurrentCourierProperty =
         DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierWindow), new PropertyMetadata(null));
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CourierWindow"/> class.
+    /// </summary>
     public CourierWindow(int? courierId = null)
     {
         InitializeComponent();
 
+        // Get the current admin ID from configuration.
         try { _currentAdminId = s_bl.Admin.GetConfig().AdminId; } catch { _currentAdminId = 1; }
 
-        if (courierId == null) //add mode
+        // Determine mode based on presence of courierId
+        if (courierId == null)
         {
             IsUpdateMode = false;
             CurrentCourier = new BO.Courier();
@@ -42,6 +63,7 @@ public partial class CourierWindow : Window
         {
             IsUpdateMode = true;
 
+            // Load the existing courier details
             try
             {
                 CurrentCourier = s_bl.Courier.Read(_currentAdminId, courierId.Value)!;
@@ -58,68 +80,75 @@ public partial class CourierWindow : Window
         DataContext = this;
     }
 
+    /// <summary>
+    /// Handles the click event for the Add/Update button.
+    /// </summary>
     private void BtnAddUpdate_Click(object sender, RoutedEventArgs e)
     {
+        // Validate required fields
         try
         {
-            // ולידציה בסיסית לשדות חובה אחרים
+            // Basic validation
             if (string.IsNullOrEmpty(CurrentCourier.Name) || string.IsNullOrEmpty(CurrentCourier.Phone))
             {
                 CustomMessageBox.Show("Please fill in all required fields.", "Validation Error");
                 return;
             }
 
+            // Additional validation can be added here as needed
             if (IsUpdateMode)
             {
-                // === התיקון הלוגי ===
-                // בדיקה: האם המשתמש השאיר את הסיסמה ריקה?
+                // If password is not changed, retain the original password
                 if (string.IsNullOrEmpty(CurrentCourier.Password))
                 {
-                    // אם כן, זה אומר שהוא רוצה לשמור על הסיסמה הישנה.
-                    // נשלוף את השליח המקורי שוב מה-BL (כולל הסיסמה המוצפנת/התקינה שיש שם)
                     BO.Courier originalCourierFromDb = s_bl.Courier.Read(_currentAdminId, CurrentCourier.Id)!;
 
-                    // נעתיק את הסיסמה מהמסד לאובייקט שאנחנו שולחים לעדכון
                     CurrentCourier.Password = originalCourierFromDb!.Password;
                 }
 
-                // כעת ב-CurrentCourier.Password יש או את מה שהמשתמש הקליד,
-                // או את הסיסמה הישנה והתקינה מהמסד. אפשר לשלוח בבטחה.
+                // Update existing courier
                 s_bl.Courier.Update(_currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier updated successfully!", "Success");
             }
-            else
+            else // Add new courier
             {
-                // בהוספה חובה להזין סיסמה (כי אין "ישנה")
+                // Ensure password is provided for new courier
                 if (string.IsNullOrEmpty(CurrentCourier.Password))
                 {
                     CustomMessageBox.Show("Password is required for new courier.", "Validation Error");
                     return;
                 }
 
+                // Create new courier
                 s_bl.Courier.Create(_currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier added successfully!", "Success");
             }
             this.Close();
         }
-        catch (Exception ex)
+        catch (Exception ex) // Catch any exceptions from BL layer
         {
-            // אם העדכון נכשל, ננקה שוב את הסיסמה כדי שהמשתמש לא יראה פתאום את ההצפנה
-            if (IsUpdateMode) CurrentCourier.Password = "********+";
+            if (IsUpdateMode) 
+                CurrentCourier.Password = "********";
             CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
         }
     }
 
+    /// <summary>
+    /// Handles the click event for the Delete button.
+    /// </summary>
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
+        // Prevent deletion if the courier has an active order
         if (CurrentCourier.CurrentOrder != null)
         {
             CustomMessageBox.Show("Cannot delete courier while they have an active order.", "Validation Error");
             return;
         }
 
+        // Confirm deletion
         if (CustomMessageBox.ShowQuestion("Are you sure you want to delete this courier?", "Delete Confirmation"))
         {
+            // Proceed with deletion
             try
             {
                 s_bl.Courier.Delete(_currentAdminId, CurrentCourier.Id);
@@ -133,11 +162,16 @@ public partial class CourierWindow : Window
         }
     }
 
+    /// <summary>
+    /// Handles the click event for the View Order button.
+    /// </summary>
     private void BtnViewOrder_Click(object sender, RoutedEventArgs e)
     {
-        if (CurrentCourier.CurrentOrder == null) return;
+        // Ensure there is a current order to view
+        if (CurrentCourier.CurrentOrder == null) 
+            return;
 
-        // יצירת חלון חדש דינאמית
+        // Create and display the order details window
         Window orderWindow = new Window
         {
             Title = "Order Details",
@@ -147,19 +181,20 @@ public partial class CourierWindow : Window
             ResizeMode = ResizeMode.NoResize,
             Background = (System.Windows.Media.Brush)FindResource("DeepPurple"),
 
-            // התוכן הוא ההזמנה עצמה
             Content = CurrentCourier.CurrentOrder,
 
-            // העיצוב נלקח מה-DataTemplate שהגדרנו ב-XAML
             ContentTemplate = (DataTemplate)FindResource("OrderDetailsTemplate")
         };
 
-        // מאפשר סגירה בלחיצה על ESC
+        // Close the window on Escape key press
         orderWindow.PreviewKeyDown += (s, args) => { if (args.Key == System.Windows.Input.Key.Escape) orderWindow.Close(); };
 
-        orderWindow.ShowDialog(); // פתיחה כחלון מודאלי (חוסם את החלון שמתחתיו)
+        orderWindow.ShowDialog(); 
     }
 
+    /// <summary>
+    /// Handles the click event for the Cancel button.
+    /// </summary>
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
         this.Close();
