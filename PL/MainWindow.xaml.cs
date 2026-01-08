@@ -1,15 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace PL;
 
 public partial class MainWindow : Window
 {
     private BlApi.IBl s_bl = BlApi.Factory.Get();
-    private int _adminId;
+    private int AdminID;
 
     public DateTime CurrentTime
     {
@@ -33,7 +30,29 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = this;
-        LoadData();
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            CurrentTime = s_bl.Admin.GetClock();
+            Configuration = s_bl.Admin.GetConfig();
+
+            s_bl.Admin.AddClockObserver(clockObserver);
+            s_bl.Admin.AddConfigObserver(configObserver);
+
+            if (Configuration != null)
+            {
+                AdminID = Configuration.AdminId;
+                txtPassword.Text = "********";
+                RefreshGraph();
+            }
+        }
+        catch (Exception ex)
+        {
+            CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
+        }
     }
 
     private void clockObserver()
@@ -52,46 +71,11 @@ public partial class MainWindow : Window
         });
     }
 
-    private void LoadData()
-    {
-        try
-        {
-            clockObserver();
-            configObserver();
-
-            BO.Config config = s_bl.Admin.GetConfig();
-            _adminId = config.AdminId;
-
-            txtAdminId.Text = config.AdminId.ToString();
-            txtAddress.Text = config.CompenyAddress;
-            txtMaxDist.Text = config.DeliveryMaxDistance?.ToString() ?? "0";
-
-            txtCarSpeed.Text = config.AverageVehicleSpeedKmH.ToString();
-            txtMotoSpeed.Text = config.AverageMotorcycleSpeedKmH.ToString();
-            txtBikeSpeed.Text = config.AverageBicycleSpeedKmH.ToString();
-            txtFootSpeed.Text = config.AverageByFootSpeedKmH.ToString();
-
-            txtRange.Text = config.MaxDeliveryRange.ToString();
-            txtRiskRange.Text = config.RiskRange.ToString();
-            txtInactivity.Text = config.InactivityTimeRange.ToString();
-
-            DateTime now = s_bl.Admin.GetClock();
-            txtClockTime.Text = now.ToString("HH:mm:ss");
-            txtClockDate.Text = now.ToString("dd/MM/yyyy");
-
-            RefreshGraph();
-        }
-        catch (Exception ex)
-        {
-            CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
-        }
-    }
-
     private void RefreshGraph()
     {
         try
         {
-            int[] quantities = s_bl.Order.GetOrderSummaryQuantities(_adminId);
+            int[] quantities = s_bl.Order.GetOrderSummaryQuantities(AdminID);
 
             UpdateSingleBar(barOpen, valOpen, quantities[(int)BO.OrderStatus.Open], quantities);
             UpdateSingleBar(barInProgress, valInProgress, quantities[(int)BO.OrderStatus.InProgress], quantities);
@@ -105,23 +89,28 @@ public partial class MainWindow : Window
     private void UpdateSingleBar(Border bar, TextBlock textVal, int value, int[] allValues)
     {
         textVal.Text = value.ToString();
-
         int maxValue = allValues.Max();
-        if (maxValue == 0) maxValue = 1;
+
+        if (maxValue == 0)
+            maxValue = 1;
 
         double maxHeight = 150;
         double newHeight = ((double)value / maxValue) * maxHeight;
 
-        if (value > 0 && newHeight < 20) newHeight = 20;
-        if (value == 0) newHeight = 5;
+        if (value > 0 && newHeight < 20)
+            newHeight = 20;
+
+        if (value == 0)
+            newHeight = 5;
 
         bar.Height = newHeight;
-
         double minOpacity = 0.3;
         double maxOpacity = 1.0;
         double ratio = (double)value / maxValue;
         double newOpacity = minOpacity + (ratio * (maxOpacity - minOpacity));
-        if (value == 0) newOpacity = 0.2;
+
+        if (value == 0)
+            newOpacity = 0.2;
 
         bar.Opacity = newOpacity;
     }
@@ -130,23 +119,16 @@ public partial class MainWindow : Window
     {
         try
         {
-            BO.Config config = s_bl.Admin.GetConfig();
+            if (Configuration == null)
+                return;
 
-            if (double.TryParse(txtMaxDist.Text, out double dist)) config.DeliveryMaxDistance = dist;
-            config.CompenyAddress = txtAddress.Text;
+            if (txtPassword.Text != "********")
+                Configuration.AdminPassword = txtPassword.Text;
 
-            if (double.TryParse(txtCarSpeed.Text, out double car)) config.AverageVehicleSpeedKmH = car;
-            if (double.TryParse(txtMotoSpeed.Text, out double moto)) config.AverageMotorcycleSpeedKmH = moto;
-            if (double.TryParse(txtBikeSpeed.Text, out double bike)) config.AverageBicycleSpeedKmH = bike;
-            if (double.TryParse(txtFootSpeed.Text, out double foot)) config.AverageByFootSpeedKmH = foot;
+            s_bl.Admin.SetConfig(Configuration);
 
-            if (TimeSpan.TryParse(txtRange.Text, out TimeSpan range)) config.MaxDeliveryRange = range;
-            if (TimeSpan.TryParse(txtRiskRange.Text, out TimeSpan risk)) config.RiskRange = risk;
-            if (TimeSpan.TryParse(txtInactivity.Text, out TimeSpan inact)) config.InactivityTimeRange = inact;
-
-            s_bl.Admin.SetConfig(config);
             CustomMessageBox.Show("Configuration saved successfully!", "Success");
-            LoadData();
+            txtPassword.Text = "********";
         }
         catch (Exception ex)
         {
@@ -163,19 +145,16 @@ public partial class MainWindow : Window
         {
             LoadingOverlay.Visibility = Visibility.Visible;
 
-            await Task.Run(() =>
+            await System.Threading.Tasks.Task.Run(() =>
             {
                 System.Threading.Thread.Sleep(250);
-
                 s_bl.Admin.InitializeDB();
-
                 System.Threading.Thread.Sleep(250);
             });
 
-            LoadData();
-
+            Configuration = s_bl.Admin.GetConfig();
+            RefreshGraph();
             LoadingOverlay.Visibility = Visibility.Collapsed;
-
             CustomMessageBox.Show("Database initialized successfully.", "Done");
         }
         catch (Exception ex)
@@ -187,25 +166,22 @@ public partial class MainWindow : Window
 
     private async void BtnReset_Click(object sender, RoutedEventArgs e)
     {
-        if (!CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset")) return;
+        if (!CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset"))
+            return;
 
         try
         {
             LoadingOverlay.Visibility = Visibility.Visible;
 
-            await Task.Run(() =>
+            await System.Threading.Tasks.Task.Run(() =>
             {
                 System.Threading.Thread.Sleep(250);
-
                 s_bl.Admin.ResetDB();
-
                 System.Threading.Thread.Sleep(250);
             });
-
-            LoadData();
-
+            Configuration = s_bl.Admin.GetConfig();
+            RefreshGraph();
             LoadingOverlay.Visibility = Visibility.Collapsed;
-
             CustomMessageBox.Show("Database reset successfully.", "Done");
         }
         catch (Exception ex)
@@ -220,57 +196,29 @@ public partial class MainWindow : Window
         MainContentControl.Visibility = Visibility.Collapsed;
         MainContentControl.Content = null;
         DashboardGrid.Visibility = Visibility.Visible;
-        LoadData();
+        RefreshGraph();
     }
 
-    private void BtnDashboard_Click(object sender, RoutedEventArgs e)
-    {
-        ShowDashboard();
-    }
+    private void BtnDashboard_Click(object sender, RoutedEventArgs e) => ShowDashboard();
+
     private void BtnCouriers_Click(object sender, RoutedEventArgs e)
     {
-        var courierList = new PL.Courier.CourierListWindow(_adminId);
-
+        var courierList = new PL.Courier.CourierListWindow(AdminID);
         courierList.RequestDashboard += (s, args) => ShowDashboard();
-
         MainContentControl.Content = courierList;
-
         MainContentControl.Visibility = Visibility.Visible;
         DashboardGrid.Visibility = Visibility.Collapsed;
     }
-
-    private void BtnList_Click(object sender, RoutedEventArgs e)
+    private void Window_Closed(object sender, EventArgs e)
     {
-        // Future implementation
+        s_bl.Admin.RemoveClockObserver(clockObserver);
+        s_bl.Admin.RemoveConfigObserver(configObserver);
     }
 
-    private void BtnAddMinute_Click(object sender, RoutedEventArgs e)
-    {
-        s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
-        LoadData();
-    }
-
-    private void BtnAddHour_Click(object sender, RoutedEventArgs e)
-    {
-        s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
-        LoadData();
-    }
-
-    private void BtnAddDay_Click(object sender, RoutedEventArgs e)
-    {
-        s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
-        LoadData();
-    }
-
-    private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
-    {
-        s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
-        LoadData();
-    }
-
-    private void BtnAddYear_Click(object sender, RoutedEventArgs e)
-    {
-        s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
-        LoadData();
-    }
+    private void BtnList_Click(object sender, RoutedEventArgs e) { }
+    private void BtnAddMinute_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
+    private void BtnAddHour_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
+    private void BtnAddDay_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
+    private void BtnAddMonth_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
+    private void BtnAddYear_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
 }

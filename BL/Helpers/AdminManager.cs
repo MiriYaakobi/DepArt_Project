@@ -43,14 +43,14 @@ internal static class AdminManager //stage 4
         //...
 
         //Calling all the observers of clock update
-        ClockUpdatedObservers?.Invoke(); //prepared for stage 5
+        ClockUpdatedObservers?.Invoke();
     }
 
     /// <summary>
     /// Method for providing current configuration variables values for any BL class that may need it
     /// </summary>
     [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
-    internal static BO.Config GetConfig() //stage 4
+    internal static BO.Config GetConfig()
     => new BO.Config()
     {
         AdminId = s_dal.Config.AdminId,
@@ -72,9 +72,9 @@ internal static class AdminManager //stage 4
     /// Method for setting current configuration variables values for any BL class that may need it
     /// </summary>
     [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
-    internal static void SetConfig(BO.Config configuration) //stage 4
+    internal static void SetConfig(BO.Config configuration)
     {
-        bool configChanged = false; // stage 5
+        bool configChanged = false;
 
         // update company address and its coordinates if changed
         if (s_dal.Config.CompenyAddress != configuration.CompenyAddress)
