@@ -31,6 +31,11 @@ public partial class CourierListWindow : UserControl
     public event EventHandler? RequestDashboard;
 
     /// <summary>
+    /// Gets or sets the selected status filter for the courier list.
+    /// </summary>
+    public object StatusFilter { get; set; } = "All";
+
+    /// <summary>
     /// Gets or sets the list of couriers to display.
     /// </summary>
     public IEnumerable<BO.CourierInList> CourierList
@@ -53,15 +58,9 @@ public partial class CourierListWindow : UserControl
         InitializeComponent();
         AdminID = adminId;
 
-        // Set up filter options for the category selector.
-        var filterOptions = new List<object>();
-        filterOptions.Add("All");
-        filterOptions.AddRange(Enum.GetValues(typeof(BO.DeliveryType)).Cast<object>());
-
-        CategorySelector.ItemsSource = filterOptions;
+        StatusFilter = "All";
 
         LoadData();
-        CategorySelector.SelectedIndex = 0;
     }
 
     /// <summary>
@@ -92,10 +91,9 @@ public partial class CourierListWindow : UserControl
 
         var tempAddList = AllCouriers;
 
-        // Filter by selected delivery type
-        if (CategorySelector.SelectedItem is BO.DeliveryType selectedType)
+        // Filter by delivery type
+        if (StatusFilter is BO.DeliveryType selectedType)
             tempAddList = tempAddList.Where(item => item.TypeOfDelivery == selectedType);
-
 
         // Filter by search text
         string searchText = SearchBox.Text;
@@ -125,7 +123,7 @@ public partial class CourierListWindow : UserControl
     {
         OpenCourierWindow(null);
         SearchBox.Text = "";
-        CategorySelector.SelectedIndex = 0;
+        StatusFilter = "All";
     }
 
     /// <summary>
@@ -168,7 +166,7 @@ public partial class CourierListWindow : UserControl
     private void BtnListManagement_Click(object sender, RoutedEventArgs e)
     {
         SearchBox.Text = "";
-        CategorySelector.SelectedIndex = 0;
+        StatusFilter = "All";
     }
 
     /// <summary>
@@ -188,5 +186,26 @@ public partial class CourierListWindow : UserControl
     {
         if (sender is ListView listView && listView.SelectedItem is BO.CourierInList selectedCourier)
             OpenCourierWindow(selectedCourier.Id);
+    }
+
+    /// <summary>
+    /// Observer method for courier list changes.
+    /// </summary>
+    private void CourierListObserver()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            ApplyFilters();
+        });
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Courier.AddObserver(CourierListObserver);
+    }
+
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Courier.RemoveObserver(CourierListObserver);
     }
 }
