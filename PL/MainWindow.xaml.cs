@@ -1,219 +1,405 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
-namespace PL
+namespace PL;
+
+/// <summary>
+/// Represents the main window of the application, providing the primary user interface for managing administrative
+/// tasks, including configuration, database operations, and data visualization.
+/// </summary>
+/// <remarks>This class serves as the entry point for the application's administrative interface. It interacts
+/// with the business logic layer (BL) to retrieve and update data, and it provides various controls for managing
+/// application settings, visualizing order statuses, and performing database operations.  The <see cref="MainWindow"/>
+/// class is designed to handle user interactions, update the UI in response to data changes, and ensure synchronization
+/// between the UI and the underlying data model. It also includes mechanisms for observing changes in the system clock
+/// and configuration.</remarks>
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    private BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    /// <summary>
+    /// Gets or sets the current time value.
+    /// </summary>
+    public DateTime CurrentTime
     {
-        private BlApi.IBl s_bl = BlApi.Factory.Get();
-        private int _adminId;
+        get { return (DateTime)GetValue(CurrentTimeProperty); }
+        set { SetValue(CurrentTimeProperty, value); }
+    }
 
-        public MainWindow()
-        {
-            InitializeComponent();
-            LoadData();
-        }
+    //dependency property for CurrentTime
+    public static readonly DependencyProperty CurrentTimeProperty =
+        DependencyProperty.Register("CurrentTime", typeof(DateTime), typeof(MainWindow), new PropertyMetadata(DateTime.Now));
 
-        private void LoadData()
+    /// <summary>
+    /// Gets or sets the configuration settings for the application.
+    /// </summary>
+    public BO.Config Configuration
+    {
+        get { return (BO.Config)GetValue(ConfigurationProperty); }
+        set { SetValue(ConfigurationProperty, value); }
+    }
+
+    //dependency property for Configuration
+    public static readonly DependencyProperty ConfigurationProperty =
+        DependencyProperty.Register("Configuration", typeof(BO.Config), typeof(MainWindow), new PropertyMetadata(null));
+
+    //ctor
+    public MainWindow()
+    {
+        InitializeComponent();
+        DataContext = this;
+    }
+
+    /// <summary>
+    /// Handles the <see cref="Window.Loaded"/> event, initializing the application's state and subscribing to necessary
+    /// observers.
+    /// </summary>
+    /// <remarks>This method retrieves the current time and configuration settings from the application's
+    /// backend logic. It also subscribes observers to monitor changes in the clock and configuration. If the
+    /// configuration is available, the password field is masked, and the graph is refreshed. Any errors encountered
+    /// during the loading process are displayed in a custom message box.</remarks>
+    /// <param name="sender">The source of the event, typically the window being loaded.</param>
+    /// <param name="e">The event data associated with the <see cref="Window.Loaded"/> event.</param>
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
         {
-            try
+            //initialize data
+            CurrentTime = s_bl.Admin.GetClock();
+            Configuration = s_bl.Admin.GetConfig();
+
+            //subscribe observers
+            s_bl.Admin.AddClockObserver(clockObserver);
+            s_bl.Admin.AddConfigObserver(configObserver);
+
+            //initial UI setup
+            if (Configuration != null)
             {
-                BO.Config config = s_bl.Admin.GetConfig();
-                _adminId = config.AdminId;
-
-                txtAdminId.Text = config.AdminId.ToString();
-                txtAddress.Text = config.CompenyAddress;
-                txtMaxDist.Text = config.DeliveryMaxDistance?.ToString() ?? "0";
-
-                txtCarSpeed.Text = config.AverageVehicleSpeedKmH.ToString();
-                txtMotoSpeed.Text = config.AverageMotorcycleSpeedKmH.ToString();
-                txtBikeSpeed.Text = config.AverageBicycleSpeedKmH.ToString();
-                txtFootSpeed.Text = config.AverageByFootSpeedKmH.ToString();
-
-                txtRange.Text = config.MaxDeliveryRange.ToString();
-                txtRiskRange.Text = config.RiskRange.ToString();
-                txtInactivity.Text = config.InactivityTimeRange.ToString();
-
-                DateTime now = s_bl.Admin.GetClock();
-                txtClockTime.Text = now.ToString("HH:mm:ss");
-                txtClockDate.Text = now.ToString("dd/MM/yyyy");
-
+                txtPassword.Text = "********";
                 RefreshGraph();
             }
-            catch (Exception ex)
-            {
-                CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
-            }
         }
-
-        private void RefreshGraph()
+        catch (Exception ex)
         {
-            try
-            {
-                int[] quantities = s_bl.Order.GetOrderSummaryQuantities(_adminId);
-
-                UpdateSingleBar(barOpen, valOpen, quantities[(int)BO.OrderStatus.Open], quantities);
-                UpdateSingleBar(barInProgress, valInProgress, quantities[(int)BO.OrderStatus.InProgress], quantities);
-                UpdateSingleBar(barDelivered, valDelivered, quantities[(int)BO.OrderStatus.Delivered], quantities);
-                UpdateSingleBar(barRefused, valRefused, quantities[(int)BO.OrderStatus.Refused], quantities);
-                UpdateSingleBar(barCancelled, valCancelled, quantities[(int)BO.OrderStatus.Cancelled], quantities);
-            }
-            catch (Exception) { }
-        }
-
-        private void UpdateSingleBar(Border bar, TextBlock textVal, int value, int[] allValues)
-        {
-            textVal.Text = value.ToString();
-
-            int maxValue = allValues.Max();
-            if (maxValue == 0) maxValue = 1;
-
-            double maxHeight = 150;
-            double newHeight = ((double)value / maxValue) * maxHeight;
-
-            if (value > 0 && newHeight < 20) newHeight = 20;
-            if (value == 0) newHeight = 5;
-
-            bar.Height = newHeight;
-
-            double minOpacity = 0.3;
-            double maxOpacity = 1.0;
-            double ratio = (double)value / maxValue;
-            double newOpacity = minOpacity + (ratio * (maxOpacity - minOpacity));
-            if (value == 0) newOpacity = 0.2;
-
-            bar.Opacity = newOpacity;
-        }
-
-        private void BtnSaveConfig_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                BO.Config config = s_bl.Admin.GetConfig();
-
-                if (double.TryParse(txtMaxDist.Text, out double dist)) config.DeliveryMaxDistance = dist;
-                config.CompenyAddress = txtAddress.Text;
-
-                if (double.TryParse(txtCarSpeed.Text, out double car)) config.AverageVehicleSpeedKmH = car;
-                if (double.TryParse(txtMotoSpeed.Text, out double moto)) config.AverageMotorcycleSpeedKmH = moto;
-                if (double.TryParse(txtBikeSpeed.Text, out double bike)) config.AverageBicycleSpeedKmH = bike;
-                if (double.TryParse(txtFootSpeed.Text, out double foot)) config.AverageByFootSpeedKmH = foot;
-
-                if (TimeSpan.TryParse(txtRange.Text, out TimeSpan range)) config.MaxDeliveryRange = range;
-                if (TimeSpan.TryParse(txtRiskRange.Text, out TimeSpan risk)) config.RiskRange = risk;
-                if (TimeSpan.TryParse(txtInactivity.Text, out TimeSpan inact)) config.InactivityTimeRange = inact;
-
-                s_bl.Admin.SetConfig(config);
-                CustomMessageBox.Show("Configuration saved successfully!", "Success");
-                LoadData();
-            }
-            catch (Exception ex)
-            {
-                CustomMessageBox.Show($"Failed to save config: {ex.Message}", "Validation Error");
-            }
-        }
-
-        private void BtnInit_Click(object sender, RoutedEventArgs e)
-        {
-            bool confirm = CustomMessageBox.ShowQuestion("Initialize DB? Current data will be lost.", "Initialize");
-            if (confirm)
-            {
-                try
-                {
-                    s_bl.Admin.InitializeDB();
-                    CustomMessageBox.Show("Database initialized.", "Done");
-                    LoadData();
-                }
-                catch (Exception ex)
-                {
-                    CustomMessageBox.Show(ex.Message, "Error");
-                }
-            }
-        }
-
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
-        {
-            bool confirm = CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset");
-            if (confirm)
-            {
-                try
-                {
-                    s_bl.Admin.ResetDB();
-                    CustomMessageBox.Show("Database reset.", "Done");
-                    LoadData();
-                }
-                catch (Exception ex)
-                {
-                    CustomMessageBox.Show(ex.Message, "Error");
-                }
-            }
-        }
-
-        private void ShowDashboard()
-        {
-            // הסתרת הפקד של הרשימה והצגת הדשבורד מחדש
-            MainContentControl.Visibility = Visibility.Collapsed;
-            MainContentControl.Content = null; // ניקוי הזיכרון
-            DashboardGrid.Visibility = Visibility.Visible;
-            LoadData();
-        }
-
-        private void BtnDashboard_Click(object sender, RoutedEventArgs e)
-        {
-            ShowDashboard();
-        }
-        private void BtnCouriers_Click(object sender, RoutedEventArgs e)
-        {
-            // 1. יצירת החלון (UserControl) עם שליחת ה-ID
-            var courierList = new PL.Courier.CourierListWindow(_adminId);
-
-            // 2. הרשמה לאירוע חזרה (שימוש בשם הפונקציה הקיים אצלך: ShowDashboard)
-            courierList.RequestDashboard += (s, args) => ShowDashboard();
-
-            // 3. הכנסה לתוך הפקד (שימוש בשם הקיים אצלך: MainContentControl)
-            MainContentControl.Content = courierList;
-
-            // 4. החלפת תצוגה
-            MainContentControl.Visibility = Visibility.Visible;
-            DashboardGrid.Visibility = Visibility.Collapsed;
-        }
-
-        private void BtnList_Click(object sender, RoutedEventArgs e)
-        {
-            // Future implementation
-        }
-
-        private void BtnAddMinute_Click(object sender, RoutedEventArgs e)
-        {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
-            LoadData();
-        }
-
-        private void BtnAddHour_Click(object sender, RoutedEventArgs e)
-        {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
-            LoadData();
-        }
-
-        private void BtnAddDay_Click(object sender, RoutedEventArgs e)
-        {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
-            LoadData();
-        }
-
-        private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
-        {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
-            LoadData();
-        }
-
-        private void BtnAddYear_Click(object sender, RoutedEventArgs e)
-        {
-            s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
-            LoadData();
+            CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
         }
     }
+
+    /// <summary>
+    /// Updates the current time by retrieving the clock value from the administration service.
+    /// </summary>
+    /// <remarks>This method is invoked on the UI thread using the dispatcher to ensure thread safety  when
+    /// updating the <see cref="CurrentTime"/> property.</remarks>
+    private void clockObserver()
+    {
+        // Ensure the update occurs on the UI thread
+        Dispatcher.Invoke(() =>
+        {
+            CurrentTime = s_bl.Admin.GetClock();
+        });
+    }
+
+    /// <summary>
+    /// Configures the observer by retrieving the current configuration from the admin service.
+    /// </summary>
+    /// <remarks>This method must be called on the UI thread as it uses the dispatcher to update the
+    /// configuration.</remarks>
+    private void configObserver()
+    {
+        // Ensure the update occurs on the UI thread
+        Dispatcher.Invoke(() =>
+        {
+            Configuration = s_bl.Admin.GetConfig();
+        });
+    }
+
+    /// <summary>
+    /// Refreshes the graphical representation of order statuses by updating the values of the corresponding bars.
+    /// </summary>
+    /// <remarks>This method retrieves the summary of order quantities for each status using the
+    /// administrator's ID and updates the graphical bars to reflect the current state of orders. The method handles the
+    /// statuses Open, In Progress, Delivered, Refused, and Cancelled.</remarks>
+    private void RefreshGraph()
+    {
+        try
+        {
+            //get order quantities summary
+            int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
+
+            UpdateSingleBar(barOpen, valOpen, quantities[(int)BO.OrderStatus.Open], quantities);
+            UpdateSingleBar(barInProgress, valInProgress, quantities[(int)BO.OrderStatus.InProgress], quantities);
+            UpdateSingleBar(barDelivered, valDelivered, quantities[(int)BO.OrderStatus.Delivered], quantities);
+            UpdateSingleBar(barRefused, valRefused, quantities[(int)BO.OrderStatus.Refused], quantities);
+            UpdateSingleBar(barCancelled, valCancelled, quantities[(int)BO.OrderStatus.Cancelled], quantities);
+        }
+        catch (Exception) { }
+    }
+
+    /// <summary>
+    /// Updates the visual representation of a single bar in a bar chart based on the specified value and its relation
+    /// to other values.
+    /// </summary>
+    /// <remarks>The method adjusts the height and opacity of the bar proportionally to the specified value
+    /// relative to the maximum value in the dataset. - Bars with a value of 0 are assigned a minimum height of 5 and a
+    /// reduced opacity of 0.2. - Bars with non-zero values are guaranteed a minimum height of 20. - The maximum height
+    /// of a bar is capped at 150.</remarks>
+    /// <param name="bar">The <see cref="Border"/> element representing the bar to be updated.</param>
+    /// <param name="textVal">The <see cref="TextBlock"/> element displaying the value associated with the bar.</param>
+    /// <param name="value">The value to be represented by the bar. Must be non-negative.</param>
+    /// <param name="allValues">An array of all values in the dataset, used to determine the relative height and opacity of the bar.</param>
+    private void UpdateSingleBar(Border bar, TextBlock textVal, int value, int[] allValues)
+    {
+        // Update the text value
+        textVal.Text = value.ToString();
+        int maxValue = allValues.Max();
+
+        // Prevent division by zero
+        if (maxValue == 0)
+            maxValue = 1;
+
+        // Calculate new height
+        double maxHeight = 150;
+        double newHeight = ((double)value / maxValue) * maxHeight;
+
+        // Ensure minimum height for non-zero values
+        if (value > 0 && newHeight < 20)
+            newHeight = 20;
+
+        // Ensure minimum height for zero values
+        if (value == 0)
+            newHeight = 5;
+
+        // Update bar height and opacity
+        bar.Height = newHeight;
+        double minOpacity = 0.3;
+        double maxOpacity = 1.0;
+        double ratio = (double)value / maxValue;
+        double newOpacity = minOpacity + (ratio * (maxOpacity - minOpacity));
+
+        // Ensure minimum opacity for zero values
+        if (value == 0)
+            newOpacity = 0.2;
+
+        bar.Opacity = newOpacity;
+    }
+
+    /// <summary>
+    /// Handles the click event of the "Save Configuration" button. Saves the current configuration settings, including
+    /// updating the admin password if modified.
+    /// </summary>
+    /// <remarks>If the password field contains a value other than "********", the admin password is updated.
+    /// Displays a success message upon successful save, or an error message if the operation fails.</remarks>
+    /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+    /// <param name="e">The event data associated with the click event.</param>
+    private void BtnSaveConfig_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Validate configuration before saving
+            if (Configuration == null)
+                return;
+
+            // Update password if changed
+            if (txtPassword.Text != "********")
+                Configuration.AdminPassword = txtPassword.Text;
+
+            s_bl.Admin.SetConfig(Configuration);
+
+            CustomMessageBox.Show("Configuration saved successfully!", "Success");
+            txtPassword.Text = "********";
+        }
+        catch (Exception ex)
+        {
+            CustomMessageBox.Show($"Failed to save config: {ex.Message}", "Validation Error");
+        }
+    }
+
+    /// <summary>
+    /// Handles the click event of the "Initialize Database" button. Prompts the user for confirmation before
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void BtnInit_Click(object sender, RoutedEventArgs e)
+    {
+        //check if a background process is already running
+        if (LoadingOverlay.Visibility == Visibility.Visible)
+            return;
+
+        // Confirm initialization
+        if (!CustomMessageBox.ShowQuestion("Initialize Database with dummy data?", "Initialize"))
+            return;
+
+        //convert sender to button
+        var btn = sender as Button;
+
+        try
+        {
+            //lock the current button
+            if (btn != null) btn.IsEnabled = false;
+
+            LoadingOverlay.Visibility = Visibility.Visible;
+
+            //temp disconnection of observers to avoid multiple updates during init
+            s_bl.Admin.RemoveConfigObserver(configObserver);
+            s_bl.Admin.RemoveClockObserver(clockObserver);
+
+            // Perform database initialization asynchronously
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(250);
+                s_bl.Admin.InitializeDB();
+                System.Threading.Thread.Sleep(250);
+            });
+
+            // Reattach observers
+            s_bl.Admin.AddConfigObserver(configObserver);
+            s_bl.Admin.AddClockObserver(clockObserver);
+
+            // Refresh configuration and graph
+            Configuration = s_bl.Admin.GetConfig();
+
+            RefreshGraph();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+
+            CustomMessageBox.Show("Database initialized successfully.", "Done");
+        }
+        catch (Exception ex)
+        {
+            // Hide loading overlay and show error message
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            CustomMessageBox.Show("Error: " + ex.Message, "Error");
+        }
+        finally
+        {
+            //added block to ensure UI is always released
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            if (btn != null) btn.IsEnabled = true;
+        }
+    }
+
+    /// <summary>
+    /// Handles the click event of the Reset button, resetting the database to its initial state.
+    /// </summary>
+    /// <remarks>This operation deletes all data in the database and restores it to its default configuration.
+    /// A confirmation dialog is displayed before proceeding with the reset. During the reset process, a loading overlay
+    /// is shown to indicate progress. If the reset is successful, the database configuration is reloaded, and the UI is
+    /// updated accordingly. In case of an error, an error message is displayed to the user.</remarks>
+    /// <param name="sender">The source of the event, typically the Reset button.</param>
+    /// <param name="e">The event data associated with the click event.</param>
+    private async void BtnReset_Click(object sender, RoutedEventArgs e)
+    {
+        //check if a background process is already running
+        if (LoadingOverlay.Visibility == Visibility.Visible)
+            return;
+
+        // Confirm reset
+        if (!CustomMessageBox.ShowQuestion("RESET the DB? ALL data will be deleted.", "Reset"))
+            return;
+
+        // convert sender to button
+        var btn = sender as Button;
+
+        try
+        {
+            //lock the current button
+            if (btn != null) btn.IsEnabled = false;
+
+            LoadingOverlay.Visibility = Visibility.Visible;
+
+            // temp disconnection of observers to avoid multiple updates during reset
+            s_bl.Admin.RemoveConfigObserver(configObserver);
+            s_bl.Admin.RemoveClockObserver(clockObserver);
+
+            // Perform database reset asynchronously
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(250);
+                s_bl.Admin.ResetDB();
+                System.Threading.Thread.Sleep(250);
+            });
+
+            //reattach observers
+            s_bl.Admin.AddConfigObserver(configObserver);
+            s_bl.Admin.AddClockObserver(clockObserver);
+
+            // Refresh configuration and graph
+            Configuration = s_bl.Admin.GetConfig();
+
+            RefreshGraph();
+
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+
+            CustomMessageBox.Show("Database reset successfully.", "Done");
+        }
+        catch (Exception ex)
+        {
+            // Hide loading overlay and show error message
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            CustomMessageBox.Show("Error: " + ex.Message, "Error");
+        }
+        finally
+        {
+            //added block to ensure UI is always released
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+            if (btn != null) btn.IsEnabled = true;
+        }
+    }
+    /// <summary>
+    /// Displays the dashboard by hiding the main content and making the dashboard visible.
+    /// </summary>
+    /// <remarks>This method collapses the visibility of the main content control, clears its content,  and
+    /// ensures the dashboard grid is visible. It also refreshes the graph displayed on the dashboard.</remarks>
+    private void ShowDashboard()
+    {
+        MainContentControl.Visibility = Visibility.Collapsed;
+        MainContentControl.Content = null;
+
+        DashboardGrid.Visibility = Visibility.Visible;
+        RefreshGraph();
+    }
+
+    /// <summary>
+    /// displays the dashboard when the corresponding button is clicked.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnDashboard_Click(object sender, RoutedEventArgs e) => ShowDashboard();
+
+    /// <summary>
+    /// changes the main content to display the courier list when the corresponding button is clicked.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnCouriers_Click(object sender, RoutedEventArgs e)
+    {
+        var courierList = new PL.Courier.CourierListWindow(Configuration.AdminId);
+
+        //subscribe to dashboard request event
+        courierList.RequestDashboard += (s, args) => ShowDashboard();
+        MainContentControl.Content = courierList;
+
+        //visibility toggles
+        MainContentControl.Visibility = Visibility.Visible;
+        DashboardGrid.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// cleans up observers when the window is closed.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void Window_Closed(object sender, EventArgs e)
+    {
+        s_bl.Admin.RemoveClockObserver(clockObserver);
+        s_bl.Admin.RemoveConfigObserver(configObserver);
+    }
+
+    //placeholder - to be implemented in the future
+    private void BtnList_Click(object sender, RoutedEventArgs e) { }
+    private void BtnAddMinute_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
+    private void BtnAddHour_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
+    private void BtnAddDay_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
+    private void BtnAddMonth_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
+    private void BtnAddYear_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
 }

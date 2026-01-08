@@ -4,13 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:PL" 
+             xmlns:local="clr-namespace:PL"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1000"
              FlowDirection="LeftToRight"
              Background="{StaticResource AliceBlue}"
-             DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}">
+             DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}"
+             Loaded="UserControl_Loaded"       
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
+        <local:DeliveryTypeCollection x:Key="DeliveryTypeCollectionKey" />
+ 
         <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
         <SolidColorBrush x:Key="GhostWhite" Color="#F8F8FF"/>
         <SolidColorBrush x:Key="AliceBlue" Color="#F0F8FF"/>
@@ -20,6 +25,51 @@
 
         <converters:StatusToColorConverter x:Key="StatusToColorConverterKey"/>
         <converters:DeleteVisibilityConverter x:Key="DeleteVisibilityConverterKey"/>
+
+        <Style x:Key="SoftModernCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid>
+                            <Border x:Name="CheckBoxBorder"
+                                    Width="24" Height="24"
+                                    CornerRadius="6"
+                                    BorderThickness="1.5"
+                                    BorderBrush="#D0D0D0"
+                                    Background="White">
+                            </Border>
+
+                            <Path x:Name="CheckMark"
+                                  Data="M5,12 L9,16 L19,6" 
+                                  Stroke="{StaticResource TextDark}"
+                                  StrokeThickness="3"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Stretch="Uniform"
+                                  Width="12" Height="10"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Opacity="0"/>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource DeepPurple}"/>
+                                <Setter TargetName="CheckMark" Property="Opacity" Value="1"/>
+                            </Trigger>
+
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsChecked" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource DeepPurple}"/>
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="#F5F5FF"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="Background" Value="Transparent"/>
@@ -268,13 +318,18 @@
         <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
             <StackPanel Margin="20,40,20,20">
 
-                <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15">
+                <Border Width="110" Height="110" CornerRadius="55" Background="White" Margin="0,0,0,15">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
                     </Border.Effect>
-                    <Image Source="/Images/logo.png" Stretch="Uniform"/>
-                </Border>
 
+                    <TextBlock Text="👤" 
+                            FontSize="50" 
+                            Foreground="{StaticResource DeepPurple}"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"/>
+                </Border>
+                
                 <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
 
                 <Button Content="Main Dashboard" Click="BtnDashboard_Click" Style="{StaticResource MenuButton}"/>
@@ -300,11 +355,12 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🚚 Vehicle Type:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <ComboBox x:Name="CategorySelector" 
-                                  Style="{StaticResource PurpleComboBox}"
-                                  Width="180" Height="35" 
-                                  VerticalContentAlignment="Center"
-                                  SelectionChanged="Filter_Changed"/>
+                        <ComboBox ItemsSource="{Binding Source={StaticResource DeliveryTypeCollectionKey}}"
+                            SelectedValue="{Binding StatusFilter, Mode=TwoWay}"
+                            Style="{StaticResource PurpleComboBox}"
+                            Width="180" Height="35" 
+                            VerticalContentAlignment="Center"
+                            SelectionChanged="Filter_Changed"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -357,7 +413,11 @@
                                 <GridViewColumn Header="Active" Width="80">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding IsActive}" HorizontalAlignment="Center"/>
+                                            <CheckBox IsChecked="{Binding IsActive}" 
+                                                Style="{StaticResource SoftModernCheckBoxStyle}"
+                                                IsHitTestVisible="False"
+                                                HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -368,7 +428,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Current Order" Width="100">
+                                <GridViewColumn Header="Current Order" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding CurrentOrderId, FallbackValue='--'}" HorizontalAlignment="Center"/>
@@ -389,7 +449,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="zevel" Width="60">
+                                <GridViewColumn Header="" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Style="{StaticResource TrashButtonStyle}" 

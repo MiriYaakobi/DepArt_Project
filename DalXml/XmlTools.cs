@@ -215,7 +215,7 @@ static class XMLTools
             element = new XElement(elemName);
             root.Add(element);
         }
-        // עכשיו האלמנט קיים, ויש להכריח פורמט בינלאומי לכתיבה
+
         element.SetValue(elemVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
         XMLTools.SaveListToXMLElement(root, xmlFileName);
     }

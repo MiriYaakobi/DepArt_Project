@@ -233,11 +233,12 @@ internal static class CourierManager
             {
                 DateTime? lastActivityTime = GetLastActivityTime(doCourier.Id);
 
-                if (lastActivityTime.HasValue && newClock - lastActivityTime.Value > inactivityTimeSpan)
+                bool isShipping = FindOpenDeliveryForCourier(doCourier.Id) != null;
+
+                //if inactive for longer than the threshold and not currently shipping, deactivate
+                if (lastActivityTime.HasValue && (newClock - lastActivityTime.Value > inactivityTimeSpan) && !isShipping)
                 {
                     s_dal.Courier.Update(doCourier with { IsActive = false });
-
-                    // notify observers about the update
                     Observers.NotifyItemUpdated(doCourier.Id);
                 }
             }

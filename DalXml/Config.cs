@@ -112,8 +112,8 @@ internal static class Config
         AverageBicycleSpeedKmH = 20.0;
         AverageByFootSpeedKmH = 5.0;
 
-        MaxDeliveryRange = TimeSpan.FromHours(4);
-        RiskRange = TimeSpan.FromHours(3);
-        InactivityTimeRange = TimeSpan.FromDays(60);
+        MaxDeliveryRange = TimeSpan.FromHours(4032);
+        RiskRange = TimeSpan.FromHours(576);
+        InactivityTimeRange = TimeSpan.FromHours(1440);
     }
 }
