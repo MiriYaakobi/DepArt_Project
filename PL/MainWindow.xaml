@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Delivery System Dashboard" Height="850" Width="1250"
+        Title="Delivery System Dashboard" Height="850" Width="1350"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI" FlowDirection="LeftToRight">
 
@@ -119,7 +119,8 @@
         <Grid x:Name="DashboardGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="458*"/>
+                <ColumnDefinition Width="37*"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
@@ -145,7 +146,7 @@
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Column="1" Margin="30">
+            <Grid Grid.Column="1" Margin="30,30,30,30" Grid.ColumnSpan="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -167,8 +168,8 @@
                     <Border Grid.Column="1" Style="{StaticResource BaseCard}" Background="{StaticResource Lavender}">
                         <Grid Margin="20">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="txtClockTime" Text="12:30:45" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="txtClockDate" Text="01/01/2024" FontSize="16" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="txtClockTime" Text="{Binding CurrentTime, StringFormat=HH:mm:ss}" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtClockDate" Text="{Binding CurrentTime, StringFormat=dd/MM/yyyy}" FontSize="16" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
                                 <Expander Header="Manage Time" HorizontalAlignment="Center" Width="180" Cursor="Hand" FocusVisualStyle="{x:Null}">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
@@ -309,50 +310,50 @@
                             <UniformGrid Grid.Row="1" Columns="4">
                                 <StackPanel Margin="5">
                                     <TextBlock Text="👤 Admin ID" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtAdminId" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtAdminId" Text="{Binding Configuration.AdminId, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🔑 Password" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtPassword" Text="******" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtPassword" Text="{Binding Configuration.AdminPassword, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏢 Address" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtAddress" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtAddress" Text="{Binding Configuration.CompenyAddress, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="📏 Max Dist." Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtMaxDist" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtMaxDist" Text="{Binding Configuration.DeliveryMaxDistance, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🔋 Range" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtRange" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtRange" Text="{Binding Configuration.MaxDeliveryRange, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="⚠️ Risk Range" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtRiskRange" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtRiskRange" Text="{Binding Configuration.RiskRange, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🚗 Car Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtCarSpeed" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtCarSpeed" Text="{Binding Configuration.AverageVehicleSpeedKmH, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏍️ Moto Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtMotoSpeed" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtMotoSpeed" Text="{Binding Configuration.AverageMotorcycleSpeedKmH, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🚴 Bike Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtBikeSpeed" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtBikeSpeed" Text="{Binding Configuration.AverageBicycleSpeedKmH, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏃 Foot Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtFootSpeed" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtFootSpeed" Text="{Binding Configuration.AverageByFootSpeedKmH, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="💤 Inactivity" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtInactivity" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox x:Name="txtInactivity" Text="{Binding Configuration.InactivityTimeRange, Mode=TwoWay}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                             </UniformGrid>
 

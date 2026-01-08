@@ -9,6 +9,7 @@
 public class Config
 {
     public int AdminId { get; set; }
+    public string? AdminPassword { get; set; }
     public DateTime Clock { get; set; } // Current system clock time
     public TimeSpan MaxDeliveryRange { get; set; } // Maximum allowed delivery time range
     public TimeSpan RiskRange { get; set; } // Time range considered as high risk
