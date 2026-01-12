@@ -21,22 +21,15 @@ public class StatusToColorConverter : IValueConverter
     /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is bool isActive)
-        {
-            if (!isActive)
-                return Brushes.LavenderBlush;
-        }
-
+        if (value is bool isActive && !isActive)
+            return Brushes.LavenderBlush;
         return Brushes.Transparent;
     }
 
     /// <summary>
     /// Converts a color brush back to a boolean value indicating status.
     /// </summary>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
 /// <summary>
@@ -232,8 +225,71 @@ public class DeleteVisibilityConverter : IValueConverter
     /// <summary>
     /// Converts a boolean value back to a button title.
     /// </summary>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
+
+/// <summary>
+/// Converts an OrderStatus enum value to a corresponding color brush for UI representation.
+/// </summary>
+public class OrderStatusToBrushConverter : IValueConverter
+{
+    // מגדיר צבעים מותאמים אישית שמשתלבים עם העיצוב
+    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#FFB74D")!; // כתום
+    private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#9575CD")!; // סגול
+    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#4DB6AC")!; // ירוק
+    private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#E57373")!; // אדום
+    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!; // אפור
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is OrderStatus status)
+        {
+            switch (status)
+            {
+                case OrderStatus.Open: return _openColor;
+                case OrderStatus.InProgress: return _inProgressColor;
+                case OrderStatus.Delivered: return _deliveredColor;
+                case OrderStatus.Refused: return _errorColor;
+                case OrderStatus.Cancelled: return _cancelledColor;
+                default: return Brushes.Black;
+            }
+        }
+
+        // צבעים ל-Timeliness (עמידה בזמנים)
+        if (value is ScheduleStatus schedule)
+        {
+            switch (schedule)
+            {
+                case ScheduleStatus.Late: return _errorColor; // אותו אדום רך
+                case ScheduleStatus.InRisk: return _openColor; // אותו כתום חמים
+                default: return _deliveredColor; // OnTime - ירוק
+            }
+        }
+        return Brushes.Black;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+/// <summary>
+/// Converts an OrderStatus enum value to a corresponding visibility for the cancel button.
+/// </summary>
+public class CancelVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is OrderStatus status)
+        {
+            // אם ההזמנה נמסרה, בוטלה או סורבה - אי אפשר לבטל שוב
+            if (status == OrderStatus.Delivered ||
+                status == OrderStatus.Cancelled ||
+                status == OrderStatus.Refused)
+            {
+                return Visibility.Collapsed; // הסתרת הכפתור
+            }
+        }
+        return Visibility.Visible; // הצגת הכפתור
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
