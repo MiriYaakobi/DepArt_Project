@@ -26,9 +26,10 @@ public partial class CourierListWindow : UserControl
     private IEnumerable<BO.CourierInList>? AllCouriers;
 
     /// <summary>
-    /// Event raised to request navigation back to the dashboard.
+    /// Event raised to request navigation back to the dashboard and order list.
     /// </summary>
     public event EventHandler? RequestDashboard;
+    public event EventHandler? RequestOrderList;
 
     /// <summary>
     /// Gets or sets the selected status filter for the courier list.
@@ -163,10 +164,11 @@ public partial class CourierListWindow : UserControl
     /// <summary>
     /// Opens the list management window.
     /// </summary>
-    private void BtnListManagement_Click(object sender, RoutedEventArgs e)
+    private void BtnList_Click(object sender, RoutedEventArgs e)
     {
-        SearchBox.Text = "";
-        StatusFilter = "All";
+        //SearchBox.Text = "";
+        //StatusFilter = "All";
+        RequestOrderList?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -207,5 +209,10 @@ public partial class CourierListWindow : UserControl
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.RemoveObserver(CourierListObserver);
+    }
+
+    private void BtnCouriers_Click(object sender, RoutedEventArgs e)
+    {
+        // Do nothing, we are already here
     }
 }

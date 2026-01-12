@@ -137,7 +137,8 @@
                             FontSize="50" 
                             Foreground="{StaticResource DeepPurple}"
                             HorizontalAlignment="Left" 
-                            VerticalAlignment="Top" Margin="22,19,0,0"/>
+                            VerticalAlignment="Top" 
+                            Margin="22,19,0,0"/>
                     </Border>
 
                     <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>

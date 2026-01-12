@@ -377,9 +377,9 @@ public partial class MainWindow : Window
 
         //subscribe to dashboard request event
         courierList.RequestDashboard += (s, args) => ShowDashboard();
-        MainContentControl.Content = courierList;
+        courierList.RequestOrderList += (s, args) => BtnList_Click(this, new RoutedEventArgs());
 
-        //visibility toggles
+        MainContentControl.Content = courierList;
         MainContentControl.Visibility = Visibility.Visible;
         DashboardGrid.Visibility = Visibility.Collapsed;
     }
@@ -396,7 +396,22 @@ public partial class MainWindow : Window
     }
 
     //placeholder - to be implemented in the future
-    private void BtnList_Click(object sender, RoutedEventArgs e) { }
+    /// <summary>
+    /// Opens the Order List Management screen.
+    /// </summary>
+    private void BtnList_Click(object sender, RoutedEventArgs e)
+    {
+        var orderList = new PL.Order.OrderListWindow(Configuration.AdminId);
+
+        // הרשמה לאירועים - התיקון הוא בשליחת null או ארגומנט חדש
+        orderList.RequestDashboard += (s, args) => ShowDashboard();
+        orderList.RequestCouriers += (s, args) => BtnCouriers_Click(this, new RoutedEventArgs());
+
+        MainContentControl.Content = orderList;
+        MainContentControl.Visibility = Visibility.Visible;
+        DashboardGrid.Visibility = Visibility.Collapsed;
+    }
+
     private void BtnAddMinute_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
     private void BtnAddHour_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
     private void BtnAddDay_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
