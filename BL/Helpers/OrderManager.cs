@@ -1,4 +1,5 @@
 ﻿using DalApi;
+using System.Text.RegularExpressions;
 
 namespace Helpers;
 
@@ -512,8 +513,14 @@ internal static class OrderManager
     {
         if (string.IsNullOrEmpty(order.CustomerName) || order.CustomerName.Length < 2)
             throw new BO.BlInvalidDataException("Customer name must contain at least 2 characters.");
-        if (string.IsNullOrEmpty(order.CustomerPhone) || order.CustomerPhone.Length != 10 || !order.CustomerPhone.All(char.IsDigit))
-            throw new BO.BlInvalidDataException("Phone number is invalid.");
+
+        string phoneToValidate = order.CustomerPhone?.Replace("-", "").Replace(" ", "") ?? "";
+        const string phonePattern = @"^0\d{9}$";
+
+        if (string.IsNullOrEmpty(phoneToValidate) || !Regex.IsMatch(phoneToValidate, phonePattern))
+            throw new BO.BlInvalidDataException($"Phone number '{order.CustomerPhone}' is invalid. Must be 10 digits starting with 0.");
+
+
         if (string.IsNullOrWhiteSpace(order.Address))
             throw new BO.BlInvalidDataException("Delivery address cannot be empty.");
     }

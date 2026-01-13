@@ -1,4 +1,4 @@
-﻿using BlApi; // <--- חשוב מאוד! פותר את הבעיה של BlFactory ו-IBl
+﻿using BlApi; 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -109,19 +109,17 @@ namespace PL.Order
             new OrderWindow().Show();
         }
 
+        private void OpenOrderWindow(int id = 0)
+        {
+            var window = new OrderWindow(id);
+            window.Closed += (s, args) => LoadData();
+            window.Show();
+        }
+
         private void OrderList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // 1. המרה בטוחה של השולח ל-ListView (למקרה שהאירוע הגיע ממקום אחר)
-            var listView = sender as ListView;
-
-            // 2. בדיקה שאכן נבחר פריט (למניעת קריסה בלחיצה על אזור ריק או כותרת)
-            // הערה: אני מניח שהישות ברשימה היא מסוג BO.OrderForList. 
-            // אם אצלך זה BO.Order רגיל, שני את הטיפוס בסוגריים.
-            if (listView?.SelectedItem is BO.OrderInList selectedOrder)
-            {
-                    int currentOrderId = selectedOrder.Id!.Value;
-                    new OrderWindow(currentOrderId).Show();
-            }
+            if (sender is ListView listView && listView.SelectedItem is BO.OrderInList selectedOrder)
+                OpenOrderWindow(selectedOrder.OrderId);
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)

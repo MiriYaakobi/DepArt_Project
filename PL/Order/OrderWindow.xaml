@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:PL"
         mc:Ignorable="d"
-        Title="Order Details" Height="750" Width="550"
+        Title="Order Details" Height="690" Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize" Background="{StaticResource AliceBlue}">
 
@@ -81,25 +81,41 @@
             <Setter Property="ItemContainerStyle" Value="{StaticResource PurpleComboBoxItem}"/>
         </Style>
 
-        <Style x:Key="TrashButtonStyle" TargetType="Button">
+        <Style x:Key="CancelIconButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="50" Width="45" Height="45">
-                            <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" 
-                                  Fill="#FFF43939" Stretch="Uniform" Margin="0,10,0,0" HorizontalAlignment="Center" Width="25" Height="25" VerticalAlignment="Top"/>
+                        <Border x:Name="border" 
+                        Width="24" Height="24" 
+                        CornerRadius="12"
+                        Background="#FFF5F5"
+                        BorderBrush="#FFCDD2"
+                        BorderThickness="1">
+
+                            <Path x:Name="icon"
+                          Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" 
+                          Fill="#E57373" 
+                          Stretch="Uniform" 
+                          HorizontalAlignment="Center" 
+                          VerticalAlignment="Center" 
+                          Width="10" Height="10"/>
                         </Border>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#FFEEEE"/>
+                                <Setter TargetName="border" Property="Background" Value="#FF5252"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF5252"/>
+                                <Setter TargetName="icon" Property="Fill" Value="White"/>
                             </Trigger>
+
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="0.9" ScaleY="0.9" CenterX="22.5" CenterY="22.5"/>
+                                        <ScaleTransform ScaleX="0.9" ScaleY="0.9" CenterX="12" CenterY="12"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -200,12 +216,12 @@
                         <TextBox Text="{Binding CurrentOrder.CustomerPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1">
+                    <StackPanel Grid.Column="0" Grid.Row="1">
                         <TextBlock Text="Full Address"/>
                         <TextBox Text="{Binding CurrentOrder.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="0" Grid.Row="2">
+                    <StackPanel Grid.Column="2" Grid.Row="1">
                         <TextBlock Text="Order Type"/>
                         <ComboBox SelectedItem="{Binding CurrentOrder.TypeOfOrder, Mode=TwoWay}"
                                   ItemsSource="{Binding OrderTypes}"
@@ -213,7 +229,7 @@
                                   Height="35" Margin="0,0,0,20"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2">
+                    <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2">
                         <TextBlock Text="Verbal Description"/>
                         <TextBox Text="{Binding CurrentOrder.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
@@ -303,12 +319,12 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0"
-                    Click="BtnDelete_Click"
+                    Click="BtnCancelOrder_Click"
                     Visibility="{Binding IsUpdateMode, Converter={StaticResource BoolToVisConverter}}"
-                    Style="{StaticResource TrashButtonStyle}"
+                    Style="{StaticResource CancelIconButtonStyle}"
                     HorizontalAlignment="Left" 
                     Margin="25,0,0,0"
-                    ToolTip="Delete Order"/>
+                    ToolTip="Cancel Order" Grid.ColumnSpan="2" Width="54"/>
 
             <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="{Binding IsUpdateMode, Converter={StaticResource BoolToTitleConverterKey}}" 

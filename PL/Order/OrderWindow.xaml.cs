@@ -8,6 +8,8 @@ public partial class OrderWindow : Window
 
     public bool IsUpdateMode { get; private set; }
 
+    private int currentAdminId;
+
     // Dependency Properties
     public BO.Order CurrentOrder
     {
@@ -24,12 +26,20 @@ public partial class OrderWindow : Window
     {
         InitializeComponent();
 
+        try
+        {
+            currentAdminId = s_bl.Admin.GetConfig().AdminId;
+        }
+        catch
+        {
+            currentAdminId = 123456782;
+        }
+
         if (orderId == 0) // Add mode
         {
             IsUpdateMode = false;
             CurrentOrder = new BO.Order
             {
-
                 OrderOpeningTime = s_bl.Admin.GetClock(),
                 StatusOfOrder = BO.OrderStatus.Open,
             };
@@ -39,11 +49,13 @@ public partial class OrderWindow : Window
             IsUpdateMode = true;
             try
             {
-                CurrentOrder = s_bl.Order.Read(s_bl.Admin.GetConfig().AdminId, orderId)!;
+                CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
             }
-            catch
+            catch (Exception ex)
             {
-                Close();
+                CustomMessageBox.Show($"Could not load order #{orderId}.\nError: {ex.Message}", "Error");
+                CurrentOrder = new BO.Order();
+                IsUpdateMode = false;
             }
         }
 
@@ -65,16 +77,15 @@ public partial class OrderWindow : Window
 
             if (IsUpdateMode)
             {
-                s_bl.Order.Update(s_bl.Admin.GetConfig().AdminId, CurrentOrder);
+                s_bl.Order.Update(currentAdminId, CurrentOrder);
                 CustomMessageBox.Show("Order updated successfully!", "Success");
             }
             else
             {
-                // כאן יש לוודא שיש לך פונקציית יצירה מתאימה ב-BL
-                // s_bl.Order.Create(CurrentOrder); 
+                s_bl.Order.Create(currentAdminId, CurrentOrder);
                 CustomMessageBox.Show("Order added successfully!", "Success");
             }
-            Close();
+            this.Close();
         }
         catch (Exception ex)
         {
@@ -82,25 +93,31 @@ public partial class OrderWindow : Window
         }
     }
 
-    private void BtnDelete_Click(object sender, RoutedEventArgs e)
+    private void BtnCancelOrder_Click(object sender, RoutedEventArgs e)
     {
-        if (CustomMessageBox.ShowQuestion("Delete this order?", "Confirmation"))
+        if (CurrentOrder.StatusOfOrder != BO.OrderStatus.Open && CurrentOrder.StatusOfOrder != BO.OrderStatus.InProgress)
+        {
+            CustomMessageBox.Show("Cannot cancel close order", "Validation Error");
+            return;
+        }
+
+        if (CustomMessageBox.ShowQuestion("Cancel this order?", "Confirmation"))
         {
             try
             {
-                s_bl.Order.Delete(s_bl.Admin.GetConfig().AdminId, CurrentOrder.Id);
-                CustomMessageBox.Show("Order deleted.", "Success");
-                Close();
+                s_bl.Order.Cancel(currentAdminId, CurrentOrder.Id);
+                CustomMessageBox.Show("Order canceled successfully.", "Success");
+                this.Close();
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Failed: {ex.Message}", "Error");
+                CustomMessageBox.Show($"Failed to cancel: {ex.Message}", "Error");
             }
         }
     }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
-        Close();
+        this.Close();
     }
 }
