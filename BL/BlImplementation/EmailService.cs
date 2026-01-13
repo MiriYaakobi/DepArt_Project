@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Net;
 using System.Net.Mail;
-using System.Windows;
 
-namespace PL
+namespace BlImplementation // שינינו מ-PL ל-BlImplementation
 {
-    public static class EmailService
+    internal static class EmailService
     {
-        // מדריך: https://support.google.com/accounts/answer/185833
         private const string SenderEmail = "Miri.m.y1984@gmail.com";
-        private const string SenderPassword = "YOUR_APP_PASSWORD"; // סיסמת אפליקציה (16 תווים)
+        private const string SenderPassword = "oxgyvpxxhpyqefpg";
 
         public static void SendNotification(string recipientEmail, string subject, string body)
         {
@@ -38,9 +36,7 @@ namespace PL
             }
             catch (Exception ex)
             {
-                // אנחנו לא רוצים שהתוכנה תקרוס אם המייל נכשל, אז רק נציג שגיאה
-                // (במצב אמת היינו רושמים ללוג)
-                Console.WriteLine("Email failed: " + ex.Message);
+                throw new Exception($"GMAIL ERROR: {ex.Message}");
             }
         }
     }

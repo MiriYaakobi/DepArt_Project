@@ -275,13 +275,15 @@ internal static class Tools
             //throw new InvalidOperationException($"Routing service failed to find a route. Status: {response.StatusCode}. Error: {errorContent}");
             throw new BO.BlInvalidOperationException($"Routing API failed. Status: {response.StatusCode}. Details: {errorContent}");
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException /*ex*/)
         {
-            throw new BO.BlInvalidOperationException($"Network error connecting to Routing service: {ex.Message}", ex);
+            return null;
+            //throw new BO.BlInvalidOperationException($"Network error connecting to Routing service: {ex.Message}", ex);
         }
-        catch (Exception ex)
+        catch (Exception /*ex*/)
         {
-            throw new BO.BlInvalidOperationException($"An unexpected error occurred during routing: {ex.Message}", ex);
+            return null;
+            //throw new BO.BlInvalidOperationException($"An unexpected error occurred during routing: {ex.Message}", ex);
         }
     }
 
@@ -291,7 +293,7 @@ internal static class Tools
     /// <param name="password"></param>
     /// <returns></returns>
     /// <exception cref="BlInvalidDataException"></exception>
-    internal static string HashPassword(string password)
+    public static string HashPassword(string password)
     {
         if (string.IsNullOrEmpty(password))
         {

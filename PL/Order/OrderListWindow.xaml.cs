@@ -127,61 +127,38 @@ namespace PL.Order
             // בדיקת בטיחות: האם השורה בטבלה תקינה?
             if (sender is FrameworkElement element && element.DataContext is BO.OrderInList orderToCancel)
             {
-                // בדיקה אם ההזמנה סגורה (למרות שהכפתור מוסתר, הגנה כפולה)
+                // בדיקה אם ההזמנה סגורה (הגנה כפולה)
                 if (orderToCancel.StatusOfOrder == BO.OrderStatus.Delivered ||
-                    orderToCancel.StatusOfOrder == BO.OrderStatus.Cancelled ||
+                    orderToCancel.StatusOfOrder == BO.OrderStatus.Cancelled || // הקפדתי על הכתיב Cancelled
                     orderToCancel.StatusOfOrder == BO.OrderStatus.Refused)
                 {
                     CustomMessageBox.Show("Cannot cancel a closed order.", "Error");
                     return;
                 }
 
-                // אנחנו משתמשים ב-OrderId כי זה המפתח הראשי של ההזמנה
                 int idToCancel = orderToCancel.OrderId;
 
                 if (CustomMessageBox.ShowQuestion($"Are you sure you want to CANCEL Order #{idToCancel}?", "Confirm Cancellation"))
                 {
                     try
                     {
-                        bool wasInProgress = (orderToCancel.StatusOfOrder == BO.OrderStatus.InProgress);
-
-                        // --- כאן מתבצעת הקריאה ל-BL ---
-                        // אם זה קורס כאן, הבעיה היא בתוך הפונקציה ב-BL שמנסה לגשת למשלוח שלא קיים
+                        // --- קריאה ל-BL ---
+                        // ה-BL כבר דואג לשלוח את המייל בתוך הפונקציה הזו!
                         s_bl.Order.Cancel(AdminID, idToCancel);
 
-                        // לוגיקת המייל (תכף נגדיר אותה)
-                        if (wasInProgress)
-                        {
-                            // כאן תכניסי את המייל האמיתי שלך
-                            string myEmail = "YOUR_EMAIL@gmail.com";
-                            string subject = $"Order #{idToCancel} Cancelled";
-                            string body = $"Attention Courier,\n\nThe order #{idToCancel} has been cancelled by the admin.\nPlease stop the delivery and return the package.";
-
-                            // שליחת המייל (בתוך try-catch כדי שלא יקריס את התוכנה אם הסיסמה לא נכונה)
-                            Task.Run(() =>
-                            {
-                                EmailService.SendNotification(myEmail, subject, body);
-                            });
-
-                            CustomMessageBox.Show("Order cancelled. Notification sent to courier.", "Success");
-                        }
-                        else
-                        {
-                            CustomMessageBox.Show("Order cancelled successfully.", "Success");
-                        }
+                        // הצגת הודעת הצלחה למשתמש
+                        CustomMessageBox.Show("Order cancelled successfully (Courier notified via email).", "Success");
 
                         // רענון הרשימה
                         LoadData();
                     }
                     catch (Exception ex)
                     {
-                        // תופס את השגיאה מה-BL ומציג אותה יפה במקום לקרוס
                         CustomMessageBox.Show($"System Error: {ex.Message}", "Error");
                     }
                 }
             }
         }
-
         // 1. חזרה לדשבורד
         private void BtnDashboard_Click(object sender, RoutedEventArgs e)
         {
