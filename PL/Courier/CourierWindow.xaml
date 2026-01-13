@@ -245,7 +245,7 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="🚚 " FontSize="28" Foreground="White" Margin="0"/>
-                    <TextBlock Text="{Binding IsUpdateMode, Converter={StaticResource BoolToTitleConverterKey}, StringFormat='{}{0} Courier Details'}" 
+                    <TextBlock Text="{Binding IsUpdateMode, Converter={StaticResource BoolToTitleConverterKey}, StringFormat='{}{0} Courier'}" 
                                Foreground="White" FontSize="24" FontWeight="Bold"/>
                 </StackPanel>
 

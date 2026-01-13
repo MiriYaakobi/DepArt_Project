@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows;
-using BO;
+﻿using System.Windows;
 
 namespace PL.Courier;
 
@@ -19,9 +17,6 @@ public partial class CourierWindow : Window
 {
     // Reference to the business logic layer for courier operations.
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-
-    // The ID of the current admin user performing operations.
-    private int _currentAdminId;
 
     // Indicates whether the window is in update mode (true) or add mode (false).
     public bool IsUpdateMode { get; private set; }
@@ -49,9 +44,6 @@ public partial class CourierWindow : Window
     {
         InitializeComponent();
 
-        // Get the current admin ID from configuration.
-        try { _currentAdminId = s_bl.Admin.GetConfig().AdminId; } catch { _currentAdminId = 1; }
-
         // Determine mode based on presence of courierId
         if (courierId == null)
         {
@@ -66,7 +58,7 @@ public partial class CourierWindow : Window
             // Load the existing courier details
             try
             {
-                CurrentCourier = s_bl.Courier.Read(_currentAdminId, courierId.Value)!;
+                CurrentCourier = s_bl.Courier.Read(s_bl.Admin.GetConfig().AdminId, courierId.Value)!;
 
                 //save the password to not be null
                 CurrentCourier.Password = "********";
@@ -101,13 +93,13 @@ public partial class CourierWindow : Window
                 // If password is not changed, retain the original password
                 if (string.IsNullOrEmpty(CurrentCourier.Password))
                 {
-                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(_currentAdminId, CurrentCourier.Id)!;
+                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(s_bl.Admin.GetConfig().AdminId, CurrentCourier.Id)!;
 
                     CurrentCourier.Password = originalCourierFromDb!.Password;
                 }
 
                 // Update existing courier
-                s_bl.Courier.Update(_currentAdminId, CurrentCourier);
+                s_bl.Courier.Update(s_bl.Admin.GetConfig().AdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier updated successfully!", "Success");
             }
             else // Add new courier
@@ -120,7 +112,7 @@ public partial class CourierWindow : Window
                 }
 
                 // Create new courier
-                s_bl.Courier.Create(_currentAdminId, CurrentCourier);
+                s_bl.Courier.Create(s_bl.Admin.GetConfig().AdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier added successfully!", "Success");
             }
             this.Close();
@@ -151,7 +143,7 @@ public partial class CourierWindow : Window
             // Proceed with deletion
             try
             {
-                s_bl.Courier.Delete(_currentAdminId, CurrentCourier.Id);
+                s_bl.Courier.Delete(s_bl.Admin.GetConfig().AdminId, CurrentCourier.Id);
                 CustomMessageBox.Show("Courier deleted successfully.", "Deleted");
                 this.Close();
             }

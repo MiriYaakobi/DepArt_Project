@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace PL.Order
 {
@@ -105,15 +106,21 @@ namespace PL.Order
 
         private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Open Add Order Window");
+            new OrderWindow().Show();
         }
 
-        private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void OrderList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (((ListView)sender).SelectedItem is BO.OrderInList selectedOrder)
+            // 1. המרה בטוחה של השולח ל-ListView (למקרה שהאירוע הגיע ממקום אחר)
+            var listView = sender as ListView;
+
+            // 2. בדיקה שאכן נבחר פריט (למניעת קריסה בלחיצה על אזור ריק או כותרת)
+            // הערה: אני מניח שהישות ברשימה היא מסוג BO.OrderForList. 
+            // אם אצלך זה BO.Order רגיל, שני את הטיפוס בסוגריים.
+            if (listView?.SelectedItem is BO.OrderInList selectedOrder)
             {
-                // בהמשך נפתח את חלון העדכון
-                MessageBox.Show("Update Order ID: " + selectedOrder.Id);
+                    int currentOrderId = selectedOrder.Id!.Value;
+                    new OrderWindow(currentOrderId).Show();
             }
         }
 
