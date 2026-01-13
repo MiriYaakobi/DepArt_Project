@@ -234,11 +234,11 @@ public class DeleteVisibilityConverter : IValueConverter
 public class OrderStatusToBrushConverter : IValueConverter
 {
     // מגדיר צבעים מותאמים אישית שמשתלבים עם העיצוב
-    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#FFB74D")!; // כתום
-    private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#9575CD")!; // סגול
-    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#4DB6AC")!; // ירוק
-    private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#E57373")!; // אדום
-    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#90A4AE")!; // אפור
+    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#855A9D")!;
+    private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#DBC9EF")!;
+    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#007B87")!;
+    private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#13A2A4")!;
+    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#B9EBE0")!;
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

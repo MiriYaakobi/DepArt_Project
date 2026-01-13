@@ -344,7 +344,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="📋 Orders List" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DeepPurple}" Margin="0,0,0,10"/>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding OrderList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding OrderList}" MouseDoubleClick="OrderList_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Order ID" Width="80">

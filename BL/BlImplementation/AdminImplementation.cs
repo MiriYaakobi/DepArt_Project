@@ -35,6 +35,24 @@ internal class AdminImplementation : IAdmin
         AdminManager.UpdateClock(newClock);
     }
 
+    /// <summary>
+    /// Validates the login credentials for the admin user.
+    /// </summary>
+    public bool ValidateLogin(int id, string password)
+    {
+        // Get the stored admin configuration
+        BO.Config config = AdminManager.GetConfig();
+
+        // Check if the provided ID matches the stored admin ID
+        if (config.AdminId != id)
+            return false;
+
+        // Hash the input password and compare it with the stored hashed password
+        string hashedInput = Helpers.Tools.HashPassword(password);
+
+        return config.AdminPassword == hashedInput;
+    }
+
     public DateTime GetClock() =>
         AdminManager.Now;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using BO;
+using System.Windows.Input;
 
 namespace PL.Courier;
 
@@ -184,7 +184,7 @@ public partial class CourierListWindow : UserControl
     /// <summary>
     /// Handles double-click events on the courier list.
     /// </summary>
-    private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (sender is ListView listView && listView.SelectedItem is BO.CourierInList selectedCourier)
             OpenCourierWindow(selectedCourier.Id);

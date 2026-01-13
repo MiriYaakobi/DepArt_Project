@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PL"
              xmlns:converters="clr-namespace:PL"
-             StartupUri="MainWindow.xaml">
+             StartupUri="LoginWindow.xaml">
     <Application.Resources>
         <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
         <SolidColorBrush x:Key="GhostWhite" Color="#F8F8FF"/>
