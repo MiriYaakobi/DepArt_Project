@@ -373,7 +373,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
 
-                                <GridViewColumn Header="Timeliness" Width="100">
+                                <GridViewColumn Header="Time Liness" Width="100">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding TimeLinessStatus}" 
