@@ -188,7 +188,8 @@ internal static class OrderManager
                 RemainingTime = remainingTime,
                 TotalHandlingDuration = totalHandlingDuration,
                 TotalDeliveries = totalDeliveries,
-                MaxDeliveryTime = maxDeliveryTime
+                MaxDeliveryTime = maxDeliveryTime,
+                OrderOpeningTime = doOrder.OrderOpeningTime,
             };
         });
     }
@@ -421,36 +422,53 @@ internal static class OrderManager
     }
 
     /// <summary>
-    /// maps the list of closed deliveries for a specific order.
+    ///maps the list of closed deliveries for a specific order.
     /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
     /// <param name="orderId"></param>
     /// <returns></returns>
     internal static IEnumerable<BO.DeliveryPerOrderInList> MapDeliveryListForOrder(int orderId)
     {
-        var closedDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId && d.DeliveryEndTime.HasValue);
+        //get all deliveries for the order
+        var allDeliveries = s_dal.Delivery.ReadAll(d => d.OrderId == orderId);
 
-        return closedDeliveries.Select(doDelivery =>
+        return allDeliveries.Select(doDelivery =>
         {
-            // Get courier details
-            DO.Courier doCourier = s_dal.Courier.Read(doDelivery.CourierId)!;
+            //attempt to read courier details
+            DO.Courier? doCourier = null;
+            try
+            {
+                if (doDelivery.CourierId != 0)
+                    doCourier = s_dal.Courier.Read(doDelivery.CourierId);
+            }
+            catch { }
 
-            // calculate TotalHandlingDuration
-            TimeSpan totalHandlingDuration = doDelivery.DeliveryEndTime!.Value - doDelivery.DeliveryStartTime;
+            //calculating total handling duration safely
+            TimeSpan totalHandlingDuration = TimeSpan.Zero;
+
+            if (doDelivery.DeliveryEndTime.HasValue)
+                totalHandlingDuration = doDelivery.DeliveryEndTime.Value - doDelivery.DeliveryStartTime;
 
             return new BO.DeliveryPerOrderInList
             {
                 Id = doDelivery.Id,
                 CourierId = doDelivery.CourierId,
-                Name = doCourier.Name,
-                TypeOfDelivery = (BO.DeliveryType)doCourier.TypeOfDelivery,
+                Name = doCourier?.Name ?? "Unknown Courier",
+                TypeOfDelivery = doCourier != null ? (BO.DeliveryType)doCourier.TypeOfDelivery : BO.DeliveryType.ByFoot,
+
                 DeliveryStartTime = doDelivery.DeliveryStartTime,
-                OrderClosedStatus = (BO.OrderEndStatus?)doDelivery.OrderClosedStatus, // is the cast safe?
+                OrderClosedStatus = (BO.OrderEndStatus?)doDelivery.OrderClosedStatus,
+
+                //if the delivery is still open, DeliveryEndTime will be null
                 DeliveryEndTime = doDelivery.DeliveryEndTime,
+
                 ActualDistance = doDelivery.ActualDistance,
                 TotalHandlingDuration = totalHandlingDuration
             };
-        });
+        })
+
+        //sorting deliveries by start time descending
+        .OrderByDescending(d => d.DeliveryStartTime);
     }
 
     /// <summary>

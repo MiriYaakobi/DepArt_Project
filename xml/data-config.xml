@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <NextDeliveryId>1043</NextDeliveryId>
+  <NextDeliveryId>1039</NextDeliveryId>
   <NextOrderId>1050</NextOrderId>
-  <Clock>2026-01-13T23:22:06.8871238+02:00</Clock>
+  <Clock>2026-01-13T21:16:14.3539828+02:00</Clock>
   <AdminId>123456782</AdminId>
   <AdminPassword>Deafult1234$</AdminPassword>
   <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>
@@ -12,8 +12,8 @@
   <AverageMotorcycleSpeedKmH>100</AverageMotorcycleSpeedKmH>
   <AverageBicycleSpeedKmH>20</AverageBicycleSpeedKmH>
   <AverageByFootSpeedKmH>5</AverageByFootSpeedKmH>
-  <MaxDeliveryRange>168.00:00:00</MaxDeliveryRange>
-  <RiskRange>24.00:00:00</RiskRange>
-  <InactivityTimeRange>60.00:00:00</InactivityTimeRange>
-  <DeliveryMaxDistance>150</DeliveryMaxDistance>
+  <MaxDeliveryRange>14.00:00:00</MaxDeliveryRange>
+  <RiskRange>1.00:00:00</RiskRange>
+  <InactivityTimeRange>30.00:00:00</InactivityTimeRange>
+  <DeliveryMaxDistance>300</DeliveryMaxDistance>
 </config>

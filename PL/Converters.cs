@@ -155,13 +155,20 @@ public class NullToVisibilityConverter : IValueConverter
     /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value == null ? Visibility.Collapsed : Visibility.Visible;
+        bool isInverted = parameter?.ToString() == "Invert";
+
+        if (value == null)
+            return isInverted ? Visibility.Visible : Visibility.Collapsed;
+
+        else
+            return isInverted ? Visibility.Collapsed : Visibility.Visible;
     }
 
     /// <summary>
     /// Converts a null value back to a visibility state.
     /// </summary>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
 }
 
 /// <summary>
@@ -293,3 +300,32 @@ public class CancelVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
+public class OrderToDeleteVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        // בדיקה שהערך שהתקבל הוא אכן הזמנה
+        if (value is BO.Order order)
+        {
+            // 1. אם ה-ID הוא 0, זה מצב הוספה - להסתיר
+            if (order.Id == 0)
+                return Visibility.Collapsed;
+
+            // 2. בדיקת סטטוסים - להציג רק אם זה "פתוח" או "בתהליך"
+            // ודאי שהשמות (Ordered, InProgress) תואמים בדיוק ל-Enum שלך ב-BO!
+            if (order.StatusOfOrder == BO.OrderStatus.Open ||
+                order.StatusOfOrder == BO.OrderStatus.InProgress)
+            {
+                return Visibility.Visible;
+            }
+        }
+
+        // לכל שאר המקרים (סטטוס סגור, נשלח, או אובייקט ריק) - להסתיר
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

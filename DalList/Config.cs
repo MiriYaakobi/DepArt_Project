@@ -48,15 +48,15 @@ static internal class Config
         CompenyLatitude = 32.0641632;
         CompenyLongitude = 34.7692375;
 
-        DeliveryMaxDistance = 150.0;
+        DeliveryMaxDistance = 300.0;
 
         AverageVehicleSpeedKmH = 80.0;
         AverageMotorcycleSpeedKmH = 100.0;
         AverageBicycleSpeedKmH = 20.0;
         AverageByFootSpeedKmH = 5.0;
 
-        MaxDeliveryRange = TimeSpan.FromHours(4032);
-        RiskRange = TimeSpan.FromHours(576);
-        InactivityTimeRange = TimeSpan.FromHours(1440);
+        MaxDeliveryRange = TimeSpan.FromDays(14);
+        RiskRange = TimeSpan.FromHours(24);
+        InactivityTimeRange = TimeSpan.FromDays(30);
     }
 }

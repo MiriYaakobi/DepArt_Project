@@ -15,6 +15,8 @@
         <converters:ZeroToEmptyStringConverter x:Key="ZeroToEmptyConverterKey"/>
         <converters:BooleanToButtonTitleConverter x:Key="BoolToTitleConverterKey"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisConverter"/>
+        <converters:OrderToDeleteVisibilityConverter x:Key="OrderToDeleteVisibilityConverterKey"/>
+        
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
         <Style TargetType="ComboBoxItem" x:Key="PurpleComboBoxItem">
@@ -42,6 +44,49 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <DataTemplate x:Key="DeliveryDetailsTemplate">
+            <Border Background="#F0F8FF" BorderBrush="#8986CC" BorderThickness="1" CornerRadius="10" Padding="15" Margin="0,5,0,0">
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Left" Margin="0,0,0,10">
+                <Run Text="🚚 Delivery Details
+                     " FontWeight="Bold" Foreground="#8986CC"/>
+                    </TextBlock>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Courier: " Foreground="Gray" Margin="0,0,5,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" Foreground="#4A4A6A"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Courier ID: " Foreground="Gray" Margin="0,0,5,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CourierId}" FontWeight="Bold" Foreground="#4A4A6A"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Type: " Foreground="Gray" Margin="0,0,5,5"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TypeOfDelivery}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Time: " Foreground="Gray" Margin="0,0,5,5"/>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="{Binding DeliveryStartTime, StringFormat='Start: {0:HH:mm}'}" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding DeliveryEndTime, StringFormat='End: {0:HH:mm}', TargetNullValue='(In Progress)'}" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Distance: " Foreground="Gray" Margin="0,0,5,0"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ActualDistance, StringFormat='{}{0:N2} km'}" FontWeight="Bold"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
 
         <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
             <Grid>
@@ -299,9 +344,16 @@
                                 <TextBlock Text="{Binding CurrentOrder.TimeLinessStatus}" Style="{StaticResource InfoValue}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="4" Margin="0,5,0,0">
+                            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="4" Margin="0,15,0,0">
                                 <TextBlock Text="Associated Deliveries" Style="{StaticResource InfoLabel}"/>
-                                <TextBlock Text="{Binding CurrentOrder.DeliveryList, TargetNullValue='No deliveries yet'}" Style="{StaticResource InfoValue}"/>
+
+                                <ContentControl Content="{Binding CurrentOrder.DeliveryList}" 
+                                                ContentTemplate="{StaticResource DeliveryDetailsTemplate}"
+                                                Visibility="{Binding CurrentOrder.DeliveryList, Converter={StaticResource NullToVisConverter}}"/>
+
+                                <TextBlock Text="No deliveries yet" 
+                                           Visibility="{Binding CurrentOrder.DeliveryList, Converter={StaticResource NullToVisConverter}, ConverterParameter=Invert}" 
+                                           Style="{StaticResource InfoValue}" FontStyle="Italic" Opacity="0.6"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -320,7 +372,7 @@
 
             <Button Grid.Column="0"
                     Click="BtnCancelOrder_Click"
-                    Visibility="{Binding IsUpdateMode, Converter={StaticResource BoolToVisConverter}}"
+                    Visibility="{Binding CurrentOrder, Converter={StaticResource OrderToDeleteVisibilityConverterKey}}"
                     Style="{StaticResource CancelIconButtonStyle}"
                     HorizontalAlignment="Left" 
                     Margin="25,0,0,0"
