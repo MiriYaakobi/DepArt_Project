@@ -187,8 +187,7 @@
     </Window.Resources>
 
     <Grid>
-        <ContentControl Visibility="{Binding ContentVisibility}" Panel.ZIndex="100"/>
-
+        <ContentControl Content="{Binding MainViewContent}"  Visibility="{Binding ContentVisibility}" Panel.ZIndex="100"/>
         <Grid Visibility="{Binding DashboardVisibility}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>

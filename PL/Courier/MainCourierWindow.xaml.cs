@@ -8,7 +8,7 @@ namespace PL.Courier
     public partial class MainCourierWindow : Window
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-        private int courierId;
+        private int _courierId;
         private string enteredPassword = "";
 
         public object? MainViewContent
@@ -60,7 +60,7 @@ namespace PL.Courier
         public MainCourierWindow(int courierId)
         {
             InitializeComponent();
-            this.courierId = courierId;
+            _courierId = courierId;
             DataContext = this;
             RefreshCourierState();
         }
@@ -69,7 +69,7 @@ namespace PL.Courier
         {
             try
             {
-                CurrentCourier = s_bl.Courier.Read(courierId, courierId)!;
+                CurrentCourier = s_bl.Courier.Read(_courierId, _courierId)!;
                 VisualPassword = "********";
                 enteredPassword = "";
             }
@@ -92,7 +92,7 @@ namespace PL.Courier
         private void BtnHistory_Click(object sender, RoutedEventArgs e)
         {
             var historyView = new PL.Courier.CourierHistoryView();
-            historyView.CourierId = courierId;
+            historyView.CourierId = _courierId;
 
             historyView.RequestDashboardView += (s, args) =>
             {
@@ -153,7 +153,7 @@ namespace PL.Courier
         {
             try
             {
-                BO.Courier savedCourier = s_bl.Courier.Read(courierId, courierId)!;
+                BO.Courier savedCourier = s_bl.Courier.Read(_courierId, _courierId)!;
                 double? companyLimit = s_bl.Admin.GetConfig().DeliveryMaxDistance;
                 if (companyLimit.HasValue && CurrentCourier.MaxDistance.HasValue && CurrentCourier.MaxDistance.Value > companyLimit.Value)
                 {
@@ -174,7 +174,7 @@ namespace PL.Courier
                     CurrentCourier.Password = originalCourierFromDb.Password;
                 }
 
-                s_bl.Courier.Update(courierId, CurrentCourier);
+                s_bl.Courier.Update(_courierId, CurrentCourier);
                 CustomMessageBox.Show("Profile updated successfully!", "Success");
                 RefreshCourierState();
             }
@@ -201,7 +201,7 @@ namespace PL.Courier
                     // 1. requestingUserId -> ה-ID של השליח (כי הוא המשתמש המחובר)
                     // 2. courierId -> ה-ID של השליח שמבצע
                     // 3. deliveryId -> ה-ID ששלפנו הרגע מהאובייקט
-                    s_bl.Order.CompleteDelivery(courierId, courierId, deliveryId);
+                    s_bl.Order.CompleteDelivery(_courierId, _courierId, deliveryId);
 
                     CustomMessageBox.Show("Order delivery completed!", "Great Job", MessageType.Success);
 
