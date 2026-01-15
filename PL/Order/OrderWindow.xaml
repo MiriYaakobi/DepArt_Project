@@ -381,7 +381,7 @@
             <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="{Binding IsUpdateMode, Converter={StaticResource BoolToTitleConverterKey}}" 
                         Click="BtnAddUpdate_Click" IsEnabled="{Binding IsEditable}"
-                        Width="140" Height="45" Margin="10"
+                        Width="140" Height="45" Margin="10" IsDefault="True"
                         Background="{StaticResource DeepPurple}" Foreground="White" FontWeight="Bold" FontSize="16"
                         BorderThickness="0" Cursor="Hand">
                     <Button.Resources>

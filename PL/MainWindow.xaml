@@ -169,8 +169,8 @@
                     <Border Grid.Column="1" Style="{StaticResource BaseCard}" Background="{StaticResource Lavender}">
                         <Grid Margin="20">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock x:Name="txtClockTime" Text="{Binding CurrentTime, StringFormat=HH:mm:ss}" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="txtClockDate" Text="{Binding CurrentTime, StringFormat=dd/MM/yyyy}" FontSize="16" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm:ss}" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding CurrentTime, StringFormat=dd/MM/yyyy}" FontSize="16" Foreground="{StaticResource TextDark}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
                                 <Expander Header="Manage Time" HorizontalAlignment="Center" Width="180" Cursor="Hand" FocusVisualStyle="{x:Null}">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
@@ -315,50 +315,50 @@
                             <UniformGrid Grid.Row="1" Columns="4">
                                 <StackPanel Margin="5">
                                     <TextBlock Text="👤 Admin ID" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtAdminId" Text="{Binding Configuration.AdminId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.AdminId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🔑 Password" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtPassword" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding AdminPasswordInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏢 Address" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtAddress" Text="{Binding Configuration.CompenyAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.CompenyAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="📏 Max Dist." Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtMaxDist" Text="{Binding Configuration.DeliveryMaxDistance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.DeliveryMaxDistance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🔋 Range" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtRange" Text="{Binding Configuration.MaxDeliveryRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.MaxDeliveryRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="⚠️ Risk Range" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtRiskRange" Text="{Binding Configuration.RiskRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.RiskRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🚗 Car Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtCarSpeed" Text="{Binding Configuration.AverageVehicleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.AverageVehicleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏍️ Moto Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtMotoSpeed" Text="{Binding Configuration.AverageMotorcycleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.AverageMotorcycleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🚴 Bike Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtBikeSpeed" Text="{Binding Configuration.AverageBicycleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.AverageBicycleSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="5">
                                     <TextBlock Text="🏃 Foot Speed" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtFootSpeed" Text="{Binding Configuration.AverageByFootSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.AverageByFootSpeedKmH, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                                 <StackPanel Margin="5">
                                     <TextBlock Text="💤 Inactivity" Style="{StaticResource ConfigLabel}"/>
-                                    <TextBox x:Name="txtInactivity" Text="{Binding Configuration.InactivityTimeRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
+                                    <TextBox Text="{Binding Configuration.InactivityTimeRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConfigBox}"/>
                                 </StackPanel>
                             </UniformGrid>
 

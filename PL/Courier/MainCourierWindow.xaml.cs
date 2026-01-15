@@ -1,4 +1,205 @@
-﻿using System;
+﻿//using System;
+//using System.Windows;
+//using System.Windows.Controls;
+//using System.Windows.Input;
+
+//namespace PL.Courier
+//{
+//    public partial class MainCourierWindow : Window
+//    {
+//        private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+//        private int _courierId;
+//        private string _enteredPassword = ""; // הסיסמה האמיתית (נסתרת)
+
+//        // 1. יצירת Dependency Property לטקסט שמופיע בתיבה (הכוכביות)
+//        public string VisualPassword
+//        {
+//            get { return (string)GetValue(VisualPasswordProperty); }
+//            set { SetValue(VisualPasswordProperty, value); }
+//        }
+
+//        public static readonly DependencyProperty VisualPasswordProperty =
+//            DependencyProperty.Register("VisualPassword", typeof(string), typeof(MainCourierWindow), new PropertyMetadata("********"));
+
+//        // מאפיין שמחזיק את כל סוגי המשלוח (אופנוע, רכב וכו')
+//        public Array DeliveryTypes { get; } = Enum.GetValues(typeof(BO.DeliveryType));
+
+//        // Dependency Property לפרטי השליח
+//        public BO.Courier CurrentCourier
+//        {
+//            get { return (BO.Courier)GetValue(CurrentCourierProperty); }
+//            set { SetValue(CurrentCourierProperty, value); }
+//        }
+
+//        public static readonly DependencyProperty CurrentCourierProperty =
+//            DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(MainCourierWindow));
+
+//        public MainCourierWindow(int courierId)
+//        {
+//            InitializeComponent();
+//            _courierId = courierId;
+//            DataContext = this; // חובה!
+//            RefreshCourierState();
+//        }
+
+//        private void RefreshCourierState()
+//        {
+//            try
+//            {
+//                CurrentCourier = s_bl.Courier.Read(_courierId, _courierId)!;
+
+//                // 2. איפוס התצוגה לכוכביות והסיסמה האמיתית לריקה
+//                VisualPassword = "********";
+//                _enteredPassword = "";
+//            }
+//            catch (Exception ex)
+//            {
+//                CustomMessageBox.Show("Error loading data: " + ex.Message, "Error");
+//                this.Close();
+//            }
+//        }
+
+//        // --- לוגיקת הכוכביות הידנית (עובדת עם sender וללא שמות) ---
+
+//        private void Password_PreviewTextInput(object sender, TextCompositionEventArgs e)
+//        {
+//            // אם זו ההקלדה הראשונה והתיבה מכילה את ברירת המחדל, נאפס אותה
+//            if (VisualPassword == "********")
+//            {
+//                VisualPassword = "";
+//                _enteredPassword = "";
+//            }
+
+//            // הוספת התו לסיסמה האמיתית
+//            _enteredPassword += e.Text;
+
+//            // עדכון התצוגה (הוספת כוכבית)
+//            // שימי לב: בגלל שיש Binding, עדכון המאפיין יעדכן את המסך
+//            // אבל כאן אנחנו מעדכנים ישירות את הטקסט כדי לשלוט בסמן
+//            if (sender is TextBox txt)
+//            {
+//                txt.Text += "●";
+//                txt.CaretIndex = txt.Text.Length; // הזזת הסמן לסוף
+//            }
+
+//            e.Handled = true; // מונע מהאות האמיתית להופיע
+//        }
+
+//        private void Password_PreviewKeyDown(object sender, KeyEventArgs e)
+//        {
+//            TextBox? txt = sender as TextBox;
+//            if (txt == null) return;
+
+//            // אם התיבה מכילה את ברירת המחדל, כל לחיצה מוחקת אותה
+//            if (VisualPassword == "********")
+//            {
+//                VisualPassword = "";
+//                _enteredPassword = "";
+//                // לא עושים return כי אולי זה היה Backspace שצריך לבצע
+//            }
+
+//            if (e.Key == Key.Back)
+//            {
+//                if (_enteredPassword.Length > 0)
+//                {
+//                    _enteredPassword = _enteredPassword.Substring(0, _enteredPassword.Length - 1);
+
+//                    if (txt.Text.Length > 0)
+//                    {
+//                        txt.Text = txt.Text.Substring(0, txt.Text.Length - 1);
+//                        txt.CaretIndex = txt.Text.Length;
+//                    }
+//                }
+//                e.Handled = true;
+//            }
+//            else if (e.Key == Key.Space)
+//            {
+//                _enteredPassword += " ";
+//                txt.Text += "●";
+//                txt.CaretIndex = txt.Text.Length;
+//                e.Handled = true;
+//            }
+//        }
+
+//        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+//        {
+//            e.CanExecute = false;
+//            e.Handled = true;
+//        }
+
+//        private void BtnUpdate_Click(object sender, RoutedEventArgs e)
+//        {
+//            try
+//            {
+//                BO.Courier savedCourier = s_bl.Courier.Read(_courierId, _courierId)!;
+
+//                double? companyLimit = s_bl.Admin.GetConfig().DeliveryMaxDistance;
+//                if (companyLimit.HasValue && CurrentCourier.MaxDistance.HasValue &&
+//                    CurrentCourier.MaxDistance.Value > companyLimit.Value)
+//                {
+//                    CustomMessageBox.Show($"Shipping max distance must be less than or equal to the company's shipping distance.", "Error");
+//                    return;
+//                }
+
+//                if (savedCourier.CurrentOrder != null &&
+//                    savedCourier.TypeOfDelivery != CurrentCourier.TypeOfDelivery)
+//                {
+//                    CustomMessageBox.Show("Cannot change vehicle...", "Error");
+//                    CurrentCourier.TypeOfDelivery = savedCourier.TypeOfDelivery;
+//                    return;
+//                }
+
+//                if (!string.IsNullOrEmpty(_enteredPassword))
+//                {
+//                    CurrentCourier.Password = _enteredPassword;
+//                }
+//                else
+//                {
+//                    BO.Courier originalCourierFromDb =
+//                        s_bl.Courier.Read(CurrentCourier.Id, CurrentCourier.Id)!;
+
+//                    CurrentCourier.Password = originalCourierFromDb.Password;
+//                }
+
+//                s_bl.Courier.Update(_courierId, CurrentCourier);
+//                CustomMessageBox.Show("Profile updated successfully!", "Success");
+
+//                RefreshCourierState();
+//            }
+//            catch (Exception ex)
+//            {
+//                CustomMessageBox.Show($"Update failed: {ex.Message}", "Error");
+//            }
+//        }
+
+//        private void BtnHistory_Click(object sender, RoutedEventArgs e)
+//        {
+//            // יצירת המסך (או שימוש בקיים אם שמרת אותו כשדה במחלקה)
+//            var historyView = new PL.Courier.CourierHistoryView();
+
+//            // העברת ה-ID של השליח
+//            historyView.CourierId = _courierId;
+
+//            // הרשמה לאירועי הניווט של המסך הפנימי כדי לחזור לדשבורד
+//            historyView.RequestDashboardView += (s, args) =>
+//            {
+//                // כאן תחזירי את התוכן המקורי של הדשבורד
+//                // MyContentControl.Content = ... (הדשבורד המקורי)
+//            };
+
+//            // הצגת המסך בתוך החלון הראשי
+//            // נניח שיש לך ContentControl בשם MainContentArea ב-XAML הראשי
+//            MainContentArea.Content = historyView;
+//        }
+
+//        // ... שאר הפונקציות (FindOrder, FinishOrder, Logout) ללא שינוי ...
+//        private void BtnFindOrder_Click(object sender, RoutedEventArgs e) { /*...*/ }
+//        private void BtnFinishOrder_Click(object sender, RoutedEventArgs e) { /*...*/ }
+//        private void BtnLogout_Click(object sender, RoutedEventArgs e) { this.Close(); }
+//    }
+//}
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,36 +210,61 @@ namespace PL.Courier
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
         private int _courierId;
-        private string _enteredPassword = ""; // הסיסמה האמיתית (נסתרת)
+        private string _enteredPassword = "";
 
-        // 1. יצירת Dependency Property לטקסט שמופיע בתיבה (הכוכביות)
+        // --- ניהול החלפת מסכים ---
+
+        public object? MainViewContent
+        {
+            get { return (object?)GetValue(MainViewContentProperty); }
+            set { SetValue(MainViewContentProperty, value); }
+        }
+        public static readonly DependencyProperty MainViewContentProperty =
+            DependencyProperty.Register("MainViewContent", typeof(object), typeof(MainCourierWindow));
+
+        public Visibility DashboardVisibility
+        {
+            get { return (Visibility)GetValue(DashboardVisibilityProperty); }
+            set { SetValue(DashboardVisibilityProperty, value); }
+        }
+        public static readonly DependencyProperty DashboardVisibilityProperty =
+            DependencyProperty.Register("DashboardVisibility", typeof(Visibility), typeof(MainCourierWindow), new PropertyMetadata(Visibility.Visible));
+
+        public Visibility ContentVisibility
+        {
+            get { return (Visibility)GetValue(ContentVisibilityProperty); }
+            set { SetValue(ContentVisibilityProperty, value); }
+        }
+        public static readonly DependencyProperty ContentVisibilityProperty =
+            DependencyProperty.Register("ContentVisibility", typeof(Visibility), typeof(MainCourierWindow), new PropertyMetadata(Visibility.Collapsed));
+
+
+        // --- פרטי השליח ---
+
         public string VisualPassword
         {
             get { return (string)GetValue(VisualPasswordProperty); }
             set { SetValue(VisualPasswordProperty, value); }
         }
-
         public static readonly DependencyProperty VisualPasswordProperty =
             DependencyProperty.Register("VisualPassword", typeof(string), typeof(MainCourierWindow), new PropertyMetadata("********"));
 
-        // מאפיין שמחזיק את כל סוגי המשלוח (אופנוע, רכב וכו')
         public Array DeliveryTypes { get; } = Enum.GetValues(typeof(BO.DeliveryType));
 
-        // Dependency Property לפרטי השליח
         public BO.Courier CurrentCourier
         {
             get { return (BO.Courier)GetValue(CurrentCourierProperty); }
             set { SetValue(CurrentCourierProperty, value); }
         }
-
         public static readonly DependencyProperty CurrentCourierProperty =
             DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(MainCourierWindow));
+
 
         public MainCourierWindow(int courierId)
         {
             InitializeComponent();
             _courierId = courierId;
-            DataContext = this; // חובה!
+            DataContext = this;
             RefreshCourierState();
         }
 
@@ -47,8 +273,6 @@ namespace PL.Courier
             try
             {
                 CurrentCourier = s_bl.Courier.Read(_courierId, _courierId)!;
-
-                // 2. איפוס התצוגה לכוכביות והסיסמה האמיתית לריקה
                 VisualPassword = "********";
                 _enteredPassword = "";
             }
@@ -59,123 +283,107 @@ namespace PL.Courier
             }
         }
 
-        // --- לוגיקת הכוכביות הידנית (עובדת עם sender וללא שמות) ---
+        // --- ניווט ---
+
+        private void BtnDashboard_Click(object sender, RoutedEventArgs e)
+        {
+            MainViewContent = null;
+            ContentVisibility = Visibility.Collapsed;
+            DashboardVisibility = Visibility.Visible;
+        }
+
+        private void BtnHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var historyView = new PL.Courier.CourierHistoryView();
+            historyView.CourierId = _courierId;
+
+            historyView.RequestDashboardView += (s, args) =>
+            {
+                MainViewContent = null;
+                ContentVisibility = Visibility.Collapsed;
+                DashboardVisibility = Visibility.Visible;
+            };
+
+            historyView.RequestPickOrderView += (s, args) =>
+            {
+                CustomMessageBox.Show("Pick Order Screen - Coming Soon", "Info");
+            };
+
+            DashboardVisibility = Visibility.Collapsed;
+            MainViewContent = historyView;
+            ContentVisibility = Visibility.Visible;
+        }
+
+        private void BtnFindOrder_Click(object sender, RoutedEventArgs e)
+        {
+            CustomMessageBox.Show("Pick Order Screen - Coming Soon", "Info");
+        }
+
+        // --- שאר הפונקציות ---
 
         private void Password_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            // אם זו ההקלדה הראשונה והתיבה מכילה את ברירת המחדל, נאפס אותה
-            if (VisualPassword == "********")
-            {
-                VisualPassword = "";
-                _enteredPassword = "";
-            }
-
-            // הוספת התו לסיסמה האמיתית
+            if (VisualPassword == "********") { VisualPassword = ""; _enteredPassword = ""; }
             _enteredPassword += e.Text;
-
-            // עדכון התצוגה (הוספת כוכבית)
-            // שימי לב: בגלל שיש Binding, עדכון המאפיין יעדכן את המסך
-            // אבל כאן אנחנו מעדכנים ישירות את הטקסט כדי לשלוט בסמן
-            if (sender is TextBox txt)
-            {
-                txt.Text += "●";
-                txt.CaretIndex = txt.Text.Length; // הזזת הסמן לסוף
-            }
-
-            e.Handled = true; // מונע מהאות האמיתית להופיע
+            if (sender is TextBox txt) { txt.Text += "●"; txt.CaretIndex = txt.Text.Length; }
+            e.Handled = true;
         }
 
         private void Password_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             TextBox? txt = sender as TextBox;
             if (txt == null) return;
-
-            // אם התיבה מכילה את ברירת המחדל, כל לחיצה מוחקת אותה
-            if (VisualPassword == "********")
-            {
-                VisualPassword = "";
-                _enteredPassword = "";
-                // לא עושים return כי אולי זה היה Backspace שצריך לבצע
-            }
+            if (VisualPassword == "********") { VisualPassword = ""; _enteredPassword = ""; }
 
             if (e.Key == Key.Back)
             {
                 if (_enteredPassword.Length > 0)
                 {
                     _enteredPassword = _enteredPassword.Substring(0, _enteredPassword.Length - 1);
-
-                    if (txt.Text.Length > 0)
-                    {
-                        txt.Text = txt.Text.Substring(0, txt.Text.Length - 1);
-                        txt.CaretIndex = txt.Text.Length;
-                    }
+                    if (txt.Text.Length > 0) { txt.Text = txt.Text.Substring(0, txt.Text.Length - 1); txt.CaretIndex = txt.Text.Length; }
                 }
                 e.Handled = true;
             }
             else if (e.Key == Key.Space)
             {
-                _enteredPassword += " ";
-                txt.Text += "●";
-                txt.CaretIndex = txt.Text.Length;
-                e.Handled = true;
+                _enteredPassword += " "; txt.Text += "●"; txt.CaretIndex = txt.Text.Length; e.Handled = true;
             }
         }
 
-        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = false;
-            e.Handled = true;
-        }
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e) { e.CanExecute = false; e.Handled = true; }
 
         private void BtnUpdate_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 BO.Courier savedCourier = s_bl.Courier.Read(_courierId, _courierId)!;
-
                 double? companyLimit = s_bl.Admin.GetConfig().DeliveryMaxDistance;
-                if (companyLimit.HasValue && CurrentCourier.MaxDistance.HasValue &&
-                    CurrentCourier.MaxDistance.Value > companyLimit.Value)
+                if (companyLimit.HasValue && CurrentCourier.MaxDistance.HasValue && CurrentCourier.MaxDistance.Value > companyLimit.Value)
                 {
                     CustomMessageBox.Show($"Shipping max distance must be less than or equal to the company's shipping distance.", "Error");
                     return;
                 }
-
-                if (savedCourier.CurrentOrder != null &&
-                    savedCourier.TypeOfDelivery != CurrentCourier.TypeOfDelivery)
+                if (savedCourier.CurrentOrder != null && savedCourier.TypeOfDelivery != CurrentCourier.TypeOfDelivery)
                 {
                     CustomMessageBox.Show("Cannot change vehicle...", "Error");
                     CurrentCourier.TypeOfDelivery = savedCourier.TypeOfDelivery;
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(_enteredPassword))
-                {
-                    CurrentCourier.Password = _enteredPassword;
-                }
+                if (!string.IsNullOrEmpty(_enteredPassword)) CurrentCourier.Password = _enteredPassword;
                 else
                 {
-                    BO.Courier originalCourierFromDb =
-                        s_bl.Courier.Read(CurrentCourier.Id, CurrentCourier.Id)!;
-
+                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(CurrentCourier.Id, CurrentCourier.Id)!;
                     CurrentCourier.Password = originalCourierFromDb.Password;
                 }
 
                 s_bl.Courier.Update(_courierId, CurrentCourier);
                 CustomMessageBox.Show("Profile updated successfully!", "Success");
-
                 RefreshCourierState();
             }
-            catch (Exception ex)
-            {
-                CustomMessageBox.Show($"Update failed: {ex.Message}", "Error");
-            }
+            catch (Exception ex) { CustomMessageBox.Show($"Update failed: {ex.Message}", "Error"); }
         }
 
-        // ... שאר הפונקציות (FindOrder, FinishOrder, Logout) ללא שינוי ...
-        private void BtnFindOrder_Click(object sender, RoutedEventArgs e) { /*...*/ }
-        private void BtnFinishOrder_Click(object sender, RoutedEventArgs e) { /*...*/ }
-        private void BtnHistory_Click(object sender, RoutedEventArgs e) { /*...*/ }
-        private void BtnLogout_Click(object sender, RoutedEventArgs e) { this.Close(); }
+        private void BtnFinishOrder_Click(object sender, RoutedEventArgs e) { /* מימוש עתידי */ }
     }
 }

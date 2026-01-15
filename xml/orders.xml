@@ -7,32 +7,32 @@
     <Latitude>32.0675</Latitude>
     <Longitude>34.7775</Longitude>
     <CustomerName>Noah Cohen</CustomerName>
-    <CustomerPhone>057-680-9023</CustomerPhone>
-    <OrderOpeningTime>2025-12-31T15:38:38.1383345+02:00</OrderOpeningTime>
+    <CustomerPhone>053-366-4661</CustomerPhone>
+    <OrderOpeningTime>2026-01-01T17:29:11.380523+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1001</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Jaffa Road 2, Jerusalem</Address>
     <Latitude>31.778</Latitude>
     <Longitude>35.2345</Longitude>
     <CustomerName>Daniel Levy</CustomerName>
-    <CustomerPhone>058-638-7527</CustomerPhone>
-    <OrderOpeningTime>2026-01-05T15:38:38.1428191+02:00</OrderOpeningTime>
+    <CustomerPhone>052-731-7993</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:11.3875776+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1002</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Ha'arbaa 14, Herzliya</Address>
     <Latitude>32.1632</Latitude>
     <Longitude>34.8406</Longitude>
     <CustomerName>Maya Rosen</CustomerName>
-    <CustomerPhone>050-342-4044</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.1614198+02:00</OrderOpeningTime>
+    <CustomerPhone>052-806-9252</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.4142335+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
@@ -43,68 +43,68 @@
     <Latitude>32.088</Latitude>
     <Longitude>34.8875</Longitude>
     <CustomerName>David Friedman</CustomerName>
-    <CustomerPhone>053-776-1691</CustomerPhone>
-    <OrderOpeningTime>2026-01-09T15:38:38.1791052+02:00</OrderOpeningTime>
+    <CustomerPhone>054-571-7233</CustomerPhone>
+    <OrderOpeningTime>2026-01-03T17:29:11.4380367+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1004</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Sderot Hen 5, Haifa</Address>
     <Latitude>32.804</Latitude>
     <Longitude>34.9896</Longitude>
     <CustomerName>Lior Avrahami</CustomerName>
-    <CustomerPhone>055-824-8683</CustomerPhone>
-    <OrderOpeningTime>2026-01-05T15:38:38.1960681+02:00</OrderOpeningTime>
+    <CustomerPhone>058-562-2873</CustomerPhone>
+    <OrderOpeningTime>2026-01-02T17:29:11.4639682+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1005</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'atzmaut 25, Bat Yam</Address>
     <Latitude>32.021</Latitude>
     <Longitude>34.7544</Longitude>
     <CustomerName>Tamar Ben-David</CustomerName>
-    <CustomerPhone>051-767-3374</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.2137559+02:00</OrderOpeningTime>
+    <CustomerPhone>050-115-1499</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.488207+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1006</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Modi'in - Lev HaIr St</Address>
     <Latitude>31.8989</Latitude>
     <Longitude>35.0078</Longitude>
     <CustomerName>Eitan Barak</CustomerName>
-    <CustomerPhone>057-667-8377</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.2325207+02:00</OrderOpeningTime>
+    <CustomerPhone>054-878-9407</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T17:29:11.5135498+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1007</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ashdod - HaGdud HaIvri St</Address>
     <Latitude>31.8044</Latitude>
     <Longitude>34.6553</Longitude>
     <CustomerName>Shira Saban</CustomerName>
-    <CustomerPhone>057-699-6604</CustomerPhone>
-    <OrderOpeningTime>2025-12-30T15:38:38.2490329+02:00</OrderOpeningTime>
+    <CustomerPhone>050-466-8518</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:11.5397312+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1008</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Beersheba - David Tuviyahu Blvd</Address>
     <Latitude>31.2518</Latitude>
     <Longitude>34.7915</Longitude>
     <CustomerName>Adam Danino</CustomerName>
-    <CustomerPhone>053-649-8918</CustomerPhone>
-    <OrderOpeningTime>2026-01-15T15:38:38.2662831+02:00</OrderOpeningTime>
+    <CustomerPhone>054-287-8436</CustomerPhone>
+    <OrderOpeningTime>2026-01-13T17:29:11.5656071+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
@@ -115,92 +115,92 @@
     <Latitude>31.8948</Latitude>
     <Longitude>34.811</Longitude>
     <CustomerName>Rachel Neuman</CustomerName>
-    <CustomerPhone>058-413-6785</CustomerPhone>
-    <OrderOpeningTime>2026-01-01T15:38:38.2833391+02:00</OrderOpeningTime>
+    <CustomerPhone>051-174-7456</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.5917275+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1010</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Herzl 10, Tel Aviv</Address>
     <Latitude>32.0675</Latitude>
     <Longitude>34.7775</Longitude>
     <CustomerName>Itay Hershkovitz</CustomerName>
-    <CustomerPhone>050-303-4343</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.3001756+02:00</OrderOpeningTime>
+    <CustomerPhone>054-172-6994</CustomerPhone>
+    <OrderOpeningTime>2026-01-13T17:29:11.6190118+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1011</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Jaffa Road 2, Jerusalem</Address>
     <Latitude>31.778</Latitude>
     <Longitude>35.2345</Longitude>
     <CustomerName>Roni Gabay</CustomerName>
-    <CustomerPhone>055-882-3361</CustomerPhone>
-    <OrderOpeningTime>2026-01-09T15:38:38.3191719+02:00</OrderOpeningTime>
+    <CustomerPhone>057-252-9997</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:11.6561677+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1012</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Ha'arbaa 14, Herzliya</Address>
     <Latitude>32.1632</Latitude>
     <Longitude>34.8406</Longitude>
     <CustomerName>Gal Zahavi</CustomerName>
-    <CustomerPhone>050-262-8045</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.3359255+02:00</OrderOpeningTime>
+    <CustomerPhone>050-869-7421</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.6802129+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1013</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Begin 101, Petah Tikva</Address>
     <Latitude>32.088</Latitude>
     <Longitude>34.8875</Longitude>
     <CustomerName>Nina Ronen</CustomerName>
-    <CustomerPhone>051-222-4477</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.3543728+02:00</OrderOpeningTime>
+    <CustomerPhone>056-551-7946</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.6992452+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1014</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Sderot Hen 5, Haifa</Address>
     <Latitude>32.804</Latitude>
     <Longitude>34.9896</Longitude>
     <CustomerName>Amir Ilan</CustomerName>
-    <CustomerPhone>058-333-8396</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.3712541+02:00</OrderOpeningTime>
+    <CustomerPhone>058-319-4943</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:11.7216619+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1015</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Ha'atzmaut 25, Bat Yam</Address>
     <Latitude>32.021</Latitude>
     <Longitude>34.7544</Longitude>
     <CustomerName>Dana Marciano</CustomerName>
-    <CustomerPhone>052-661-2998</CustomerPhone>
-    <OrderOpeningTime>2025-12-31T15:38:38.3881538+02:00</OrderOpeningTime>
+    <CustomerPhone>058-822-3720</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:11.7404596+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1016</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Modi'in - Lev HaIr St</Address>
     <Latitude>31.8989</Latitude>
     <Longitude>35.0078</Longitude>
     <CustomerName>Jonathan Tzadok</CustomerName>
-    <CustomerPhone>051-988-9327</CustomerPhone>
-    <OrderOpeningTime>2026-01-13T15:38:38.4041104+02:00</OrderOpeningTime>
+    <CustomerPhone>057-350-2844</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.7667804+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
@@ -211,20 +211,20 @@
     <Latitude>31.8044</Latitude>
     <Longitude>34.6553</Longitude>
     <CustomerName>Liad Baruch</CustomerName>
-    <CustomerPhone>057-448-1845</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.4229142+02:00</OrderOpeningTime>
+    <CustomerPhone>054-975-3394</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T17:29:11.800972+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1018</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Beersheba - David Tuviyahu Blvd</Address>
     <Latitude>31.2518</Latitude>
     <Longitude>34.7915</Longitude>
     <CustomerName>Omer Amir</CustomerName>
-    <CustomerPhone>055-435-4391</CustomerPhone>
-    <OrderOpeningTime>2026-01-09T15:38:38.4466821+02:00</OrderOpeningTime>
+    <CustomerPhone>056-150-1166</CustomerPhone>
+    <OrderOpeningTime>2026-01-02T17:29:11.8317337+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
@@ -235,20 +235,20 @@
     <Latitude>31.8948</Latitude>
     <Longitude>34.811</Longitude>
     <CustomerName>Ruth Hazan</CustomerName>
-    <CustomerPhone>057-473-7395</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.4658678+02:00</OrderOpeningTime>
+    <CustomerPhone>058-820-2192</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T17:29:11.8552388+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1020</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Herzl 10, Tel Aviv</Address>
     <Latitude>32.0675</Latitude>
     <Longitude>34.7775</Longitude>
     <CustomerName>Eli Mor</CustomerName>
-    <CustomerPhone>053-117-2051</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.4829904+02:00</OrderOpeningTime>
+    <CustomerPhone>052-281-9209</CustomerPhone>
+    <OrderOpeningTime>2025-12-31T17:29:11.8770152+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
@@ -259,32 +259,32 @@
     <Latitude>31.778</Latitude>
     <Longitude>35.2345</Longitude>
     <CustomerName>Sara Peretz</CustomerName>
-    <CustomerPhone>053-721-5058</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.5037294+02:00</OrderOpeningTime>
+    <CustomerPhone>057-199-8006</CustomerPhone>
+    <OrderOpeningTime>2026-01-10T17:29:11.8997914+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1022</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'arbaa 14, Herzliya</Address>
     <Latitude>32.1632</Latitude>
     <Longitude>34.8406</Longitude>
     <CustomerName>Ben Avital</CustomerName>
-    <CustomerPhone>051-184-8742</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.5226489+02:00</OrderOpeningTime>
+    <CustomerPhone>056-558-2143</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T17:29:11.9250917+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1023</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Begin 101, Petah Tikva</Address>
     <Latitude>32.088</Latitude>
     <Longitude>34.8875</Longitude>
     <CustomerName>Hila Levi</CustomerName>
-    <CustomerPhone>052-150-7266</CustomerPhone>
-    <OrderOpeningTime>2026-01-13T15:38:38.5398461+02:00</OrderOpeningTime>
+    <CustomerPhone>057-547-1667</CustomerPhone>
+    <OrderOpeningTime>2026-01-05T17:29:11.9533977+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
@@ -295,20 +295,20 @@
     <Latitude>32.804</Latitude>
     <Longitude>34.9896</Longitude>
     <CustomerName>Yoni Weiss</CustomerName>
-    <CustomerPhone>055-689-7134</CustomerPhone>
-    <OrderOpeningTime>2026-01-06T15:38:38.5579111+02:00</OrderOpeningTime>
+    <CustomerPhone>056-835-7284</CustomerPhone>
+    <OrderOpeningTime>2026-01-04T17:29:11.97506+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1025</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'atzmaut 25, Bat Yam</Address>
     <Latitude>32.021</Latitude>
     <Longitude>34.7544</Longitude>
     <CustomerName>Nadav Regev</CustomerName>
-    <CustomerPhone>058-673-1244</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.5764291+02:00</OrderOpeningTime>
+    <CustomerPhone>052-922-9239</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:12.0012666+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
@@ -319,8 +319,8 @@
     <Latitude>31.8989</Latitude>
     <Longitude>35.0078</Longitude>
     <CustomerName>Tal Segal</CustomerName>
-    <CustomerPhone>058-891-4715</CustomerPhone>
-    <OrderOpeningTime>2026-01-06T15:38:38.5926788+02:00</OrderOpeningTime>
+    <CustomerPhone>050-266-8513</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:12.0279045+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
@@ -331,44 +331,44 @@
     <Latitude>31.8044</Latitude>
     <Longitude>34.6553</Longitude>
     <CustomerName>Naomi Klein</CustomerName>
-    <CustomerPhone>050-537-8073</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.6110285+02:00</OrderOpeningTime>
+    <CustomerPhone>051-206-4300</CustomerPhone>
+    <OrderOpeningTime>2026-01-12T17:29:12.0499274+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1028</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Beersheba - David Tuviyahu Blvd</Address>
     <Latitude>31.2518</Latitude>
     <Longitude>34.7915</Longitude>
     <CustomerName>Oren Goldstein</CustomerName>
-    <CustomerPhone>056-343-5014</CustomerPhone>
-    <OrderOpeningTime>2026-01-09T15:38:38.6279363+02:00</OrderOpeningTime>
+    <CustomerPhone>051-394-4716</CustomerPhone>
+    <OrderOpeningTime>2026-01-02T17:29:12.0740308+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1029</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Rehovot - Bilu St</Address>
     <Latitude>31.8948</Latitude>
     <Longitude>34.811</Longitude>
     <CustomerName>Yael Mizrahi</CustomerName>
-    <CustomerPhone>054-253-3595</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.6444125+02:00</OrderOpeningTime>
+    <CustomerPhone>058-427-6323</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:12.1016091+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1030</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Herzl 10, Tel Aviv</Address>
     <Latitude>32.0675</Latitude>
     <Longitude>34.7775</Longitude>
     <CustomerName>Ariel Rubin</CustomerName>
-    <CustomerPhone>054-562-9120</CustomerPhone>
-    <OrderOpeningTime>2025-12-30T15:38:38.6638071+02:00</OrderOpeningTime>
+    <CustomerPhone>055-705-7364</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:12.1291738+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
@@ -379,68 +379,68 @@
     <Latitude>31.778</Latitude>
     <Longitude>35.2345</Longitude>
     <CustomerName>Noa Shahar</CustomerName>
-    <CustomerPhone>057-336-8973</CustomerPhone>
-    <OrderOpeningTime>2026-01-03T15:38:38.6832426+02:00</OrderOpeningTime>
+    <CustomerPhone>052-455-9916</CustomerPhone>
+    <OrderOpeningTime>2026-01-13T17:29:12.1549439+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1032</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'arbaa 14, Herzliya</Address>
     <Latitude>32.1632</Latitude>
     <Longitude>34.8406</Longitude>
     <CustomerName>Idan Azulay</CustomerName>
-    <CustomerPhone>057-816-9121</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.7079292+02:00</OrderOpeningTime>
+    <CustomerPhone>058-564-7152</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T17:29:12.1762609+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1033</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Begin 101, Petah Tikva</Address>
     <Latitude>32.088</Latitude>
     <Longitude>34.8875</Longitude>
     <CustomerName>Romi Halevi</CustomerName>
-    <CustomerPhone>051-460-5828</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.7265444+02:00</OrderOpeningTime>
+    <CustomerPhone>050-113-2968</CustomerPhone>
+    <OrderOpeningTime>2025-12-31T17:29:12.2022173+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1034</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Sderot Hen 5, Haifa</Address>
     <Latitude>32.804</Latitude>
     <Longitude>34.9896</Longitude>
     <CustomerName>Erez Dayan</CustomerName>
-    <CustomerPhone>054-119-4088</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.7443013+02:00</OrderOpeningTime>
+    <CustomerPhone>055-431-2667</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:12.2256691+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1035</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'atzmaut 25, Bat Yam</Address>
     <Latitude>32.021</Latitude>
     <Longitude>34.7544</Longitude>
     <CustomerName>Galit Ashkenazi</CustomerName>
-    <CustomerPhone>052-720-4193</CustomerPhone>
-    <OrderOpeningTime>2026-01-06T15:38:38.7640391+02:00</OrderOpeningTime>
+    <CustomerPhone>058-308-3549</CustomerPhone>
+    <OrderOpeningTime>2025-12-30T17:29:12.2478362+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1036</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Modi'in - Lev HaIr St</Address>
     <Latitude>31.8989</Latitude>
     <Longitude>35.0078</Longitude>
     <CustomerName>Doron Koren</CustomerName>
-    <CustomerPhone>052-442-8535</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.783186+02:00</OrderOpeningTime>
+    <CustomerPhone>051-400-9817</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:12.2721859+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
@@ -451,8 +451,8 @@
     <Latitude>31.8044</Latitude>
     <Longitude>34.6553</Longitude>
     <CustomerName>Liat Morad</CustomerName>
-    <CustomerPhone>052-409-7062</CustomerPhone>
-    <OrderOpeningTime>2026-01-15T15:38:38.8005254+02:00</OrderOpeningTime>
+    <CustomerPhone>052-978-8015</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:12.3030047+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
@@ -463,20 +463,20 @@
     <Latitude>31.2518</Latitude>
     <Longitude>34.7915</Longitude>
     <CustomerName>Ori Katz</CustomerName>
-    <CustomerPhone>055-190-5858</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.8204614+02:00</OrderOpeningTime>
+    <CustomerPhone>051-294-2066</CustomerPhone>
+    <OrderOpeningTime>2026-01-07T17:29:12.3258684+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1039</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Rehovot - Bilu St</Address>
     <Latitude>31.8948</Latitude>
     <Longitude>34.811</Longitude>
     <CustomerName>Ella Shemesh</CustomerName>
-    <CustomerPhone>055-321-4965</CustomerPhone>
-    <OrderOpeningTime>2026-01-04T15:38:38.8399197+02:00</OrderOpeningTime>
+    <CustomerPhone>058-238-1078</CustomerPhone>
+    <OrderOpeningTime>2026-01-13T17:29:12.3483331+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
@@ -487,116 +487,116 @@
     <Latitude>32.0675</Latitude>
     <Longitude>34.7775</Longitude>
     <CustomerName>Ron Biton</CustomerName>
-    <CustomerPhone>058-706-9313</CustomerPhone>
-    <OrderOpeningTime>2025-12-31T15:38:38.8568799+02:00</OrderOpeningTime>
+    <CustomerPhone>053-750-7984</CustomerPhone>
+    <OrderOpeningTime>2026-01-13T17:29:12.3769396+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1041</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Jaffa Road 2, Jerusalem</Address>
     <Latitude>31.778</Latitude>
     <Longitude>35.2345</Longitude>
     <CustomerName>Talia Oren</CustomerName>
-    <CustomerPhone>057-833-9070</CustomerPhone>
-    <OrderOpeningTime>2026-01-02T15:38:38.8735826+02:00</OrderOpeningTime>
+    <CustomerPhone>058-991-1630</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:12.4025994+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1042</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Ha'arbaa 14, Herzliya</Address>
     <Latitude>32.1632</Latitude>
     <Longitude>34.8406</Longitude>
     <CustomerName>Gadi Ben-Haim</CustomerName>
-    <CustomerPhone>057-442-5517</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.8911426+02:00</OrderOpeningTime>
+    <CustomerPhone>050-804-5882</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:12.4298344+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1043</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>Express</TypeOfOrder>
     <Address>Begin 101, Petah Tikva</Address>
     <Latitude>32.088</Latitude>
     <Longitude>34.8875</Longitude>
     <CustomerName>Eden Cohen</CustomerName>
-    <CustomerPhone>050-595-4977</CustomerPhone>
-    <OrderOpeningTime>2026-01-14T15:38:38.9075432+02:00</OrderOpeningTime>
+    <CustomerPhone>051-664-5989</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:12.4560024+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1044</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Sderot Hen 5, Haifa</Address>
     <Latitude>32.804</Latitude>
     <Longitude>34.9896</Longitude>
     <CustomerName>Noy Levi</CustomerName>
-    <CustomerPhone>054-522-4723</CustomerPhone>
-    <OrderOpeningTime>2026-01-12T15:38:38.9245665+02:00</OrderOpeningTime>
+    <CustomerPhone>058-772-8048</CustomerPhone>
+    <OrderOpeningTime>2026-01-06T17:29:12.4792956+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
   <Order>
     <Id>1045</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Ha'atzmaut 25, Bat Yam</Address>
     <Latitude>32.021</Latitude>
     <Longitude>34.7544</Longitude>
     <CustomerName>Roy Shaked</CustomerName>
-    <CustomerPhone>056-656-2548</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.9416116+02:00</OrderOpeningTime>
+    <CustomerPhone>056-411-1730</CustomerPhone>
+    <OrderOpeningTime>2026-01-09T17:29:12.5070596+02:00</OrderOpeningTime>
     <PackageDetails>Canvas painting - medium size</PackageDetails>
     <Description>Standard art delivery</Description>
   </Order>
   <Order>
     <Id>1046</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Modi'in - Lev HaIr St</Address>
     <Latitude>31.8989</Latitude>
     <Longitude>35.0078</Longitude>
     <CustomerName>Alon Baruch</CustomerName>
-    <CustomerPhone>058-409-6838</CustomerPhone>
-    <OrderOpeningTime>2026-01-04T15:38:38.9631761+02:00</OrderOpeningTime>
+    <CustomerPhone>057-785-1189</CustomerPhone>
+    <OrderOpeningTime>2026-01-11T17:29:12.5386764+02:00</OrderOpeningTime>
     <PackageDetails>Fragile - framed artwork</PackageDetails>
     <Description>Handle with care - original artwork</Description>
   </Order>
   <Order>
     <Id>1047</Id>
-    <TypeOfOrder>Regular</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Ashdod - HaGdud HaIvri St</Address>
     <Latitude>31.8044</Latitude>
     <Longitude>34.6553</Longitude>
     <CustomerName>Michal Dahan</CustomerName>
-    <CustomerPhone>053-922-2033</CustomerPhone>
-    <OrderOpeningTime>2026-01-10T15:38:38.9826189+02:00</OrderOpeningTime>
+    <CustomerPhone>055-867-5025</CustomerPhone>
+    <OrderOpeningTime>2025-12-30T17:29:12.5638775+02:00</OrderOpeningTime>
     <PackageDetails>Sculpture package - heavy</PackageDetails>
     <Description>Urgent exhibition piece - deliver directly to gallery</Description>
   </Order>
   <Order>
     <Id>1048</Id>
-    <TypeOfOrder>Express</TypeOfOrder>
+    <TypeOfOrder>SameDay</TypeOfOrder>
     <Address>Beersheba - David Tuviyahu Blvd</Address>
     <Latitude>31.2518</Latitude>
     <Longitude>34.7915</Longitude>
     <CustomerName>Yarden Golan</CustomerName>
-    <CustomerPhone>051-618-6642</CustomerPhone>
-    <OrderOpeningTime>2026-01-07T15:38:39.0003257+02:00</OrderOpeningTime>
+    <CustomerPhone>051-566-6298</CustomerPhone>
+    <OrderOpeningTime>2026-01-14T17:29:12.5824998+02:00</OrderOpeningTime>
     <PackageDetails>Photography print envelope</PackageDetails>
     <Description>Check authenticity certificate before handover</Description>
   </Order>
   <Order>
     <Id>1049</Id>
-    <TypeOfOrder>SameDay</TypeOfOrder>
+    <TypeOfOrder>Regular</TypeOfOrder>
     <Address>Rehovot - Bilu St</Address>
     <Latitude>31.8948</Latitude>
     <Longitude>34.811</Longitude>
     <CustomerName>Nadav Tal</CustomerName>
-    <CustomerPhone>056-691-5718</CustomerPhone>
-    <OrderOpeningTime>2025-12-30T15:38:39.0165835+02:00</OrderOpeningTime>
+    <CustomerPhone>053-904-7625</CustomerPhone>
+    <OrderOpeningTime>2026-01-04T17:29:12.6015409+02:00</OrderOpeningTime>
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
