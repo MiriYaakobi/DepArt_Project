@@ -7,9 +7,9 @@
     <Email>noa.levi@gmail.com</Email>
     <Password>noa#levi18</Password>
     <IsActive>true</IsActive>
-    <TypeOfDelivery>ByFoot</TypeOfDelivery>
+    <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2025-12-19T03:08:29.7891047+02:00</StartWorkTime>
-    <MaxDistance>3</MaxDistance>
+    <MaxDistance>15</MaxDistance>
   </Courier>
   <Courier>
     <Id>748184046</Id>

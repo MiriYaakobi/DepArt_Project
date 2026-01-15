@@ -14,6 +14,20 @@ namespace PL.Courier
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
 
+        // =================================================================
+        // הוספה חדשה (1): משתנה עבור פרטי השליח בסרגל הצד
+        // =================================================================
+        public BO.Courier CurrentCourier
+        {
+            get { return (BO.Courier)GetValue(CurrentCourierProperty); }
+            set { SetValue(CurrentCourierProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentCourierProperty =
+            DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierHistoryView));
+        // =================================================================
+
+
         // מזהה השליח הנוכחי
         public int CourierId
         {
@@ -48,8 +62,6 @@ namespace PL.Courier
         public CourierHistoryView()
         {
             InitializeComponent();
-            // UserControl לא יורש את ה-DataContext של החלון אוטומטית בצורה שנוחה לנו כאן,
-            // אז אנחנו קובעים אותו לעצמנו כדי שה-Binding יעבוד
             DataContext = this;
         }
 
@@ -68,8 +80,13 @@ namespace PL.Courier
 
             try
             {
+                // =================================================================
+                // הוספה חדשה (2): טעינת פרטי השליח עבור הסרגל
+                // =================================================================
+                CurrentCourier = s_bl.Courier.Read(CourierId, CourierId)!;
+                // =================================================================
+
                 // קריאה לפונקציה ב-BL כפי שהוגדר בממשק
-                // אנחנו לא שולחים מיון כרגע, אבל ניתן להוסיף אם תרצו
                 IEnumerable<BO.ClosedDeliveryInList> list = s_bl.Order.GetClosedDeliveriesForCourier(CourierId, CourierId);
 
                 // סינון לוגי בצד התצוגה (אם נבחר פילטר)
@@ -100,12 +117,11 @@ namespace PL.Courier
 
         private void BtnClearFilter_Click(object sender, RoutedEventArgs e)
         {
-            SelectedStatusFilter = null; // זה יפעיל את RefreshList דרך ה-Binding או שיש לקרוא לו ידנית אם ה-Binding לא דו-כיווני מיידי
+            SelectedStatusFilter = null;
             RefreshList();
         }
 
         // --- ניווט ---
-        // הפונקציות האלו יפעילו אירוע שהחלון הראשי יקשיב לו ויחליף את התוכן
 
         private void BtnDashboard_Click(object sender, RoutedEventArgs e)
         {
