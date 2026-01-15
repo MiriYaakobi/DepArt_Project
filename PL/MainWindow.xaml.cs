@@ -51,6 +51,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private double _cancelledHeight; public double CancelledHeight { get => _cancelledHeight; set { _cancelledHeight = value; OnPropertyChanged(); } }
     private string _cancelledVal = "0"; public string CancelledVal { get => _cancelledVal; set { _cancelledVal = value; OnPropertyChanged(); } }
 
+    private string _adminPasswordInput = "********";
+    public string AdminPasswordInput
+    {
+        get => _adminPasswordInput;
+        set { _adminPasswordInput = value; OnPropertyChanged(); }
+    }
+
     /// <summary>
     /// Gets or sets the current time value.
     /// </summary>
@@ -109,7 +116,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             //initial UI setup
             if (Configuration != null)
             {
-                txtPassword.Text = "********";
+                AdminPasswordInput = "********";
                 RefreshGraph();
             }
         }
@@ -253,18 +260,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            // Validate configuration before saving
-            if (Configuration == null)
-                return;
+            if (Configuration == null) return;
 
-            // Update password if changed
-            if (txtPassword.Text != "********")
-                Configuration.AdminPassword = txtPassword.Text;
+            // שימוש במשתנה המקושר (Binding) במקום בשם הפקד
+            if (AdminPasswordInput != "********")
+                Configuration.AdminPassword = AdminPasswordInput;
 
             s_bl.Admin.SetConfig(Configuration);
 
             CustomMessageBox.Show("Configuration saved successfully!", "Success");
-            txtPassword.Text = "********";
+
+            // איפוס הסיסמה לתצוגה
+            AdminPasswordInput = "********";
         }
         catch (Exception ex)
         {
