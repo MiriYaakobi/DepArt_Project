@@ -141,7 +141,7 @@
                     <DropShadowEffect Color="#E0E0E0" BlurRadius="15" ShadowDepth="0"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="📦 Order In Progress" FontSize="18" FontWeight="Bold" Foreground="#8986CC" Margin="0,0,0,15"/>
+                    <TextBlock Text="📦 Your Current Order" FontSize="18" FontWeight="Bold" Foreground="#8986CC" Margin="0,0,0,15"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -187,10 +187,7 @@
     </Window.Resources>
 
     <Grid>
-        <ContentControl Content="{Binding MainViewContent}" 
-                        Visibility="{Binding ContentVisibility}" 
-                        Panel.ZIndex="100"/>
-
+        <ContentControl Content="{Binding MainViewContent}"  Visibility="{Binding ContentVisibility}" Panel.ZIndex="100"/>
         <Grid Visibility="{Binding DashboardVisibility}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
@@ -217,11 +214,11 @@
                                Foreground="{StaticResource TextLight}" FontSize="12" Opacity="0.8"
                                HorizontalAlignment="Center" Margin="0,5,0,40"/>
 
-                    <Button Content="🏠 Dashboard" Background="#9A97D9" FontWeight="Bold" IsHitTestVisible="False" Style="{StaticResource MenuButton}"/>
+                    <Button Content="Dashboard" Background="#9A97D9" IsHitTestVisible="False" Style="{StaticResource MenuButton}"/>
 
-                    <Button Content="📜 Delivery History" Click="BtnHistory_Click" Style="{StaticResource MenuButton}"/>
+                    <Button Content="Delivery History" Click="BtnHistory_Click" Style="{StaticResource MenuButton}"/>
 
-                    <Button Content="📦 Pick New Order" Click="BtnFindOrder_Click" Style="{StaticResource MenuButton}"/>
+                    <Button Content="Pick New Order" Click="BtnFindOrder_Click" Style="{StaticResource MenuButton}"/>
                 </StackPanel>
             </Border>
 
@@ -239,8 +236,7 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                                <TextBlock Text="👤 My Profile" FontSize="20" FontWeight="Bold" Foreground="#4A4A6A"/>
-                                <TextBlock Text="(Edit Mode)" FontSize="12" Foreground="Gray" VerticalAlignment="Bottom" Margin="10,0,0,2"/>
+                                <TextBlock Text="👤 My Profile" FontSize="20" FontWeight="Bold" Foreground="{StaticResource DeepPurple}"/>
                             </StackPanel>
 
                             <Grid Margin="0,0,0,15">
@@ -291,17 +287,17 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                                    <TextBlock Text="On-Time ✅" Style="{StaticResource LabelStyle}"/>
-                                    <TextBox Text="{Binding CurrentCourier.OnTimeDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
+                                    <TextBlock Text="On-Time Deliveries" Style="{StaticResource LabelStyle}"/>
+                                    <TextBox Text="{Binding CurrentCourier.TotalOnTimeDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                                    <TextBlock Text="Late ⏰" Style="{StaticResource LabelStyle}"/>
-                                    <TextBox Text="{Binding CurrentCourier.LateDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
+                                    <TextBlock Text="Late Deliveries" Style="{StaticResource LabelStyle}"/>
+                                    <TextBox Text="{Binding CurrentCourier.TotalLateDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
                                 </StackPanel>
                             </Grid>
 
                             <Button Content="Update Details" Click="BtnUpdate_Click"
-                                    Background="#4A4A6A" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
+                                    Background="{StaticResource DeepPurple}" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="22"/>
@@ -322,30 +318,22 @@
                                     ContentTemplate="{StaticResource ActiveOrderTemplate}"
                                     Visibility="{Binding CurrentCourier.CurrentOrder, Converter={StaticResource NullToVisConverter}}"/>
 
-                    <Border Grid.Row="0" Background="#F9F9FF" CornerRadius="15" Padding="20"
+                    <Border Grid.Row="0" Background="#F9F9FF" CornerRadius="15" Padding="15"
                             Visibility="{Binding CurrentCourier.CurrentOrder, Converter={StaticResource NullToVisConverter}, ConverterParameter=Invert}">
                         <Border BorderBrush="#8986CC" BorderThickness="1" CornerRadius="15" Padding="20">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                 <TextBlock Text="🚀" FontSize="50" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                                 <TextBlock Text="Ready for Mission?" FontSize="20" FontWeight="Bold" Foreground="#4A4A6A" HorizontalAlignment="Center"/>
                                 <TextBlock Text="No active order at the moment." Foreground="Gray" HorizontalAlignment="Center" Margin="0,0,0,30"/>
-
-                                <Button Content="🔎 Select Order to Deliver" Click="BtnFindOrder_Click"
-                                        IsEnabled="{Binding CurrentCourier.IsActive}"
-                                        Width="220" Height="50"
-                                        Background="#8986CC" Foreground="White" FontWeight="Bold" FontSize="15" Cursor="Hand">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="25"/>
-                                        </Style>
-                                    </Button.Resources>
-                                </Button>
-
-                                <TextBlock Text="You must be 'Active' to take orders." 
-                                           Visibility="{Binding CurrentCourier.IsActive, Converter={StaticResource BoolToVisConverter}, ConverterParameter=Invert}"
-                                           Foreground="Red" FontSize="12" Margin="0,10,0,0" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
+                    </Border>
+                    <Border Grid.Row="1" CornerRadius="15" Padding="0" Margin="0,24,0,0">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                            <Image Source="/Images/courier.png" Width="300" Height="300" Stretch="Uniform" Margin="0,0,0,15"/>
+
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Grid>

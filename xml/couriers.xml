@@ -71,11 +71,11 @@
     <Name>Tamar Rosen</Name>
     <Phone>054-430-3101</Phone>
     <Email>tamar.rosen@gmail.com</Email>
-    <Password>tamar#rosen13</Password>
+    <Password>07ab59f4731b0790d0acfded6a52d2c53e7e3c6a1e241f6dfe3a41f3072e07fb</Password>
     <IsActive>true</IsActive>
-    <TypeOfDelivery>Car</TypeOfDelivery>
+    <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2022-01-19T02:41:15.7891047+02:00</StartWorkTime>
-    <MaxDistance>201</MaxDistance>
+    <MaxDistance>85</MaxDistance>
   </Courier>
   <Courier>
     <Id>783067165</Id>
@@ -101,7 +101,7 @@
   </Courier>
   <Courier>
     <Id>946667997</Id>
-    <Name>Guy Hershkovitz</Name>
+    <Name>Guya Hershkovitz</Name>
     <Phone>054-673-9549</Phone>
     <Email>guy.hershkovitz@gmail.com</Email>
     <Password>guy#hershkovitz11</Password>
