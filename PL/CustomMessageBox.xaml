@@ -5,6 +5,7 @@
         SizeToContent="Height" MinHeight="160"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="NoResize"
+        Icon="/Images/logo.png"
         AllowsTransparency="True" Background="Transparent">
 
     <Border Background="White" CornerRadius="8" Margin="10">
