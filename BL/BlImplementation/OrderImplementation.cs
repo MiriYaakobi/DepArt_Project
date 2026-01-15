@@ -25,21 +25,21 @@ internal class OrderImplementation : IOrder
         // Call Manager to perform complex logic
         try
         {
-            // --- חיפוש השליח לפני הביטול ---
+            // find the courier assigned to this order (corrected logic)
             BO.Courier? courierToNotify = null;
             try
             {
-                // משתמשים ב-var כדי לקלוט את הרשימה (CourierInList) בלי שגיאות המרה
+                // get the light list of couriers
                 var allCouriersList = CourierManager.ReadAllCouriers();
 
                 foreach (var item in allCouriersList)
                 {
                     try
                     {
-                        // שליפה מלאה כדי לבדוק את ההזמנה שבטיפול
+                        // get full courier details
                         BO.Courier c = CourierManager.ReadCourier(item.Id);
 
-                        // כאן התיקון שלך: שימוש ב-OrderId
+                        // check if they have a current order and if it matches the orderId
                         if (c.CurrentOrder != null && c.CurrentOrder.OrderId == orderId)
                         {
                             courierToNotify = c;
@@ -55,18 +55,14 @@ internal class OrderImplementation : IOrder
 
             if (courierToNotify != null)
             {
-                try
-                {
-                    //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "Miri.m.y1984@gmail.com"; // use courier email if available
-                    string emailToSend = "Miri.m.y1984@gmail.com"; // for testing purposes, send to my email
+                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "depart.ilv@gmail.com"; // use courier email if available
+                string emailToSend = "depart.ilv@gmail.com"; // for testing purposes, send to our company email
 
-                    EmailService.SendNotification(
-                        emailToSend,
-                        $"Alert: Order #{orderId} Cancelled",
-                        $"Hello {courierToNotify.Name},\n\nThe order #{orderId} assigned to you has been cancelled.\nPlease stop the delivery process.\n\nBest Regards,\nDelivery System"
-                    );
-                }
-                catch (Exception) { }
+                 EmailService.SendNotification(
+                     emailToSend,
+                     $"Alert: Order #{orderId} Cancelled",
+                     $"Hello {courierToNotify.Name},\n\nThe order #{orderId} assigned to you has been cancelled.\nPlease stop the delivery process.\n\nBest Regards,\nDelivery System"
+                 );
             }
         }
         catch (BO.BlDoesNotExistException)
@@ -336,7 +332,7 @@ internal class OrderImplementation : IOrder
         {
             BO.Courier? courierToNotify = null;
 
-            // בודקים אם הסטטוס משתנה ל-Cancelled (השתמשי באיות הנכון לפי ה-Enum שלך)
+            // If the order status is changing to Cancelled, find the assigned courier
             if (boOrder.StatusOfOrder == BO.OrderStatus.Cancelled)
             {
                 try
@@ -347,7 +343,7 @@ internal class OrderImplementation : IOrder
                         try
                         {
                             BO.Courier c = CourierManager.ReadCourier(item.Id);
-                            // בדיקה לפי OrderId
+                            // check by OrderId (or Id if that's how it's named in OrderInProgress)
                             if (c.CurrentOrder != null && c.CurrentOrder.OrderId == boOrder.Id)
                             {
                                 courierToNotify = c;
@@ -365,18 +361,15 @@ internal class OrderImplementation : IOrder
 
             if (courierToNotify != null)
             {
-                try
-                {
-                    //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "Miri.m.y1984@gmail.com";
-                    string emailToSend = "Miri.m.y1984@gmail.com";
+                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "depart.ilv@gmail.com"; // use courier email if available
+                string emailToSend = "depart.ilv@gmail.com"; // for testing purposes, send our company email
 
-                    EmailService.SendNotification(
-                        emailToSend,
-                        $"Update: Order #{boOrder.Id} Cancelled",
-                        $"Hello {courierToNotify.Name},\n\nThe order #{boOrder.Id} assigned to you has been cancelled by the admin.\nYou do not need to deliver it.\n\nBest Regards,\nDelivery System"
-                    );
-                }
-                catch (Exception) { }
+                EmailService.SendNotification(
+                     emailToSend,
+                     $"Update: Order #{boOrder.Id} Cancelled",
+                     $"Hello {courierToNotify.Name},\n\nThe order #{boOrder.Id} assigned to you has been cancelled by the admin.\nYou do not need to deliver it.\n\nBest Regards,\nDelivery System"
+                );
+
             }
         }
         // exception handling
@@ -404,217 +397,3 @@ internal class OrderImplementation : IOrder
     public void RemoveObserver(int id, Action observer) =>
         OrderManager.Observers.RemoveObserver(id, observer);
 }
-
-//namespace BlImplementation;
-//using BlApi;
-//using Helpers;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-
-//internal class OrderImplementation : IOrder
-//{
-//    public void Cancel(int requestingUserId, int orderId)
-//    {
-//        AdminManager.AssertAdmin(requestingUserId);
-
-//        try
-//        {
-//            // --- שלב 1: מציאת השליח (לוגיקה מתוקנת) ---
-//            BO.Courier? courierToNotify = null;
-//            try
-//            {
-//                // 1. שולפים את הרשימה הקלה (CourierInList)
-//                // שימוש ב-var פותר את בעיית הטיפוסים
-//                var allCouriersList = CourierManager.ReadAllCouriers();
-
-//                // 2. עוברים אחד אחד ושולפים את השליח המלא כדי לבדוק את ההזמנה שלו
-//                foreach (var courierSummary in allCouriersList)
-//                {
-//                    try
-//                    {
-//                        // שליפה מלאה
-//                        BO.Courier fullCourier = CourierManager.ReadCourier(courierSummary.Id);
-
-//                        // בדיקה: האם יש לו הזמנה בטיפול? האם זו ההזמנה שלנו?
-//                        // הערה: שיניתי מ-Id ל-OrderId. אם זה אדום, תבדקי ב-BO/OrderInProgress.cs איך קוראים לשדה
-//                        if (fullCourier.CurrentOrder != null && fullCourier.CurrentOrder.OrderId == orderId)
-//                        {
-//                            courierToNotify = fullCourier;
-//                            break; // מצאנו! אפשר לעצור
-//                        }
-//                    }
-//                    catch { continue; }
-//                }
-//            }
-//            catch { }
-
-//            // --- שלב 2: ביצוע הביטול ---
-//            OrderManager.CancelOrder(orderId);
-
-//            // --- שלב 3: שליחת מייל ---
-//            if (courierToNotify != null)
-//            {
-//                try
-//                {
-//                    string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "Miri.m.y1984@gmail.com";
-
-//                    EmailService.SendNotification(
-//                        emailToSend,
-//                        $"Alert: Order #{orderId} Cancelled",
-//                        $"Hello {courierToNotify.Name},\n\nThe order #{orderId} assigned to you has been cancelled.\nPlease stop the delivery process.\n\nBest Regards,\nDelivery System"
-//                    );
-//                }
-//                catch (Exception) { }
-//            }
-//        }
-//        catch (BO.BlDoesNotExistException) { throw; }
-//        catch (BO.BlInvalidOperationException) { throw; }
-//        catch (InvalidOperationException ex)
-//        {
-//            throw new BO.BlInvalidOperationException(ex.Message, ex);
-//        }
-//    }
-
-//    public void ChooseOrder(int requestingUserId, int courierId, int orderId)
-//    {
-//        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
-//        BO.Order boOrder = OrderManager.ReadOrder(orderId);
-//        if (boOrder.StatusOfOrder != BO.OrderStatus.Open)
-//            throw new BO.BlInvalidOperationException($"Order {orderId} is not available. Only 'Open' orders can be assigned.");
-//        BO.Courier boCourier = CourierManager.ReadCourier(courierId);
-//        if (!boCourier.IsActive)
-//            throw new BO.BlInvalidOperationException($"Courier {courierId} is inactive.");
-//        DeliveryManager.CreateNewDeliveryForOrder(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
-//    }
-
-//    public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId)
-//    {
-//        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
-//        DeliveryManager.CompleteDeliveryUpdate(courierId, deliveryId);
-//    }
-
-//    public void Create(int requestingUserId, BO.Order boOrder)
-//    {
-//        try { OrderManager.CreateOrder(boOrder); }
-//        catch (ArgumentException ex) { throw new BO.BlInvalidDataException($"Invalid data provided for order creation: {ex.Message}", ex); }
-//        catch (InvalidOperationException ex) { throw new BO.BlInvalidOperationException($"An internal error occurred during order creation.", ex); }
-//    }
-
-//    public void Delete(int requestingUserId, int orderId)
-//    {
-//        AdminManager.AssertAdmin(requestingUserId);
-//        throw new BO.BlInvalidOperationException($"Orders cannot be removed from the system.");
-//    }
-
-//    public IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null)
-//    {
-//        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
-//        IEnumerable<BO.ClosedDeliveryInList> closedDeliveries = DeliveryManager.GetClosedDeliveriesForCourier(courierId, filterByType);
-//        if (sortBy.HasValue) closedDeliveries = DeliveryManager.SortClosedDeliveries(closedDeliveries, sortBy.Value);
-//        else closedDeliveries = closedDeliveries.OrderBy(d => d.OrderClosedStatus);
-//        return closedDeliveries;
-//    }
-
-//    public int[] GetOrderSummaryQuantities(int requestingUserId)
-//    {
-//        AdminManager.AssertAdmin(requestingUserId);
-//        return OrderManager.GetOrderSummaryQuantities();
-//    }
-
-//    public BO.Order Read(int requestingUserId, int orderId)
-//    {
-//        try
-//        {
-//            OrderManager.AssertReadAuthorization(requestingUserId, orderId);
-//        }
-//        catch (BO.BlDoesNotExistException) { throw; }
-//        catch (BO.BlNotAuthorizedException) { throw; }
-//        catch (Exception ex) { throw new BO.BlInvalidOperationException($"An internal error occurred during authorization check for Order ID {orderId}.", ex); }
-
-//        try { return OrderManager.ReadOrder(orderId); }
-//        catch (BO.BlDoesNotExistException) { throw; }
-//    }
-
-//    public IEnumerable<BO.OrderInList> ReadAll(int requestingUserId, BO.OrderFieldSort? sortBy = null, BO.OrderFieldSort? filterBy = null, object? filterValue = null)
-//    {
-//        AdminManager.AssertAdmin(requestingUserId);
-//        IEnumerable<BO.OrderInList> orders = OrderManager.ReadAllOrders();
-//        if (filterBy.HasValue && filterValue != null) orders = OrderManager.FilterOrdersBy(orders, filterBy.Value, filterValue);
-//        if (sortBy.HasValue) orders = OrderManager.SortOrdersBy(orders, sortBy.Value);
-//        else orders = orders.OrderBy(o => o.StatusOfOrder);
-//        return orders;
-//    }
-
-//    public IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType, BO.OpenOrderFieldSort? sortBy)
-//    {
-//        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
-//        IEnumerable<BO.OpenOrderInList> openOrders = DeliveryManager.GetAvailableOpenOrders(courierId, filterByType);
-//        if (sortBy.HasValue) openOrders = DeliveryManager.SortOpenOrders(openOrders, sortBy.Value);
-//        else openOrders = openOrders.OrderByDescending(o => o.TimeLinessStatus);
-//        return openOrders;
-//    }
-
-//    public void Update(int requestingUserId, BO.Order boOrder)
-//    {
-//        AdminManager.AssertAdmin(requestingUserId);
-
-//        try
-//        {
-//            // --- שלב 1: מציאת השליח (אם הסטטוס הפך לבוטל) ---
-//            BO.Courier? courierToNotify = null;
-//            if (boOrder.StatusOfOrder == BO.OrderStatus.Cancelled)
-//            {
-//                try
-//                {
-//                    // אותה לוגיקה כמו ב-Cancel:
-//                    // 1. רשימה קלה
-//                    var allCouriersList = CourierManager.ReadAllCouriers();
-
-//                    // 2. חיפוש מלא
-//                    foreach (var courierSummary in allCouriersList)
-//                    {
-//                        try
-//                        {
-//                            BO.Courier fullCourier = CourierManager.ReadCourier(courierSummary.Id);
-//                            // בדיקה לפי OrderId (או Id אם ככה זה נקרא ב-OrderInProgress)
-//                            if (fullCourier.CurrentOrder != null && fullCourier.CurrentOrder.OrderId == boOrder.Id)
-//                            {
-//                                courierToNotify = fullCourier;
-//                                break;
-//                            }
-//                        }
-//                        catch { continue; }
-//                    }
-//                }
-//                catch { }
-//            }
-
-//            // --- שלב 2: עדכון ---
-//            OrderManager.UpdateOrder(boOrder);
-
-//            // --- שלב 3: שליחת מייל ---
-//            if (courierToNotify != null)
-//            {
-//                try
-//                {
-//                    string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "Miri.m.y1984@gmail.com";
-
-//                    EmailService.SendNotification(
-//                        emailToSend,
-//                        $"Update: Order #{boOrder.Id} Cancelled",
-//                        $"Hello {courierToNotify.Name},\n\nThe order #{boOrder.Id} assigned to you has been cancelled by the admin.\nYou do not need to deliver it.\n\nBest Regards,\nDelivery System"
-//                    );
-//                }
-//                catch (Exception) { }
-//            }
-//        }
-//        catch (DO.DalDoesNotExistException ex) { throw new BO.BlDoesNotExistException($"Order with ID {boOrder.Id} does not exist.", ex); }
-//        catch (InvalidOperationException ex) { throw new BO.BlInvalidOperationException(ex.Message, ex); }
-//    }
-
-//    public void AddObserver(Action listObserver) => OrderManager.Observers.AddListObserver(listObserver);
-//    public void AddObserver(int id, Action observer) => OrderManager.Observers.AddObserver(id, observer);
-//    public void RemoveObserver(Action listObserver) => OrderManager.Observers.RemoveListObserver(listObserver);
-//    public void RemoveObserver(int id, Action observer) => OrderManager.Observers.RemoveObserver(id, observer);
-//}
