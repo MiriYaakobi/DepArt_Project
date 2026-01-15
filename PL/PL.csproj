@@ -14,6 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\courier.png" />
+    <None Remove="Images\courier_removed.png" />
     <None Remove="Images\logo.png" />
   </ItemGroup>
 
@@ -22,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\courier.png" />
     <Resource Include="Images\logo.png" />
   </ItemGroup>
 

@@ -371,11 +371,11 @@
     <DeliveryEndTime>2026-01-13T13:24:12.2022173+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
-    <Id>1037</Id>
-    <OrderId>1030</OrderId>
-    <CourierId>946667997</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-12T02:15:12.1291738+02:00</DeliveryStartTime>
+    <Id>1039</Id>
+    <OrderId>1000</OrderId>
+    <CourierId>235753707</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-01-03T02:03:11.380523+02:00</DeliveryStartTime>
     <ActualDistance>0.8624720804820074</ActualDistance>
     <OrderClosedStatus xsi:nil="true" />
     <DeliveryEndTime xsi:nil="true" />
@@ -387,17 +387,17 @@
     <TypeOfOrder>Regular</TypeOfOrder>
     <DeliveryStartTime>2026-01-15T16:03:12.3769396+02:00</DeliveryStartTime>
     <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-01-15T17:29:13.5509405+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
-    <Id>1039</Id>
-    <OrderId>1000</OrderId>
-    <CourierId>235753707</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-03T02:03:11.380523+02:00</DeliveryStartTime>
+    <Id>1037</Id>
+    <OrderId>1030</OrderId>
+    <CourierId>946667997</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-01-12T02:15:12.1291738+02:00</DeliveryStartTime>
     <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-01-15T17:29:13.5509405+02:00</DeliveryEndTime>
   </Delivery>
 </ArrayOfDelivery>
