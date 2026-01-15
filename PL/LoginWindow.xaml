@@ -7,6 +7,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
+        Icon="/Images/logo.png"
         FontFamily="Segoe UI"
         MouseDown="Window_MouseDown">
     <Window.Resources>

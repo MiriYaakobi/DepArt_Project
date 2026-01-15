@@ -12,7 +12,6 @@
              DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}"
              Loaded="UserControl_Loaded"       
              Unloaded="UserControl_Unloaded">
-
     <UserControl.Resources>
         <local:DeliveryTypeCollection x:Key="DeliveryTypeCollectionKey" />
  

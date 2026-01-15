@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="Order Details" Height="690" Width="500"
         WindowStartupLocation="CenterScreen"
+        Icon="/Images/logo.png"
         ResizeMode="NoResize" Background="{StaticResource AliceBlue}">
 
     <Window.Resources>

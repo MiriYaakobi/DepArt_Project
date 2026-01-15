@@ -8,6 +8,7 @@
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI" FlowDirection="LeftToRight"
         Loaded="Window_Loaded"
+        Icon="/Images/logo.png"
         Closed="Window_Closed">
 
     <Window.Resources>
