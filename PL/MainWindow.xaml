@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Delivery System Dashboard" Height="850" Width="1350"
+        Title="Delivery System Dashboard" Height="850" Width="1400"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI" FlowDirection="LeftToRight"
         Loaded="Window_Loaded"
