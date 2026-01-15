@@ -170,7 +170,7 @@
     <Name>Yonatan Amir</Name>
     <Phone>057-500-4413</Phone>
     <Email>yonatan.amir@gmail.com</Email>
-    <Password>yonatan#amir11</Password>
+    <Password>15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225</Password>
     <IsActive>true</IsActive>
     <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2022-05-22T08:18:42.6753482+03:00</StartWorkTime>
@@ -219,5 +219,16 @@
     <TypeOfDelivery>ByFoot</TypeOfDelivery>
     <StartWorkTime>2022-09-20T02:00:45.6753482+03:00</StartWorkTime>
     <MaxDistance>4</MaxDistance>
+  </Courier>
+  <Courier>
+    <Id>329641617</Id>
+    <Name>odelya gil</Name>
+    <Phone>0534726556</Phone>
+    <Email>odelya@gmail.com</Email>
+    <Password>6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b</Password>
+    <IsActive>true</IsActive>
+    <TypeOfDelivery>Car</TypeOfDelivery>
+    <StartWorkTime>2026-01-15T15:38:39.8146394+02:00</StartWorkTime>
+    <MaxDistance>100</MaxDistance>
   </Courier>
 </ArrayOfCourier>
