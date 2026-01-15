@@ -131,7 +131,7 @@
         <Border Style="{StaticResource LoginCard}" Margin="30">
             <Grid>
                 <Button Style="{StaticResource CloseBtnStyle}" 
-                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" IsCancel="True"
                         Command="{Binding ExitCommand}"/>
 
                 <StackPanel Margin="40,20,40,40" VerticalAlignment="Center">
@@ -160,7 +160,7 @@
                     <PasswordBox x:Name="pbPassword" Style="{StaticResource PassBox}" Margin="0,0,0,30"/>
 
                     <Button Content="Login" Style="{StaticResource LoginButtonStyle}"
-                            Command="{Binding LoginCommand}"
+                            Command="{Binding LoginCommand}" IsDefault="True"
                             CommandParameter="{Binding ElementName=pbPassword}"/>
 
                 </StackPanel>
