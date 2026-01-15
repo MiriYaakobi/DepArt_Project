@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace PL;
 
@@ -13,9 +14,42 @@ namespace PL;
 /// class is designed to handle user interactions, update the UI in response to data changes, and ensure synchronization
 /// between the UI and the underlying data model. It also includes mechanisms for observing changes in the system clock
 /// and configuration.</remarks>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+
+ 
+    private Visibility _dashboardVisibility = Visibility.Visible;
+    public Visibility DashboardVisibility { get => _dashboardVisibility; set { _dashboardVisibility = value; OnPropertyChanged(); } }
+
+    private Visibility _contentVisibility = Visibility.Collapsed;
+    public Visibility ContentVisibility { get => _contentVisibility; set { _contentVisibility = value; OnPropertyChanged(); } }
+
+    private Visibility _loadingVisibility = Visibility.Collapsed;
+    public Visibility LoadingVisibility { get => _loadingVisibility; set { _loadingVisibility = value; OnPropertyChanged(); } }
+
+    private object? _mainContent = null;
+    public object? MainContent { get => _mainContent; set { _mainContent = value; OnPropertyChanged(); } }
+
+  
+    private double _openHeight; public double OpenHeight { get => _openHeight; set { _openHeight = value; OnPropertyChanged(); } }
+    private string _openVal = "0"; public string OpenVal { get => _openVal; set { _openVal = value; OnPropertyChanged(); } }
+
+    private double _inProgressHeight; public double InProgressHeight { get => _inProgressHeight; set { _inProgressHeight = value; OnPropertyChanged(); } }
+    private string _inProgressVal = "0"; public string InProgressVal { get => _inProgressVal; set { _inProgressVal = value; OnPropertyChanged(); } }
+
+    private double _deliveredHeight; public double DeliveredHeight { get => _deliveredHeight; set { _deliveredHeight = value; OnPropertyChanged(); } }
+    private string _deliveredVal = "0"; public string DeliveredVal { get => _deliveredVal; set { _deliveredVal = value; OnPropertyChanged(); } }
+
+    private double _refusedHeight; public double RefusedHeight { get => _refusedHeight; set { _refusedHeight = value; OnPropertyChanged(); } }
+    private string _refusedVal = "0"; public string RefusedVal { get => _refusedVal; set { _refusedVal = value; OnPropertyChanged(); } }
+
+    private double _cancelledHeight; public double CancelledHeight { get => _cancelledHeight; set { _cancelledHeight = value; OnPropertyChanged(); } }
+    private string _cancelledVal = "0"; public string CancelledVal { get => _cancelledVal; set { _cancelledVal = value; OnPropertyChanged(); } }
 
     /// <summary>
     /// Gets or sets the current time value.
@@ -33,15 +67,15 @@ public partial class MainWindow : Window
     /// <summary>
     /// Gets or sets the configuration settings for the application.
     /// </summary>
-    public BO.Config Configuration
+    public BO.Config? Configuration
     {
-        get { return (BO.Config)GetValue(ConfigurationProperty); }
+        get { return (BO.Config?)GetValue(ConfigurationProperty); }
         set { SetValue(ConfigurationProperty, value); }
     }
 
     //dependency property for Configuration
     public static readonly DependencyProperty ConfigurationProperty =
-        DependencyProperty.Register("Configuration", typeof(BO.Config), typeof(MainWindow), new PropertyMetadata(null));
+        DependencyProperty.Register("Configuration", typeof(BO.Config), typeof(MainWindow), new PropertyMetadata());
 
     //ctor
     public MainWindow()
@@ -123,16 +157,40 @@ public partial class MainWindow : Window
     {
         try
         {
-            //get order quantities summary
-            int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
+            if (Configuration == null) 
+                return;
 
-            UpdateSingleBar(barOpen, valOpen, quantities[(int)BO.OrderStatus.Open], quantities);
-            UpdateSingleBar(barInProgress, valInProgress, quantities[(int)BO.OrderStatus.InProgress], quantities);
-            UpdateSingleBar(barDelivered, valDelivered, quantities[(int)BO.OrderStatus.Delivered], quantities);
-            UpdateSingleBar(barRefused, valRefused, quantities[(int)BO.OrderStatus.Refused], quantities);
-            UpdateSingleBar(barCancelled, valCancelled, quantities[(int)BO.OrderStatus.Cancelled], quantities);
+            int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
+            int maxVal = quantities.Max();
+            if (maxVal == 0) maxVal = 1;
+
+            UpdateBarData(quantities[(int)BO.OrderStatus.Open], maxVal, v => OpenVal = v, h => OpenHeight = h);
+            UpdateBarData(quantities[(int)BO.OrderStatus.InProgress], maxVal, v => InProgressVal = v, h => InProgressHeight = h);
+            UpdateBarData(quantities[(int)BO.OrderStatus.Delivered], maxVal, v => DeliveredVal = v, h => DeliveredHeight = h);
+            UpdateBarData(quantities[(int)BO.OrderStatus.Refused], maxVal, v => RefusedVal = v, h => RefusedHeight = h);
+            UpdateBarData(quantities[(int)BO.OrderStatus.Cancelled], maxVal, v => CancelledVal = v, h => CancelledHeight = h);
         }
         catch (Exception) { }
+    }
+
+    /// <summary>
+    /// Updates the bar data for the specified order status.
+    /// </summary>
+    /// <param name="value">The current value of the order status.</param>
+    /// <param name="maxValue">The maximum value among all order statuses.</param>
+    /// <param name="SetVal">Action to set the textual representation of the value.</param>
+    /// <param name="SetHeight">Action to set the height of the bar.</param>
+    private void UpdateBarData(int value, int maxValue, Action<string> SetVal, Action<double> SetHeight)
+    {
+        SetVal(value.ToString());
+
+        double maxHeight = 110;
+        double newHeight = ((double)value / maxValue) * maxHeight;
+
+        if (value > 0 && newHeight < 20) newHeight = 20;
+        if (value == 0) newHeight = 5;
+
+        SetHeight(newHeight);
     }
 
     /// <summary>
@@ -158,7 +216,7 @@ public partial class MainWindow : Window
             maxValue = 1;
 
         // Calculate new height
-        double maxHeight = 150;
+        double maxHeight = 115;
         double newHeight = ((double)value / maxValue) * maxHeight;
 
         // Ensure minimum height for non-zero values
@@ -222,7 +280,7 @@ public partial class MainWindow : Window
     private async void BtnInit_Click(object sender, RoutedEventArgs e)
     {
         //check if a background process is already running
-        if (LoadingOverlay.Visibility == Visibility.Visible)
+        if (LoadingVisibility == Visibility.Visible)
             return;
 
         // Confirm initialization
@@ -237,7 +295,7 @@ public partial class MainWindow : Window
             //lock the current button
             if (btn != null) btn.IsEnabled = false;
 
-            LoadingOverlay.Visibility = Visibility.Visible;
+            LoadingVisibility = Visibility.Visible;
 
             //temp disconnection of observers to avoid multiple updates during init
             s_bl.Admin.RemoveConfigObserver(configObserver);
@@ -255,25 +313,27 @@ public partial class MainWindow : Window
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
 
+            clockObserver(); // Update time immediately after init
+
             // Refresh configuration and graph
             Configuration = s_bl.Admin.GetConfig();
 
             RefreshGraph();
 
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
 
             CustomMessageBox.Show("Database initialized successfully.", "Done");
         }
         catch (Exception ex)
         {
             // Hide loading overlay and show error message
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
             CustomMessageBox.Show("Error: " + ex.Message, "Error");
         }
         finally
         {
             //added block to ensure UI is always released
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
             if (btn != null) btn.IsEnabled = true;
         }
     }
@@ -290,7 +350,7 @@ public partial class MainWindow : Window
     private async void BtnReset_Click(object sender, RoutedEventArgs e)
     {
         //check if a background process is already running
-        if (LoadingOverlay.Visibility == Visibility.Visible)
+        if (LoadingVisibility == Visibility.Visible)
             return;
 
         // Confirm reset
@@ -305,7 +365,7 @@ public partial class MainWindow : Window
             //lock the current button
             if (btn != null) btn.IsEnabled = false;
 
-            LoadingOverlay.Visibility = Visibility.Visible;
+            LoadingVisibility = Visibility.Visible;
 
             // temp disconnection of observers to avoid multiple updates during reset
             s_bl.Admin.RemoveConfigObserver(configObserver);
@@ -323,28 +383,31 @@ public partial class MainWindow : Window
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
 
+            clockObserver(); // Update time immediately after init
+
             // Refresh configuration and graph
             Configuration = s_bl.Admin.GetConfig();
 
             RefreshGraph();
 
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
 
             CustomMessageBox.Show("Database reset successfully.", "Done");
         }
         catch (Exception ex)
         {
             // Hide loading overlay and show error message
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
             CustomMessageBox.Show("Error: " + ex.Message, "Error");
         }
         finally
         {
             //added block to ensure UI is always released
-            LoadingOverlay.Visibility = Visibility.Collapsed;
+            LoadingVisibility = Visibility.Collapsed;
             if (btn != null) btn.IsEnabled = true;
         }
     }
+
     /// <summary>
     /// Displays the dashboard by hiding the main content and making the dashboard visible.
     /// </summary>
@@ -352,10 +415,8 @@ public partial class MainWindow : Window
     /// ensures the dashboard grid is visible. It also refreshes the graph displayed on the dashboard.</remarks>
     private void ShowDashboard()
     {
-        MainContentControl.Visibility = Visibility.Collapsed;
-        MainContentControl.Content = null;
-
-        DashboardGrid.Visibility = Visibility.Visible;
+        DashboardVisibility = Visibility.Visible;
+        ContentVisibility = Visibility.Collapsed;
         RefreshGraph();
     }
 
@@ -373,15 +434,18 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private void BtnCouriers_Click(object sender, RoutedEventArgs e)
     {
-        var courierList = new PL.Courier.CourierListWindow(Configuration.AdminId);
+        if (Configuration == null) 
+            return;
 
-        //subscribe to dashboard request event
+        var courierList = new PL.Courier.CourierListWindow(Configuration.AdminId);
         courierList.RequestDashboard += (s, args) => ShowDashboard();
         courierList.RequestOrderList += (s, args) => BtnList_Click(this, new RoutedEventArgs());
 
-        MainContentControl.Content = courierList;
-        MainContentControl.Visibility = Visibility.Visible;
-        DashboardGrid.Visibility = Visibility.Collapsed;
+        // הצבת התוכן במשתנה MainContent
+        MainContent = courierList;
+
+        DashboardVisibility = Visibility.Collapsed;
+        ContentVisibility = Visibility.Visible;
     }
 
     /// <summary>
@@ -401,15 +465,17 @@ public partial class MainWindow : Window
     /// </summary>
     private void BtnList_Click(object sender, RoutedEventArgs e)
     {
-        var orderList = new PL.Order.OrderListWindow(Configuration.AdminId);
+        if (Configuration == null) 
+            return;
 
-        // הרשמה לאירועים - התיקון הוא בשליחת null או ארגומנט חדש
+        var orderList = new PL.Order.OrderListWindow(Configuration.AdminId);
         orderList.RequestDashboard += (s, args) => ShowDashboard();
         orderList.RequestCouriers += (s, args) => BtnCouriers_Click(this, new RoutedEventArgs());
 
-        MainContentControl.Content = orderList;
-        MainContentControl.Visibility = Visibility.Visible;
-        DashboardGrid.Visibility = Visibility.Collapsed;
+        MainContent = orderList;
+
+        DashboardVisibility = Visibility.Collapsed;
+        ContentVisibility = Visibility.Visible;
     }
 
     private void BtnAddMinute_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
