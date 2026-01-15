@@ -58,7 +58,7 @@ public partial class OrderWindow : Window
                 IsUpdateMode = false;
             }
         }
-
+        CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
         DataContext = this;
     }
 
@@ -90,6 +90,22 @@ public partial class OrderWindow : Window
         catch (Exception ex)
         {
             CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
+        }
+    }
+
+    /// <summary>
+    /// returns true if the order fields are editable based on the mode and order status.
+    /// </summary>
+    public bool IsEditable
+    {
+        get
+        {
+            //if it's add mode - always editable
+            if (!IsUpdateMode)
+                return true;
+
+            //can edit only if order is open
+            return CurrentOrder != null && CurrentOrder.StatusOfOrder == BO.OrderStatus.Open;
         }
     }
 

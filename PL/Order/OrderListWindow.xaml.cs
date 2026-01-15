@@ -124,12 +124,12 @@ namespace PL.Order
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-            // בדיקת בטיחות: האם השורה בטבלה תקינה?
+            //safty check to ensure sender is a button and its DataContext is an OrderInList
             if (sender is FrameworkElement element && element.DataContext is BO.OrderInList orderToCancel)
             {
-                // בדיקה אם ההזמנה סגורה (הגנה כפולה)
+                //if the order is already delivered, cancelled, or refused, we cannot cancel it
                 if (orderToCancel.StatusOfOrder == BO.OrderStatus.Delivered ||
-                    orderToCancel.StatusOfOrder == BO.OrderStatus.Cancelled || // הקפדתי על הכתיב Cancelled
+                    orderToCancel.StatusOfOrder == BO.OrderStatus.Cancelled ||
                     orderToCancel.StatusOfOrder == BO.OrderStatus.Refused)
                 {
                     CustomMessageBox.Show("Cannot cancel a closed order.", "Error");

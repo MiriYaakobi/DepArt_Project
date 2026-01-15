@@ -253,22 +253,22 @@
 
                     <StackPanel Grid.Column="0" Grid.Row="0">
                         <TextBlock Text="Customer Name"/>
-                        <TextBox Text="{Binding CurrentOrder.CustomerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
+                        <TextBox Text="{Binding CurrentOrder.CustomerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" IsEnabled="{Binding IsEditable}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Grid.Row="0">
                         <TextBlock Text="Customer Phone"/>
-                        <TextBox Text="{Binding CurrentOrder.CustomerPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
+                        <TextBox Text="{Binding CurrentOrder.CustomerPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" IsEnabled="{Binding IsEditable}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="0" Grid.Row="1">
                         <TextBlock Text="Full Address"/>
-                        <TextBox Text="{Binding CurrentOrder.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
+                        <TextBox Text="{Binding CurrentOrder.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" IsEnabled="{Binding IsEditable}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Grid.Row="1">
                         <TextBlock Text="Order Type"/>
-                        <ComboBox SelectedItem="{Binding CurrentOrder.TypeOfOrder, Mode=TwoWay}"
+                        <ComboBox SelectedItem="{Binding CurrentOrder.TypeOfOrder, Mode=TwoWay}" IsEnabled="{Binding IsEditable}"
                                   ItemsSource="{Binding OrderTypes}"
                                   Style="{StaticResource PurpleComboBox}"
                                   Height="35" Margin="0,0,0,20"/>
@@ -276,12 +276,12 @@
 
                     <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2">
                         <TextBlock Text="Verbal Description"/>
-                        <TextBox Text="{Binding CurrentOrder.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Text="{Binding CurrentOrder.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="4">
                         <TextBlock Text="Package Details (Weight, Volume, Fragile...)"/>
-                        <TextBox Text="{Binding CurrentOrder.PackageDetails, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding CurrentOrder.PackageDetails, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}"
                                  Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </Grid>
@@ -380,7 +380,7 @@
 
             <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="{Binding IsUpdateMode, Converter={StaticResource BoolToTitleConverterKey}}" 
-                        Click="BtnAddUpdate_Click"
+                        Click="BtnAddUpdate_Click" IsEnabled="{Binding IsEditable}"
                         Width="140" Height="45" Margin="10"
                         Background="{StaticResource DeepPurple}" Foreground="White" FontWeight="Bold" FontSize="16"
                         BorderThickness="0" Cursor="Hand">
