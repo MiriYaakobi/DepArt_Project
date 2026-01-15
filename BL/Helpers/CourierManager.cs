@@ -27,6 +27,7 @@ internal static class CourierManager
     internal static void CreateCourier(BO.Courier courier)
     {
         // Validate input by calling the helper method
+        ValidatePassword(courier.Password!);
         ValidateCourierData(courier);
 
         string hashedPassword = Tools.HashPassword(courier.Password!);
@@ -577,9 +578,8 @@ internal static class CourierManager
         if (string.IsNullOrEmpty(boCourier.Email) || !Regex.IsMatch(boCourier.Email, emailPattern))
             throw new BO.BlInvalidDataException($"Email address '{boCourier.Email}' is not in a valid format.");
 
-        // Validate Password (at least 8 characters)
-        if (string.IsNullOrEmpty(boCourier.Password) || boCourier.Password.Length < 8)
-            throw new BO.BlInvalidDataException($"Password must contain at least 8 characters.");
+        if (!string.IsNullOrEmpty(boCourier.Password) && boCourier.Password.Length < 8)
+            throw new BO.BlInvalidDataException("Password must contain at least 8 characters.");
 
         // Validate MaxDistance
         if (boCourier.MaxDistance.HasValue)
@@ -604,5 +604,16 @@ internal static class CourierManager
         // Validate TypeOfDelivery
         if (!Enum.IsDefined(typeof(BO.DeliveryType), boCourier.TypeOfDelivery))
             throw new BO.BlInvalidDataException($"The provided Delivery Type ({boCourier.TypeOfDelivery}) is not a valid option.");
+    }
+
+    /// <summary>
+    /// validates the password according to defined rules.
+    /// </summary>
+    /// <param name="password"></param>
+    /// <exception cref="BO.BlInvalidDataException"></exception>
+    internal static void ValidatePassword(string password)
+    {
+        if (string.IsNullOrEmpty(password) || password.Length < 8)
+            throw new BO.BlInvalidDataException("Password must contain at least 8 characters.");
     }
 }

@@ -141,13 +141,6 @@ namespace PL.Courier
                     return;
                 }
 
-                if (string.IsNullOrEmpty(CurrentCourier.Password))
-                {
-                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(CurrentCourier.Id, CurrentCourier.Id)!;
-
-                    CurrentCourier.Password = originalCourierFromDb!.Password;
-                }
-
                 if (savedCourier.CurrentOrder != null &&
                     savedCourier.TypeOfDelivery != CurrentCourier.TypeOfDelivery)
                 {
@@ -156,10 +149,22 @@ namespace PL.Courier
                     return;
                 }
 
+                if (!string.IsNullOrEmpty(_enteredPassword))
+                {
+                    CurrentCourier.Password = _enteredPassword;
+                }
+                else
+                {
+                    BO.Courier originalCourierFromDb =
+                        s_bl.Courier.Read(CurrentCourier.Id, CurrentCourier.Id)!;
+
+                    CurrentCourier.Password = originalCourierFromDb.Password;
+                }
+
                 s_bl.Courier.Update(_courierId, CurrentCourier);
                 CustomMessageBox.Show("Profile updated successfully!", "Success");
 
-                RefreshCourierState(); // יחזיר את הכוכביות
+                RefreshCourierState();
             }
             catch (Exception ex)
             {

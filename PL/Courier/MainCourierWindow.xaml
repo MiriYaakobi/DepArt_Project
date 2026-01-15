@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:PL" 
         mc:Ignorable="d"
-        Title="Courier Dashboard" Height="650" Width="950"
+        Title="Courier Dashboard" Height="850" Width="1400"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         Background="{StaticResource AliceBlue}">
 
@@ -187,16 +187,6 @@
                 <TextBlock Text="{Binding CurrentCourier.StartWorkTime, StringFormat='Member Since: {0:dd/MM/yyyy}'}"
                            Visibility="{Binding IsUpdateMode, Converter={StaticResource BoolToVisConverter}}"
                            Foreground="White" FontSize="14" HorizontalAlignment="Left" Margin="61,55,0,0"/>
-
-                <Button Content="Logout" HorizontalAlignment="Right" Margin="0,10,30,0"
-                        Click="BtnLogout_Click"
-                        Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White" Padding="15,5" Cursor="Hand" Width="70" Height="30" RenderTransformOrigin="0.59,-0.445">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
             </Grid>
         </Border>
 
@@ -214,11 +204,12 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,10,0">
                             <TextBlock Text="ID" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding CurrentCourier.Id, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+
+                        <StackPanel Grid.Column="1" Grid.Row="0" Margin="10,0,0,0">
                             <TextBlock Text="Activity" Style="{StaticResource LabelStyle}"/>
                             <TextBox Text="{Binding CurrentCourier.IsActive, StringFormat='Active: {0}'}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
                         </StackPanel>
@@ -250,6 +241,12 @@
 
                     <TextBlock Text="Max Distance (km)" Style="{StaticResource LabelStyle}"/>
                     <TextBox Text="{Binding CurrentCourier.MaxDistance}" Style="{StaticResource InputStyle}" Margin="0,0,0,25"/>
+
+                    <TextBlock Text="On-Time Deliveries" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.OnTimeDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray" Margin="0,0,0,30"/>
+
+                    <TextBlock Text="Late Deliveries" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.LateDeliveries}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray" Margin="0,0,0,20"/>
 
                     <Button Content="Update Details" Click="BtnUpdate_Click"
                             Background="#4A4A6A" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
