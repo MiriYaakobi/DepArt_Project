@@ -7,55 +7,48 @@ using System.Windows.Controls;
 
 namespace PL.Courier
 {
-    /// <summary>
-    /// Interaction logic for CourierHistoryView.xaml
-    /// </summary>
     public partial class CourierHistoryView : UserControl
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
 
-        // =================================================================
-        // הוספה חדשה (1): משתנה עבור פרטי השליח בסרגל הצד
-        // =================================================================
+        // משתנה עבור פרטי השליח בסרגל הצד
         public BO.Courier CurrentCourier
         {
             get { return (BO.Courier)GetValue(CurrentCourierProperty); }
             set { SetValue(CurrentCourierProperty, value); }
         }
-
         public static readonly DependencyProperty CurrentCourierProperty =
             DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierHistoryView));
-        // =================================================================
 
-
-        // מזהה השליח הנוכחי
+        // מזהה השליח
         public int CourierId
         {
             get { return (int)GetValue(CourierIdProperty); }
             set { SetValue(CourierIdProperty, value); }
         }
-
         public static readonly DependencyProperty CourierIdProperty =
             DependencyProperty.Register("CourierId", typeof(int), typeof(CourierHistoryView), new PropertyMetadata(0, OnCourierIdChanged));
 
         // רשימת המשלוחים לתצוגה
         public ObservableCollection<BO.ClosedDeliveryInList> DeliveriesList { get; set; } = new();
 
-        // אפשרויות לסינון ב-ComboBox
-        public IEnumerable<BO.OrderEndStatus> StatusOptions { get; } =
-            Enum.GetValues(typeof(BO.OrderEndStatus)).Cast<BO.OrderEndStatus>();
+        // רשימת הסינון - כוללת את "All" + ה-Enum
+        // שיניתי ל-IEnumerable<object> כדי שיוכל להכיל גם סטרינג וגם Enum
+        public IEnumerable<object> StatusOptions { get; } =
+            new List<object> { "All" }
+            .Concat(Enum.GetValues(typeof(BO.OrderEndStatus)).Cast<object>())
+            .ToList();
 
-        // הפרופרטי שנבחר בסינון
-        public BO.OrderEndStatus? SelectedStatusFilter
+        // הבחירה הנוכחית בסינון
+        public object SelectedStatusFilter
         {
-            get { return (BO.OrderEndStatus?)GetValue(SelectedStatusFilterProperty); }
+            get { return GetValue(SelectedStatusFilterProperty); }
             set { SetValue(SelectedStatusFilterProperty, value); }
         }
-
         public static readonly DependencyProperty SelectedStatusFilterProperty =
-            DependencyProperty.Register("SelectedStatusFilter", typeof(BO.OrderEndStatus?), typeof(CourierHistoryView));
+            DependencyProperty.Register("SelectedStatusFilter", typeof(object), typeof(CourierHistoryView), new PropertyMetadata("All")); // ברירת מחדל "All"
 
-        // הגדרת אירועים (Events) כדי שהחלון הראשי ידע מתי להחליף מסך
+        // אירועי ניווט
         public event EventHandler? RequestDashboardView;
         public event EventHandler? RequestPickOrderView;
 
@@ -63,9 +56,9 @@ namespace PL.Courier
         {
             InitializeComponent();
             DataContext = this;
+            SelectedStatusFilter = "All"; // שמים ברירת מחדל
         }
 
-        // כאשר ה-ID משתנה (למשל בכניסה הראשונה), נטען את הנתונים
         private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is CourierHistoryView view)
@@ -80,22 +73,21 @@ namespace PL.Courier
 
             try
             {
-                // =================================================================
-                // הוספה חדשה (2): טעינת פרטי השליח עבור הסרגל
-                // =================================================================
+                // טעינת פרטי השליח לסרגל
                 CurrentCourier = s_bl.Courier.Read(CourierId, CourierId)!;
-                // =================================================================
 
-                // קריאה לפונקציה ב-BL כפי שהוגדר בממשק
+                // שליפת כל המשלוחים
                 IEnumerable<BO.ClosedDeliveryInList> list = s_bl.Order.GetClosedDeliveriesForCourier(CourierId, CourierId);
 
-                // סינון לוגי בצד התצוגה (אם נבחר פילטר)
-                if (SelectedStatusFilter.HasValue)
+                // --- לוגיקת הסינון החדשה ---
+                // אם זה לא "All" וגם לא null -> תסנן
+                if (SelectedStatusFilter is BO.OrderEndStatus statusEnum)
                 {
-                    list = list.Where(d => d.OrderClosedStatus == SelectedStatusFilter.Value);
+                    list = list.Where(d => d.OrderClosedStatus == statusEnum);
                 }
+                // אם זה "All" (כסטרינג) או null -> אל תעשה כלום (תציג הכל)
 
-                // עדכון הרשימה הנצפית
+                // עדכון הרשימה
                 DeliveriesList.Clear();
                 foreach (var item in list)
                 {
@@ -108,8 +100,6 @@ namespace PL.Courier
             }
         }
 
-        // --- אירועי ממשק משתמש ---
-
         private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             RefreshList();
@@ -117,11 +107,9 @@ namespace PL.Courier
 
         private void BtnClearFilter_Click(object sender, RoutedEventArgs e)
         {
-            SelectedStatusFilter = null;
+            SelectedStatusFilter = "All"; // חזרה למצב הכל
             RefreshList();
         }
-
-        // --- ניווט ---
 
         private void BtnDashboard_Click(object sender, RoutedEventArgs e)
         {
