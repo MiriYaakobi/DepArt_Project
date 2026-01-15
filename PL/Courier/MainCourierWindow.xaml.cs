@@ -103,7 +103,7 @@ namespace PL.Courier
 
             historyView.RequestPickOrderView += (s, args) =>
             {
-                CustomMessageBox.Show("Pick Order Screen - Coming Soon", "Info");
+                BtnFindOrder_Click(sender, e);
             };
 
             DashboardVisibility = Visibility.Collapsed;
@@ -113,7 +113,38 @@ namespace PL.Courier
 
         private void BtnFindOrder_Click(object sender, RoutedEventArgs e)
         {
-            CustomMessageBox.Show("Pick Order Screen - Coming Soon", "Info");
+            // 1. בדיקה אם לשליח כבר יש הזמנה פעילה (אופציונלי, תלוי בדרישות)
+            if (CurrentCourier.CurrentOrder != null)
+            {
+                CustomMessageBox.Show("You already have an active order. Complete it first!", "Alert");
+                return;
+            }
+
+            // 2. יצירת המסך
+            var pickOrderView = new PL.Courier.CourierPickOrderView();
+            pickOrderView.CourierId = _courierId;
+
+            // 3. הרשמה לאירועי ניווט (חזרה לדשבורד או להיסטוריה)
+            pickOrderView.RequestDashboardView += (s, args) =>
+            {
+                MainViewContent = null;
+                ContentVisibility = Visibility.Collapsed;
+                DashboardVisibility = Visibility.Visible;
+
+                // חשוב: לרענן את מצב השליח כי אולי הוא בחר הזמנה!
+                RefreshCourierState();
+            };
+
+            pickOrderView.RequestHistoryView += (s, args) =>
+            {
+                // מעבר ישיר מהבחירה להיסטוריה
+                BtnHistory_Click(sender, e);
+            };
+
+            // 4. הצגת המסך
+            DashboardVisibility = Visibility.Collapsed;
+            MainViewContent = pickOrderView;
+            ContentVisibility = Visibility.Visible;
         }
 
         // --- שאר הפונקציות ---
