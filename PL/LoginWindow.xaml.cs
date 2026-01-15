@@ -84,10 +84,7 @@ namespace PL
                     BO.Courier? courier = s_bl.Courier.Read(idVal, idVal);
                     if (courier != null)
                     {
-                        CustomMessageBox.Show($"Welcome, {courier.Name}!", "Success", MessageType.Success);
-
-                        // פתיחת חלון השליח (בינתיים בהערה עד שניצור אותו, או שתורידי את ההערה אם יצרת)
-                        //new CourierWindow(courier.Id).Show();
+                        new MainCourierWindow(courier.Id).Show();
                     }
                 }
 

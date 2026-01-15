@@ -3,10 +3,308 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PL.Courier"
+        xmlns:converters="clr-namespace:PL" 
         mc:Ignorable="d"
-        Title="MainCourierWindow" Height="450" Width="800">
+        Title="Courier Dashboard" Height="650" Width="950"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="{StaticResource AliceBlue}">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>
+
+        <converters:NullToVisibilityConverter x:Key="NullToVisConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+
+        <Style TargetType="TextBlock" x:Key="LabelStyle">
+            <Setter Property="Foreground" Value="#808080"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style TargetType="TextBox" x:Key="InputStyle">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#8986CC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="30" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="10" Background="White" BorderBrush="#8986CC" BorderThickness="1" />
+                <Path x:Name="Arrow" Grid.Column="1" Fill="#8986CC" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,0 L4,4 L8,0" />
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Property="Background" Value="#F0F8FF"/>
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#6A5ACD"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <Style x:Key="ModernComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="bd" Background="Transparent" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E6E6FA"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#8986CC"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="ModernComboBoxTemplate" TargetType="ComboBox">
+            <Grid>
+                <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Grid.Column="2" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"/>
+                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="15,0,30,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                <TextBox x:Name="PART_EditableTextBox" Style="{x:Null}" Template="{x:Null}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15,0,30,0" Focusable="True" Background="Transparent" Visibility="Hidden" IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                    <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                        <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#8986CC" CornerRadius="10" Margin="0,5,0,0">
+                            <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Popup>
+            </Grid>
+        </ControlTemplate>
+
+        <Style TargetType="ComboBox" x:Key="PurpleComboBox">
+            <Setter Property="Template" Value="{StaticResource ModernComboBoxTemplate}"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Foreground" Value="#4A4A6A"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItem}"/>
+        </Style>
+
+        <DataTemplate x:Key="ActiveOrderTemplate">
+            <Border Background="White" CornerRadius="15" Padding="20">
+                <Border.Effect>
+                    <DropShadowEffect Color="#E0E0E0" BlurRadius="15" ShadowDepth="0"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="📦 Order In Progress" FontSize="18" FontWeight="Bold" Foreground="#8986CC" Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Order ID:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OrderId}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="1" Text="Address:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Address}" FontWeight="Bold" TextWrapping="Wrap"/>
+
+                        <TextBlock Grid.Row="2" Text="Customer:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CustomerName}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="3" Text="Phone:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CustomerPhone}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="4" Text="Opened At:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding OrderOpeningTime, StringFormat='dd/MM HH:mm'}" FontWeight="Bold"/>
+                    </Grid>
+
+                    <Separator Margin="0,15"/>
+
+                    <TextBlock Text="Action:" Style="{StaticResource LabelStyle}"/>
+
+                    <Button Content="✅ Mark as Delivered" Click="BtnFinishOrder_Click"
+                            Margin="0,10,0,0"
+                            Background="#8986CC" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="22"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+    </Window.Resources>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.ColumnSpan="2" Background="{StaticResource DeepPurple}">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <TextBlock Text="👋🏻 Hello, " FontWeight="Bold" FontSize="24" Foreground="White"/>
+                    <TextBlock Text="{Binding CurrentCourier.Name}" FontSize="24" Foreground="White"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding CurrentCourier.StartWorkTime, StringFormat='Member Since: {0:dd/MM/yyyy}'}"
+                           Visibility="{Binding IsUpdateMode, Converter={StaticResource BoolToVisConverter}}"
+                           Foreground="White" FontSize="14" HorizontalAlignment="Left" Margin="61,55,0,0"/>
+
+                <Button Content="Logout" HorizontalAlignment="Right" Margin="0,10,30,0"
+                        Click="BtnLogout_Click"
+                        Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White" Padding="15,5" Cursor="Hand" Width="70" Height="30" RenderTransformOrigin="0.59,-0.445">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Grid.Column="0" Margin="20" Background="White" CornerRadius="15" Padding="25">
+            <Border.Effect>
+                <DropShadowEffect Color="#E0E0E0" BlurRadius="10" Opacity="0.5"/>
+            </Border.Effect>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="👤 My Profile" FontSize="18" FontWeight="Bold" Foreground="#4A4A6A" Margin="0,0,0,20"/>
+
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="ID" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding CurrentCourier.Id, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                            <TextBlock Text="Activity" Style="{StaticResource LabelStyle}"/>
+                            <TextBox Text="{Binding CurrentCourier.IsActive, StringFormat='Active: {0}'}" IsReadOnly="True" Style="{StaticResource InputStyle}" Foreground="Gray"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Full Name" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.Name}" Style="{StaticResource InputStyle}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Phone Number" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.Phone}" Style="{StaticResource InputStyle}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Email" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.Email}" Style="{StaticResource InputStyle}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Password" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding VisualPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputStyle}" 
+                             Margin="0,0,0,5" PreviewTextInput="Password_PreviewTextInput" PreviewKeyDown="Password_PreviewKeyDown">
+
+                        <TextBox.CommandBindings>
+                            <CommandBinding Command="ApplicationCommands.Copy" CanExecute="CommandBinding_CanExecute"/>
+                            <CommandBinding Command="ApplicationCommands.Cut" CanExecute="CommandBinding_CanExecute"/>
+                            <CommandBinding Command="ApplicationCommands.Paste" CanExecute="CommandBinding_CanExecute"/>
+                        </TextBox.CommandBindings>
+                    </TextBox>
+
+                    <TextBlock Text="Shipping Type" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox ItemsSource="{Binding DeliveryTypes}" SelectedItem="{Binding CurrentCourier.TypeOfDelivery}" 
+                              Style="{StaticResource PurpleComboBox}" Height="35" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Max Distance (km)" Style="{StaticResource LabelStyle}"/>
+                    <TextBox Text="{Binding CurrentCourier.MaxDistance}" Style="{StaticResource InputStyle}" Margin="0,0,0,25"/>
+
+                    <Button Content="Update Details" Click="BtnUpdate_Click"
+                            Background="#4A4A6A" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="22"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Separator Margin="0,20"/>
+
+                    <Button Content="📜 View Delivery History" Click="BtnHistory_Click"
+                            Background="White" Foreground="#4A4A6A" BorderBrush="#4A4A6A" BorderThickness="1" Height="40" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="20"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <Grid Grid.Row="1" Grid.Column="1" Margin="0,20,20,20">
+
+            <ContentControl Content="{Binding CurrentCourier.CurrentOrder}"
+                            ContentTemplate="{StaticResource ActiveOrderTemplate}"
+                            Visibility="{Binding CurrentCourier.CurrentOrder, Converter={StaticResource NullToVisConverter}}"/>
+
+            <Border Background="#F9F9FF" CornerRadius="15" 
+                    Visibility="{Binding CurrentCourier.CurrentOrder, Converter={StaticResource NullToVisConverter}, ConverterParameter=Invert}">
+                <Border BorderBrush="#8986CC" BorderThickness="1" CornerRadius="15">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="🚀" FontSize="50" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        <TextBlock Text="Ready for Mission?" FontSize="20" FontWeight="Bold" Foreground="#4A4A6A" HorizontalAlignment="Center"/>
+                        <TextBlock Text="No active order at the moment." Foreground="Gray" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                        <Button Content="🔎 Select Order to Deliver" Click="BtnFindOrder_Click"
+                                IsEnabled="{Binding CurrentCourier.IsActive}"
+                                Width="220" Height="50"
+                                Background="#8986CC" Foreground="White" FontWeight="Bold" FontSize="15" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="25"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <TextBlock Text="You must be 'Active' to take orders." 
+                                   Visibility="{Binding CurrentCourier.IsActive, Converter={StaticResource BoolToVisConverter}, ConverterParameter=Invert}"
+                                   Foreground="Red" FontSize="12" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
