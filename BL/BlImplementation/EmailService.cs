@@ -2,42 +2,64 @@
 using System.Net;
 using System.Net.Mail;
 
-namespace BlImplementation // שינינו מ-PL ל-BlImplementation
+namespace BlImplementation 
 {
+    /// <summary>
+    /// A service for sending email notifications.
+    /// We used AI to understand how the email service works in code and how to implement it.
+    /// </summary>
     internal static class EmailService
     {
-        private const string SenderEmail = "Miri.m.y1984@gmail.com";
-        private const string SenderPassword = "oxgyvpxxhpyqefpg";
+        private const string SenderEmail = "depart.ilv@gmail.com";
+        private static string SenderPassword = "srmp xvma gyau ftpx";/*System.IO.File.ReadAllText(@"C:\Users\1\source\repos\secrets.txt");*/
 
+        /// <summary>
+        /// sends an email notification asynchronously.
+        /// </summary>
+        /// <param name="recipientEmail"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
         public static void SendNotification(string recipientEmail, string subject, string body)
         {
-            if (string.IsNullOrEmpty(recipientEmail)) return;
+            // if no recipient, do nothing
+            if (string.IsNullOrEmpty(recipientEmail)) 
+                return;
 
-            try
+            // send email in the background to avoid blocking the main thread
+            Task.Run(() =>
             {
-                var smtpClient = new SmtpClient("smtp.gmail.com")
+                try
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential(SenderEmail, SenderPassword),
-                    EnableSsl = true,
-                };
+                    // define SMTP client and email message
+                    var smtpClient = new SmtpClient("smtp.gmail.com")
+                    {
+                        Port = 587,
+                        Credentials = new NetworkCredential(SenderEmail, SenderPassword),
+                        EnableSsl = true,
+                    };
 
-                var mailMessage = new MailMessage
+                    // create the email message
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(SenderEmail),
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = false,
+                    };
+
+                    // add recipient
+                    mailMessage.To.Add(recipientEmail);
+
+                    // send the email
+                    smtpClient.Send(mailMessage);
+                }
+                catch (Exception ex)
                 {
-                    From = new MailAddress(SenderEmail),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = false,
-                };
-
-                mailMessage.To.Add(recipientEmail);
-
-                smtpClient.Send(mailMessage);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"GMAIL ERROR: {ex.Message}");
-            }
+                    // בגלל שזה רץ ברקע, אי אפשר לזרוק שגיאה למסך (המשתמש כבר המשיך הלאה)
+                    // לכן רק נכתוב לקונסול למקרה שנצטרך לבדוק בעתיד
+                    Console.WriteLine("Background Email Failed: " + ex.Message);
+                }
+            });
         }
     }
 }

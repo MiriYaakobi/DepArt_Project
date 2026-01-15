@@ -7,6 +7,10 @@ using System.Xml.Serialization;
 static class XMLTools
 {
     const string s_xmlDir = @"..\xml\";
+    private static readonly object s_fileLock = new object();
+    private const int MaxRetries = 3;
+    private const int RetryDelayMs = 100;
+
     static XMLTools()
     {
         if (!Directory.Exists(s_xmlDir))
@@ -20,8 +24,14 @@ static class XMLTools
 
         try
         {
-            using FileStream file = new(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            new XmlSerializer(typeof(List<T>)).Serialize(file, list);
+            lock (s_fileLock)
+            {
+                RetryOnIOException(() =>
+                {
+                    using FileStream file = new(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    new XmlSerializer(typeof(List<T>)).Serialize(file, list);
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -35,9 +45,16 @@ static class XMLTools
         try
         {
             if (!File.Exists(xmlFilePath)) return new();
-            using FileStream file = new(xmlFilePath, FileMode.Open);
-            XmlSerializer x = new(typeof(List<T>));
-            return x.Deserialize(file) as List<T> ?? new();
+
+            lock (s_fileLock)
+            {
+                return RetryOnIOException(() =>
+                {
+                    using FileStream file = new(xmlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    XmlSerializer x = new(typeof(List<T>));
+                    return x.Deserialize(file) as List<T> ?? new();
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -61,9 +78,12 @@ static class XMLTools
         string xmlFilePath = s_xmlDir + xmlFileName;
         try
         {
-            using (FileStream fs = new FileStream(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            lock (s_fileLock)
             {
-                rootElem.Save(fs);
+                RetryOnIOException(() =>
+                {
+                    rootElem.Save(xmlFilePath);
+                });
             }
         }
         catch (Exception ex)
@@ -86,18 +106,31 @@ static class XMLTools
         string xmlFilePath = s_xmlDir + xmlFileName;
         try
         {
-            if (File.Exists(xmlFilePath))
+            //if (File.Exists(xmlFilePath))
+            //{
+            //    XElement root;
+            //    using (FileStream fs = new FileStream(xmlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            //    {
+            //        root = XElement.Load(fs);
+            //    }
+            //    return root;
+            //}
+            //XElement rootElem = new(xmlFileName);
+            //rootElem.Save(xmlFilePath);
+            //return rootElem;
+            lock (s_fileLock)
             {
-                XElement root;
-                using (FileStream fs = new FileStream(xmlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                return RetryOnIOException(() =>
                 {
-                    root = XElement.Load(fs);
-                }
-                return root;
+                    if (File.Exists(xmlFilePath))
+                    {
+                        return XElement.Load(xmlFilePath);
+                    }
+                    XElement rootElem = new(xmlFileName);
+                    rootElem.Save(xmlFilePath);
+                    return rootElem;
+                });
             }
-            XElement rootElem = new(xmlFileName);
-            rootElem.Save(xmlFilePath);
-            return rootElem;
         }
         catch (Exception ex)
         {
@@ -116,23 +149,32 @@ static class XMLTools
     /// <exception cref="FormatException"></exception>
     public static int GetAndIncreaseConfigIntVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        int nextId = root.ToIntNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        root.Element(elemName)?.SetValue((nextId + 1).ToString());
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
-        return nextId;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            int nextId = root.ToIntNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            root.Element(elemName)?.SetValue((nextId + 1).ToString());
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+            return nextId;
+        }
     }
     public static int GetConfigIntVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        int num = root.ToIntNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        return num;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            int num = root.ToIntNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            return num;
+        }
     }
     public static DateTime GetConfigDateVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        DateTime dt = root.ToDateTimeNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        return dt;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            DateTime dt = root.ToDateTimeNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            return dt;
+        }
     }
 
     /// <summary>
@@ -144,9 +186,12 @@ static class XMLTools
     /// <exception cref="FormatException"></exception>
     public static string GetConfigStringVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        string? str = (string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        return str;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            string? str = (string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            return str;
+        }
     }
 
     /// <summary>
@@ -157,9 +202,12 @@ static class XMLTools
     /// <returns></returns>
     public static string? GetConfigNullableStringVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        string? str = (string?)root.Element(elemName);
-        return str;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            string? str = (string?)root.Element(elemName);
+            return str;
+        }
     }
 
     /// <summary>
@@ -171,9 +219,12 @@ static class XMLTools
     /// <exception cref="FormatException"></exception>
     public static double GetConfigDoubleVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        return num;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            return num;
+        }
     }
 
     /// <summary>
@@ -185,9 +236,12 @@ static class XMLTools
     /// <exception cref="FormatException"></exception>
     public static double? GetConfigNullableDoubleVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
-        return num;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            double num = root.ToDoubleNullable(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}");
+            return num;
+        }
     }
 
     /// <summary>
@@ -199,31 +253,40 @@ static class XMLTools
     /// <exception cref="FormatException"></exception>
     public static TimeSpan GetConfigTimeSpanVal(string xmlFileName, string elemName)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        TimeSpan ts = TimeSpan.Parse((string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}"));
-        return ts;
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            TimeSpan ts = TimeSpan.Parse((string?)root.Element(elemName) ?? throw new FormatException($"can't convert:  {xmlFileName}, {elemName}"));
+            return ts;
+        }
     }
 
     public static void SetConfigIntVal(string xmlFileName, string elemName, int elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue((elemVal).ToString());
-        XElement? element = root.Element(elemName);
-        
-        if (element == null)
+        lock (s_fileLock)
         {
-            element = new XElement(elemName);
-            root.Add(element);
-        }
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            root.Element(elemName)?.SetValue((elemVal).ToString());
+            XElement? element = root.Element(elemName);
 
-        element.SetValue(elemVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+            if (element == null)
+            {
+                element = new XElement(elemName);
+                root.Add(element);
+            }
+
+            element.SetValue(elemVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
     public static void SetConfigDateVal(string xmlFileName, string elemName, DateTime elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue(elemVal.ToString("o"));
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            root.Element(elemName)?.SetValue(elemVal.ToString("o"));
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
 
     /// <summary>
@@ -234,9 +297,18 @@ static class XMLTools
     /// <param name="elemVal"></param>
     public static void SetConfigStringVal(string xmlFileName, string elemName, string elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue(elemVal);
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            XElement? element = root.Element(elemName);
+            if (element == null)
+            {
+                element = new XElement(elemName);
+                root.Add(element);
+            }
+            element.SetValue(elemVal);
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
 
     /// <summary>
@@ -247,16 +319,22 @@ static class XMLTools
     /// <param name="elemVal"></param>
     public static void SetConfigNullableStringVal(string xmlFileName, string elemName, string? elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        XElement? element = root.Element(elemName);
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            XElement? element = root.Element(elemName);
 
-        if (element != null && elemVal == null)
-            element.Remove();
+            if (element != null && elemVal == null)
+                element.Remove();
 
-        else if (element != null && elemVal != null)
-            element.SetValue(elemVal);
+            else if (element != null && elemVal != null)
+                element.SetValue(elemVal);
 
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+            else if (element == null && elemVal != null)
+                root.Add(new XElement(elemName, elemVal));
+
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
 
     /// <summary>
@@ -267,9 +345,18 @@ static class XMLTools
     /// <param name="elemVal"></param>
     public static void SetConfigDoubleVal(string xmlFileName, string elemName, double elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue((elemVal).ToString());
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            XElement? element = root.Element(elemName);
+            if (element == null)
+            {
+                element = new XElement(elemName);
+                root.Add(element);
+            }
+            element.SetValue(elemVal.ToString());
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
 
     /// <summary>
@@ -280,9 +367,18 @@ static class XMLTools
     /// <param name="elemVal"></param>
     public static void SetConfigTimeSpanVal(string xmlFileName, string elemName, TimeSpan elemVal)
     {
-        XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
-        root.Element(elemName)?.SetValue((elemVal).ToString());
-        XMLTools.SaveListToXMLElement(root, xmlFileName);
+        lock (s_fileLock)
+        {
+            XElement root = XMLTools.LoadListFromXMLElement(xmlFileName);
+            XElement? element = root.Element(elemName);
+            if (element == null)
+            {
+                element = new XElement(elemName);
+                root.Add(element);
+            }
+            element.SetValue(elemVal.ToString());
+            XMLTools.SaveListToXMLElement(root, xmlFileName);
+        }
     }
 
     /// <summary>
@@ -293,24 +389,59 @@ static class XMLTools
     /// <param name="elemVal"></param>
     public static void SetConfigNullableDoubleVal(string xmlFileName, string elemName, double? elemVal)
     {
-        XElement root = LoadListFromXMLElement(xmlFileName);
-        XElement? element = root.Element(elemName);
-
-        // if elemVal has value, set it; else remove the element
-        if (elemVal.HasValue)
+        lock (s_fileLock)
         {
-            if (element != null)
-                element.SetValue(elemVal.Value.ToString());
+            XElement root = LoadListFromXMLElement(xmlFileName);
+            XElement? element = root.Element(elemName);
 
-            else
-                root.Add(new XElement(elemName, elemVal.Value.ToString()));
+            if (elemVal.HasValue)
+            {
+                if (element != null)
+                    element.SetValue(elemVal.Value.ToString());
+                else
+                    root.Add(new XElement(elemName, elemVal.Value.ToString()));
+            }
+            else if (element != null)
+                element.Remove();
+
+            SaveListToXMLElement(root, xmlFileName);
         }
-
-        else if (element != null)
-            element.Remove();
-
-        SaveListToXMLElement(root, xmlFileName);
     }
+
+    #region Helper Methods
+    private static void RetryOnIOException(Action action)
+    {
+        for (int i = 0; i < MaxRetries; i++)
+        {
+            try
+            {
+                action();
+                return;
+            }
+            catch (IOException) when (i < MaxRetries - 1)
+            {
+                Thread.Sleep(RetryDelayMs);
+            }
+        }
+        action();
+    }
+
+    private static T RetryOnIOException<T>(Func<T> func)
+    {
+        for (int i = 0; i < MaxRetries; i++)
+        {
+            try
+            {
+                return func();
+            }
+            catch (IOException) when (i < MaxRetries - 1)
+            {
+                Thread.Sleep(RetryDelayMs);
+            }
+        }
+        return func();
+    }
+    #endregion
     #endregion
 
 

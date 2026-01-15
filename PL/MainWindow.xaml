@@ -116,9 +116,9 @@
     </Window.Resources>
 
     <Grid Background="{StaticResource AliceBlue}">
-        <ContentControl x:Name="MainContentControl" Panel.ZIndex="10" Visibility="Collapsed"/>
+        <ContentControl Content="{Binding MainContent}" Visibility="{Binding ContentVisibility}" Panel.ZIndex="10"/>
 
-        <Grid x:Name="DashboardGrid">
+        <Grid Visibility="{Binding DashboardVisibility}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
                 <ColumnDefinition Width="458*"/>
@@ -128,17 +128,15 @@
             <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
                 <StackPanel Margin="20,40,20,20">
 
-                    <Border Width="110" Height="110" CornerRadius="55" Background="White" Margin="0,0,0,15">
+                    <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15"
+                        BorderBrush="White" BorderThickness="1"
+                        RenderOptions.BitmapScalingMode="HighQuality">
                         <Border.Effect>
                             <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
                         </Border.Effect>
-
-                        <TextBlock Text="👤" 
-                            FontSize="50" 
-                            Foreground="{StaticResource DeepPurple}"
-                            HorizontalAlignment="Left" 
-                            VerticalAlignment="Top" 
-                            Margin="22,19,0,0"/>
+                        <Border.Background>
+                            <ImageBrush ImageSource="/Images/logo.png" Stretch="UniformToFill"/>
+                        </Border.Background>
                     </Border>
 
                     <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
@@ -204,36 +202,40 @@
                             <UniformGrid Grid.Row="1" Columns="5" VerticalAlignment="Bottom" Height="220" Margin="10,20">
                                 <StackPanel VerticalAlignment="Bottom" Margin="15,0">
                                     <Grid Height="150" VerticalAlignment="Bottom">
-                                        <Border x:Name="barOpen" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.8" VerticalAlignment="Bottom"/>
-                                        <TextBlock x:Name="valOpen" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                        <Border Height="{Binding OpenHeight}" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.8" VerticalAlignment="Bottom"/>
+                                        <TextBlock Text="{Binding OpenVal}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                     </Grid>
                                     <TextBlock Text="Open" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
                                 </StackPanel>
+
                                 <StackPanel VerticalAlignment="Bottom" Margin="15,0">
                                     <Grid Height="150" VerticalAlignment="Bottom">
-                                        <Border x:Name="barInProgress" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.6" VerticalAlignment="Bottom"/>
-                                        <TextBlock x:Name="valInProgress" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                        <Border Height="{Binding InProgressHeight}" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.6" VerticalAlignment="Bottom"/>
+                                        <TextBlock Text="{Binding InProgressVal}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                     </Grid>
                                     <TextBlock Text="In Progress" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
                                 </StackPanel>
+
                                 <StackPanel VerticalAlignment="Bottom" Margin="15,0">
                                     <Grid Height="150" VerticalAlignment="Bottom">
-                                        <Border x:Name="barDelivered" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="1.0" VerticalAlignment="Bottom"/>
-                                        <TextBlock x:Name="valDelivered" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                        <Border Height="{Binding DeliveredHeight}" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="1.0" VerticalAlignment="Bottom"/>
+                                        <TextBlock Text="{Binding DeliveredVal}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                     </Grid>
                                     <TextBlock Text="Delivered" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="15" Foreground="{DynamicResource TextDark}"/>
                                 </StackPanel>
+
                                 <StackPanel VerticalAlignment="Bottom" Margin="15,0">
                                     <Grid Height="150" VerticalAlignment="Bottom">
-                                        <Border x:Name="barRefused" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.4" VerticalAlignment="Bottom"/>
-                                        <TextBlock x:Name="valRefused" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                        <Border Height="{Binding RefusedHeight}" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.4" VerticalAlignment="Bottom"/>
+                                        <TextBlock Text="{Binding RefusedVal}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                     </Grid>
                                     <TextBlock Text="Refused" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
                                 </StackPanel>
+
                                 <StackPanel VerticalAlignment="Bottom" Margin="15,0">
                                     <Grid Height="150" VerticalAlignment="Bottom">
-                                        <Border x:Name="barCancelled" Height="50" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.3" VerticalAlignment="Bottom"/>
-                                        <TextBlock x:Name="valCancelled" Text="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                                        <Border Height="{Binding CancelledHeight}" CornerRadius="10,10,0,0" Background="{StaticResource DeepPurple}" Opacity="0.3" VerticalAlignment="Bottom"/>
+                                        <TextBlock Text="{Binding CancelledVal}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                     </Grid>
                                     <TextBlock Text="Cancelled" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" Foreground="{StaticResource TextDark}"/>
                                 </StackPanel>
@@ -389,7 +391,7 @@
                 </Grid>
             </Grid>
         </Grid>
-        <Grid x:Name="LoadingOverlay" Visibility="Collapsed" Background="#40000000">
+        <Grid Visibility="{Binding LoadingVisibility}" Panel.ZIndex="100" Background="#40000000">
             <Border Background="White" 
             CornerRadius="15" 
             HorizontalAlignment="Center" 

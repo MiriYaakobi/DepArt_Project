@@ -321,17 +321,15 @@
         <Border Grid.Column="0" Background="{StaticResource DeepPurple}" CornerRadius="0,20,20,0">
             <StackPanel Margin="20,40,20,20">
 
-                <Border Width="110" Height="110" CornerRadius="55" Background="White" Margin="0,0,0,15">
+                <Border Width="110" Height="110" CornerRadius="55" Margin="0,0,0,15"
+                        BorderBrush="White" BorderThickness="1"
+                        RenderOptions.BitmapScalingMode="HighQuality">
                     <Border.Effect>
                         <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
                     </Border.Effect>
-
-                    <TextBlock Text="👤" 
-                               FontSize="50" 
-                               Foreground="{StaticResource DeepPurple}"
-                               HorizontalAlignment="Left" 
-                               VerticalAlignment="Top" 
-                               Margin="22,19,0,0"/>
+                    <Border.Background>
+                        <ImageBrush ImageSource="/Images/logo.png" Stretch="UniformToFill"/>
+                    </Border.Background>
                 </Border>
 
                 <TextBlock Text="Hello, Admin" Foreground="{StaticResource TextLight}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>

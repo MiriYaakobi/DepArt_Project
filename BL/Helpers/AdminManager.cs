@@ -196,7 +196,7 @@ internal static class AdminManager //stage 4
         lock (BlMutex) //stage 7
         {
             s_dal.ResetDB();
-            AdminManager.UpdateClock(AdminManager.Now);
+            AdminManager.UpdateClock(DateTime.Now);
             AdminManager.SetConfig(AdminManager.GetConfig());
         }
     }
@@ -212,7 +212,7 @@ internal static class AdminManager //stage 4
         lock (BlMutex) //stage 7
         {
             DalTest.Initialization.Do();
-            AdminManager.UpdateClock(AdminManager.Now);         
+            AdminManager.UpdateClock(DateTime.Now);         
             AdminManager.SetConfig(AdminManager.GetConfig());
         }
     }
