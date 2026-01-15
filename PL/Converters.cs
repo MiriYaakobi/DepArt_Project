@@ -167,8 +167,7 @@ public class NullToVisibilityConverter : IValueConverter
     /// <summary>
     /// Converts a null value back to a visibility state.
     /// </summary>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
 /// <summary>
@@ -240,15 +239,19 @@ public class DeleteVisibilityConverter : IValueConverter
 /// </summary>
 public class OrderStatusToBrushConverter : IValueConverter
 {
-    // מגדיר צבעים מותאמים אישית שמשתלבים עם העיצוב
+    // colors definition
     private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#855A9D")!;
     private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#DBC9EF")!;
     private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#007B87")!;
     private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#13A2A4")!;
     private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#B9EBE0")!;
 
+    /// <summary>
+    /// Converts an OrderStatus enum value to a corresponding color brush.
+    /// </summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        // status colors
         if (value is OrderStatus status)
         {
             switch (status)
@@ -262,14 +265,14 @@ public class OrderStatusToBrushConverter : IValueConverter
             }
         }
 
-        // צבעים ל-Timeliness (עמידה בזמנים)
+        // schedule colors
         if (value is ScheduleStatus schedule)
         {
             switch (schedule)
             {
-                case ScheduleStatus.Late: return _errorColor; // אותו אדום רך
-                case ScheduleStatus.InRisk: return _openColor; // אותו כתום חמים
-                default: return _deliveredColor; // OnTime - ירוק
+                case ScheduleStatus.Late: return _errorColor;
+                case ScheduleStatus.InRisk: return _openColor; 
+                default: return _deliveredColor; 
             }
         }
         return Brushes.Black;
@@ -287,32 +290,35 @@ public class CancelVisibilityConverter : IValueConverter
     {
         if (value is OrderStatus status)
         {
-            // אם ההזמנה נמסרה, בוטלה או סורבה - אי אפשר לבטל שוב
+            // checking for statuses that should hide the cancel button
             if (status == OrderStatus.Delivered ||
                 status == OrderStatus.Cancelled ||
                 status == OrderStatus.Refused)
             {
-                return Visibility.Collapsed; // הסתרת הכפתור
+                return Visibility.Collapsed; // hiding the button
             }
         }
-        return Visibility.Visible; // הצגת הכפתור
+        return Visibility.Visible; // showing the button
     }
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
+/// <summary>
+/// Converts an Order object to a corresponding visibility for the delete button.
+/// </summary>
 public class OrderToDeleteVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // בדיקה שהערך שהתקבל הוא אכן הזמנה
+        // checking that the received value is indeed an order
         if (value is BO.Order order)
         {
-            // 1. אם ה-ID הוא 0, זה מצב הוספה - להסתיר
+            // if the order is new (id = 0) - hide the delete button
             if (order.Id == 0)
                 return Visibility.Collapsed;
 
-            // 2. בדיקת סטטוסים - להציג רק אם זה "פתוח" או "בתהליך"
-            // ודאי שהשמות (Ordered, InProgress) תואמים בדיוק ל-Enum שלך ב-BO!
+            // checking statuses - show only if it's "Open" or "InProgress"
+            // make sure the names (Ordered, InProgress) match exactly with your Enum in BO!
             if (order.StatusOfOrder == BO.OrderStatus.Open ||
                 order.StatusOfOrder == BO.OrderStatus.InProgress)
             {
@@ -320,12 +326,51 @@ public class OrderToDeleteVisibilityConverter : IValueConverter
             }
         }
 
-        // לכל שאר המקרים (סטטוס סגור, נשלח, או אובייקט ריק) - להסתיר
+        // the default is to hide the delete button
         return Visibility.Collapsed;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+
+}
+
+/// <summary>
+/// Converts an OrderEndStatus enum value to a corresponding brush color.
+/// </summary>
+public class OrderEndStatusToBrushConverter : IValueConverter
+{
+    // defining colors
+    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#DFF0D8")!; // light green (success)
+    private readonly Brush _refusedColor = (Brush)new BrushConverter().ConvertFrom("#F2DEDE")!;   // light red (refused/failed)
+    private readonly Brush _notFoundColor = (Brush)new BrushConverter().ConvertFrom("#FFF3CD")!;  // light yellow (not found)
+    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#E2E3E5")!; // gray (cancelled)
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        // checking if the value is of type OrderEndStatus
+        if (value is OrderEndStatus endStatus)
+        {
+            switch (endStatus)
+            {
+                case OrderEndStatus.Delivered:
+                    return _deliveredColor;
+
+                case OrderEndStatus.Refused:
+                case OrderEndStatus.Failed:
+                    return _refusedColor;
+
+                case OrderEndStatus.InviterNotFound:
+                    return _notFoundColor;
+
+                case OrderEndStatus.Cancelled:
+                    return _cancelledColor;
+
+                default:
+                    return Brushes.White;
+            }
+        }
+        return Brushes.Transparent;
     }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)=> throw new NotImplementedException();
 }

@@ -1,5 +1,6 @@
 ﻿using BlApi;
 using PL.Courier;
+using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +12,7 @@ public partial class LoginWindow : Window
 {
     private IBl s_bl = BlApi.Factory.Get();
 
-    //dependency property for UserId to enable binding
+    // dependency property for UserId to enable binding
     public string UserId
     {
         get { return (string)GetValue(UserIdProperty); }
@@ -21,7 +22,7 @@ public partial class LoginWindow : Window
     public static readonly DependencyProperty UserIdProperty =
         DependencyProperty.Register("UserId", typeof(string), typeof(LoginWindow), new PropertyMetadata(""));
 
-    //commands for buttons
+    // commands for buttons
     public ICommand LoginCommand { get; private set; }
     public ICommand ExitCommand { get; private set; }
 
@@ -31,11 +32,11 @@ public partial class LoginWindow : Window
         InitializeComponent();
         this.DataContext = this;
 
-        //register commands
+        // register commands
         LoginCommand = new RelayCommand(ExecuteLogin);
         ExitCommand = new RelayCommand(ExecuteExit);
 
-        //check if admin is initialized, if not initialize the database
+        // check if admin is initialized, if not initialize the database
         try
         {
             if (s_bl.Admin.GetConfig().AdminId == 0)
@@ -47,7 +48,6 @@ public partial class LoginWindow : Window
     /// <summary>
     /// logic for login button
     /// </summary>
-    /// <param name="parameter"></param>
     private void ExecuteLogin(object? parameter)
     {
         if (parameter is not PasswordBox passwordBox)
@@ -56,7 +56,7 @@ public partial class LoginWindow : Window
         string inputIdText = UserId;
         string rawPassword = passwordBox.Password;
 
-        //validation
+        // Validation
         if (string.IsNullOrWhiteSpace(inputIdText) || string.IsNullOrWhiteSpace(rawPassword))
         {
             CustomMessageBox.Show("Please enter ID and Password.", "Validation Error", MessageType.Warning);
@@ -69,25 +69,48 @@ public partial class LoginWindow : Window
             return;
         }
 
-        //connection chance
         try
         {
             BO.UserRole role = s_bl.Courier.Login(idVal, rawPassword);
 
-            //open the relevant window based on role
+            // === Admin Login Logic ===
             if (role == BO.UserRole.Admin)
-                new MainWindow().Show();
-
-            //open courier window
+            {
+                // בדיקה אם חלון מנהל כבר פתוח
+                if (!ActivateWindowIfExists<MainWindow>())
+                {
+                    new MainWindow().Show();
+                }
+            }
+            // === Courier Login Logic ===
             else if (role == BO.UserRole.Courier)
             {
                 BO.Courier? courier = s_bl.Courier.Read(idVal, idVal);
-
                 if (courier != null)
-                    new MainCourierWindow(courier.Id).Show();
+                {
+                    // בדיקה אם חלון שליח כבר פתוח (ובודקים שזה אותו שליח!)
+                    bool found = false;
+                    foreach (Window window in Application.Current.Windows)
+                    {
+                        if (window is MainCourierWindow courierWin && courierWin.CurrentCourier?.Id == courier.Id)
+                        {
+                            if (window.WindowState == WindowState.Minimized)
+                                window.WindowState = WindowState.Normal;
+
+                            window.Activate(); // הבאת החלון לקדמה
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        new MainCourierWindow(courier.Id).Show();
+                    }
+                }
             }
 
-            //clean up after login
+            // Cleanup
             UserId = "";
             passwordBox.Clear();
         }
@@ -98,9 +121,27 @@ public partial class LoginWindow : Window
     }
 
     /// <summary>
+    /// Helper method to activate an existing window or return false if not found.
+    /// </summary>
+    private bool ActivateWindowIfExists<TWindow>() where TWindow : Window
+    {
+        foreach (Window window in Application.Current.Windows)
+        {
+            if (window is TWindow)
+            {
+                if (window.WindowState == WindowState.Minimized)
+                    window.WindowState = WindowState.Normal;
+
+                window.Activate(); // Bring to front
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// exit button logic
     /// </summary>
-    /// <param name="parameter"></param>
     private void ExecuteExit(object? parameter)
     {
         if (CustomMessageBox.ShowQuestion("Are you sure you want to exit?", "Exit System"))
@@ -110,8 +151,6 @@ public partial class LoginWindow : Window
     /// <summary>
     /// text input validation for ID textbox - only numbers allowed
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void TxtId_PreviewTextInput(object sender, TextCompositionEventArgs e)
     {
         e.Handled = new Regex("[^0-9]+").IsMatch(e.Text);
@@ -120,29 +159,22 @@ public partial class LoginWindow : Window
     /// <summary>
     /// logic to enable window dragging from anywhere in the window
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left)
             this.DragMove();
     }
-}
+} // --- סוף המחלקה LoginWindow ---
 
+// --- תחילת המחלקה RelayCommand (מחוץ ל-LoginWindow!) ---
 /// <summary>
 /// helper class for commands
 /// </summary>
 public class RelayCommand : ICommand
 {
-    //fields
     private readonly Action<object?> _execute;
     private readonly Predicate<object?>? _canExecute;
 
-    /// <summary>
-    /// relay command constructor
-    /// </summary>
-    /// <param name="execute"></param>
-    /// <param name="canExecute"></param>
     public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
     {
         _execute = execute;
@@ -153,9 +185,6 @@ public class RelayCommand : ICommand
 
     public void Execute(object? parameter) => _execute(parameter);
 
-    /// <summary>
-    /// event to re-evaluate command execution status
-    /// </summary>
     public event EventHandler? CanExecuteChanged
     {
         add { CommandManager.RequerySuggested += value; }
