@@ -309,7 +309,13 @@ internal static class OrderManager
     internal static DateTime CalculateMaxDeliveryTime(int orderId)
     {
         // get existing order
-        DO.Order doOrder = GetExistingOrder(orderId);
+        DO.Order? doOrder = s_dal.Order.Read(orderId);
+
+        // if order not found, return max value
+        if (doOrder == null)
+        {
+            return DateTime.MaxValue;
+        }
 
         // get max delivery range from config
         TimeSpan maxTimeSpan = s_dal.Config.MaxDeliveryRange;

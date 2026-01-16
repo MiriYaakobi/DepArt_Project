@@ -11,7 +11,6 @@ namespace PL.Courier
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
 
-        // משתנה עבור פרטי השליח בסרגל הצד
         public BO.Courier CurrentCourier
         {
             get { return (BO.Courier)GetValue(CurrentCourierProperty); }
@@ -20,7 +19,6 @@ namespace PL.Courier
         public static readonly DependencyProperty CurrentCourierProperty =
             DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierHistoryView));
 
-        // מזהה השליח
         public int CourierId
         {
             get { return (int)GetValue(CourierIdProperty); }
@@ -29,26 +27,21 @@ namespace PL.Courier
         public static readonly DependencyProperty CourierIdProperty =
             DependencyProperty.Register("CourierId", typeof(int), typeof(CourierHistoryView), new PropertyMetadata(0, OnCourierIdChanged));
 
-        // רשימת המשלוחים לתצוגה
         public ObservableCollection<BO.ClosedDeliveryInList> DeliveriesList { get; set; } = new();
 
-        // רשימת הסינון - כוללת את "All" + ה-Enum
-        // שיניתי ל-IEnumerable<object> כדי שיוכל להכיל גם סטרינג וגם Enum
         public IEnumerable<object> StatusOptions { get; } =
             new List<object> { "All" }
             .Concat(Enum.GetValues(typeof(BO.OrderEndStatus)).Cast<object>())
             .ToList();
 
-        // הבחירה הנוכחית בסינון
         public object SelectedStatusFilter
         {
             get { return GetValue(SelectedStatusFilterProperty); }
             set { SetValue(SelectedStatusFilterProperty, value); }
         }
         public static readonly DependencyProperty SelectedStatusFilterProperty =
-            DependencyProperty.Register("SelectedStatusFilter", typeof(object), typeof(CourierHistoryView), new PropertyMetadata("All")); // ברירת מחדל "All"
+            DependencyProperty.Register("SelectedStatusFilter", typeof(object), typeof(CourierHistoryView), new PropertyMetadata("All"));
 
-        // אירועי ניווט
         public event EventHandler? RequestDashboardView;
         public event EventHandler? RequestPickOrderView;
 
@@ -56,8 +49,30 @@ namespace PL.Courier
         {
             InitializeComponent();
             DataContext = this;
-            SelectedStatusFilter = "All"; // שמים ברירת מחדל
+            SelectedStatusFilter = "All";
+
+            // === הוספת האזנה לעדכונים אוטומטיים ===
+            this.Loaded += UserControl_Loaded;
+            this.Unloaded += UserControl_Unloaded;
         }
+
+        // פונקציית האזנה - תופעל כשמשהו משתנה במערכת
+        private void OrderObserver()
+        {
+            Dispatcher.Invoke(() => RefreshList());
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            s_bl.Order.AddObserver(OrderObserver); // הרשמה
+            RefreshList();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            s_bl.Order.RemoveObserver(OrderObserver); // ביטול הרשמה
+        }
+        // ==========================================
 
         private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -73,21 +88,15 @@ namespace PL.Courier
 
             try
             {
-                // טעינת פרטי השליח לסרגל
                 CurrentCourier = s_bl.Courier.Read(CourierId, CourierId)!;
 
-                // שליפת כל המשלוחים
                 IEnumerable<BO.ClosedDeliveryInList> list = s_bl.Order.GetClosedDeliveriesForCourier(CourierId, CourierId);
 
-                // --- לוגיקת הסינון החדשה ---
-                // אם זה לא "All" וגם לא null -> תסנן
                 if (SelectedStatusFilter is BO.OrderEndStatus statusEnum)
                 {
                     list = list.Where(d => d.OrderClosedStatus == statusEnum);
                 }
-                // אם זה "All" (כסטרינג) או null -> אל תעשה כלום (תציג הכל)
 
-                // עדכון הרשימה
                 DeliveriesList.Clear();
                 foreach (var item in list)
                 {
@@ -102,12 +111,6 @@ namespace PL.Courier
 
         private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RefreshList();
-        }
-
-        private void BtnClearFilter_Click(object sender, RoutedEventArgs e)
-        {
-            SelectedStatusFilter = "All"; // חזרה למצב הכל
             RefreshList();
         }
 

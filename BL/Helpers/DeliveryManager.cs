@@ -166,34 +166,42 @@ internal static class DeliveryManager
     /// <returns></returns>
     internal static IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int courierId, BO.OrderType? filterByType = null)
     {
-        // retrieves all closed deliveries for a specific courier, with optional filtering by order type.
+        // Read courier details once outside the loop
+        var courier = s_dal.Courier.Read(courierId);
+        if (courier == null)
+            throw new BO.BlDoesNotExistException($"Courier {courierId} not found");
+
+        var courierDeliveryType = (BO.DeliveryType)courier.TypeOfDelivery;
+
+        // Retrieve all closed deliveries
         var deliveries = s_dal.Delivery.ReadAll(d =>
             d.CourierId == courierId &&
             d.DeliveryEndTime.HasValue);
 
-        // map DO.Delivery to BO.ClosedDeliveryInList 
+        // Map to BO using the pre-fetched courier data
         var closedDeliveries = deliveries.Select(doDelivery =>
         {
-            // retrieve associated order
+            // Fetch order details
             DO.Order doOrder = OrderManager.GetExistingOrder(doDelivery.OrderId);
 
-            // calculate TotalHandlingDuration
+            // calculate total handling duration
             TimeSpan totalHandlingDuration = doDelivery.DeliveryEndTime!.Value - doDelivery.DeliveryStartTime;
 
+            // map to BO.ClosedDeliveryInList
             return new BO.ClosedDeliveryInList
             {
                 Id = doDelivery.Id,
                 OrderId = doDelivery.OrderId,
                 TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
                 Address = doOrder.Address,
-                TypeOfDelivery = (BO.DeliveryType)s_dal.Courier.Read(courierId)!.TypeOfDelivery,
+                TypeOfDelivery = courierDeliveryType,
                 ActualDistance = doDelivery.ActualDistance,
                 TotalHandlingDuration = totalHandlingDuration,
                 OrderClosedStatus = (BO.OrderEndStatus)doDelivery.OrderClosedStatus!,
                 DeliveryEndTime = doDelivery.DeliveryEndTime
             };
         })
-        .Where(bDelivery => !filterByType.HasValue || bDelivery.TypeOfOrder == filterByType.Value); // filter by type if needed
+        .Where(bDelivery => !filterByType.HasValue || bDelivery.TypeOfOrder == filterByType.Value);
 
         return closedDeliveries;
     }
@@ -260,23 +268,6 @@ internal static class DeliveryManager
                 DateTime maxDeliveryTime = OrderManager.CalculateMaxDeliveryTime(doOrder.Id);
                 TimeSpan remainingTime = maxDeliveryTime - AdminManager.Now;
 
-                // calculate actual distance and estimated time
-                (double actualDistance, TimeSpan estimatedTime)? routingResult = null;
-                
-                try
-                {
-                    // attempt to get routing info
-                    routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
-                        companyLat, companyLon,
-                        doOrder.Latitude, doOrder.Longitude,
-                        (BO.DeliveryType)doCourier.TypeOfDelivery
-                    );
-                }
-                catch
-                {
-                    // if routing fails, we simply leave routingResult as null
-                }
-
                 // return the mapped BO.OpenOrderInList
                 return new BO.OpenOrderInList
                 {
@@ -288,8 +279,8 @@ internal static class DeliveryManager
                     TimeLinessStatus = timeLinessStatus,
                     RemainingTime = remainingTime,
                     MaxDeliveryTime = maxDeliveryTime,
-                    ActualDistance = routingResult?.actualDistance,
-                    ActualTimeExtension = routingResult?.estimatedTime
+                    ActualDistance = null,
+                    ActualTimeExtension = null
                 };
             });
 

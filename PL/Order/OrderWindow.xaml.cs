@@ -38,6 +38,7 @@ public partial class OrderWindow : Window
         if (orderId == 0) // Add mode
         {
             IsUpdateMode = false;
+            // יצירת הזמנה חדשה בזיכרון (לא קוראים ל-BL)
             CurrentOrder = new BO.Order
             {
                 OrderOpeningTime = s_bl.Admin.GetClock(),
@@ -49,6 +50,7 @@ public partial class OrderWindow : Window
             IsUpdateMode = true;
             try
             {
+                // קריאה לדאטה בייס רק כשיש ID אמיתי
                 CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
             }
             catch (Exception ex)
@@ -56,9 +58,12 @@ public partial class OrderWindow : Window
                 CustomMessageBox.Show($"Could not load order #{orderId}.\nError: {ex.Message}", "Error");
                 CurrentOrder = new BO.Order();
                 IsUpdateMode = false;
+                this.Close(); // עדיף לסגור אם הטעינה נכשלה
             }
         }
-        CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
+
+        // --- מחקתי את השורה הבעייתית שהייתה כאן! ---
+
         DataContext = this;
     }
 
