@@ -600,4 +600,25 @@
     <PackageDetails>Limited edition art box</PackageDetails>
     <Description>Carefully packed for collector</Description>
   </Order>
+  <Order>
+    <Id>1050</Id>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <Address>givat zeev</Address>
+    <Latitude>31.8602834</Latitude>
+    <Longitude>35.17260615638803</Longitude>
+    <CustomerName>Miri Yaakobi</CustomerName>
+    <CustomerPhone>0546537605</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T21:16:16.1990772+02:00</OrderOpeningTime>
+    <Description>keep it safe with no stiches</Description>
+  </Order>
+  <Order>
+    <Id>1051</Id>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <Address>herzl 12, tel aviv</Address>
+    <Latitude>32.0623233</Latitude>
+    <Longitude>34.7699763</Longitude>
+    <CustomerName>Odeliya</CustomerName>
+    <CustomerPhone>0542400074</CustomerPhone>
+    <OrderOpeningTime>2026-01-15T21:16:16.1990772+02:00</OrderOpeningTime>
+  </Order>
 </ArrayOfOrder>

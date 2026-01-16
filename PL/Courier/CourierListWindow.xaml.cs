@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using PL; // חובה עבור CustomMessageBox
 
 namespace PL.Courier;
 
@@ -61,6 +62,10 @@ public partial class CourierListWindow : UserControl
 
         StatusFilter = "All";
 
+        // הוספתי את ה-Loading וה-Unloading לפה כדי לוודא שזה רשום
+        this.Loaded += UserControl_Loaded;
+        this.Unloaded += UserControl_Unloaded;
+
         LoadData();
     }
 
@@ -73,12 +78,14 @@ public partial class CourierListWindow : UserControl
         {
             if (AdminID == 0) return;
 
+            // טעינה מחדש מה-BL
             AllCouriers = s_bl.Courier.ReadAll(AdminID);
             ApplyFilters();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error loading data: {ex.Message}", "Error");
+            // שימוש ב-CustomMessageBox במקום MessageBox רגיל
+            new CustomMessageBox($"Error loading data: {ex.Message}", "Error", false).ShowDialog();
         }
     }
 
@@ -135,14 +142,14 @@ public partial class CourierListWindow : UserControl
         // Confirm deletion
         if (sender is Button btn && btn.DataContext is BO.CourierInList courierToDelete)
         {
-            CustomMessageBox customMsg = new CustomMessageBox($"Are you sure you want to delete {courierToDelete.Name}?", "Delete Courier", true);
-
-            // Show confirmation dialog
-            if (customMsg.ShowDialog() == true)
+            // שימוש ב-CustomMessageBox לשאלה
+            if (CustomMessageBox.ShowQuestion($"Are you sure you want to delete {courierToDelete.Name}?", "Delete Courier"))
             {
                 try
                 {
                     s_bl.Courier.Delete(AdminID, courierToDelete.Id);
+                    // לא צריך לקרוא ל-LoadData ידנית כי ה-Observer יעשה את זה!
+                    // אבל אם רוצים תגובה מיידית:
                     LoadData();
                 }
                 catch (Exception ex)
@@ -166,8 +173,6 @@ public partial class CourierListWindow : UserControl
     /// </summary>
     private void BtnList_Click(object sender, RoutedEventArgs e)
     {
-        //SearchBox.Text = "";
-        //StatusFilter = "All";
         RequestOrderList?.Invoke(this, EventArgs.Empty);
     }
 
@@ -177,7 +182,7 @@ public partial class CourierListWindow : UserControl
     private void OpenCourierWindow(int? id = null)
     {
         var window = new CourierWindow(id);
-        window.Closed += (s, args) => LoadData();
+        // window.Closed += (s, args) => LoadData(); // אין צורך, ה-Observer יטפל בעדכון!
         window.Show();
     }
 
@@ -197,13 +202,15 @@ public partial class CourierListWindow : UserControl
     {
         Dispatcher.Invoke(() =>
         {
-            ApplyFilters();
+            // תיקון חשוב: טעינה מחדש מה-DB ולא רק סינון
+            LoadData();
         });
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.AddObserver(CourierListObserver);
+        LoadData(); // טעינה ראשונית כשהמסך עולה
     }
 
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)

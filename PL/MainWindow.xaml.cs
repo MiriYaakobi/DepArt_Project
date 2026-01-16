@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System; // הוספתי כי היה חסר בקוד המקורי ל-Exception ו-Action
+using System.Linq; // הוספתי בשביל Max()
+using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
 
@@ -22,7 +24,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
 
- 
+
     private Visibility _dashboardVisibility = Visibility.Visible;
     public Visibility DashboardVisibility { get => _dashboardVisibility; set { _dashboardVisibility = value; OnPropertyChanged(); } }
 
@@ -35,7 +37,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private object? _mainContent = null;
     public object? MainContent { get => _mainContent; set { _mainContent = value; OnPropertyChanged(); } }
 
-  
+
     private double _openHeight; public double OpenHeight { get => _openHeight; set { _openHeight = value; OnPropertyChanged(); } }
     private string _openVal = "0"; public string OpenVal { get => _openVal; set { _openVal = value; OnPropertyChanged(); } }
 
@@ -113,6 +115,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             s_bl.Admin.AddClockObserver(clockObserver);
             s_bl.Admin.AddConfigObserver(configObserver);
 
+            // --- תוספת: האזנה לשינויים בהזמנות ---
+            s_bl.Order.AddObserver(OrderObserver);
+
             //initial UI setup
             if (Configuration != null)
             {
@@ -124,6 +129,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             CustomMessageBox.Show($"Error loading data: {ex.Message}", "Error");
         }
+    }
+
+    // --- תוספת: פונקציית עדכון לגרף ---
+    private void OrderObserver()
+    {
+        Dispatcher.Invoke(() => RefreshGraph());
     }
 
     /// <summary>
@@ -164,7 +175,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            if (Configuration == null) 
+            if (Configuration == null)
                 return;
 
             int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
@@ -307,6 +318,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             //temp disconnection of observers to avoid multiple updates during init
             s_bl.Admin.RemoveConfigObserver(configObserver);
             s_bl.Admin.RemoveClockObserver(clockObserver);
+            s_bl.Order.RemoveObserver(OrderObserver); // --- תוספת ---
 
             // Perform database initialization asynchronously
             await System.Threading.Tasks.Task.Run(() =>
@@ -319,6 +331,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             // Reattach observers
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
+            s_bl.Order.AddObserver(OrderObserver); // --- תוספת ---
 
             clockObserver(); // Update time immediately after init
 
@@ -377,6 +390,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             // temp disconnection of observers to avoid multiple updates during reset
             s_bl.Admin.RemoveConfigObserver(configObserver);
             s_bl.Admin.RemoveClockObserver(clockObserver);
+            s_bl.Order.RemoveObserver(OrderObserver); // --- תוספת ---
 
             // Perform database reset asynchronously
             await System.Threading.Tasks.Task.Run(() =>
@@ -389,6 +403,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             //reattach observers
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
+            s_bl.Order.AddObserver(OrderObserver); // --- תוספת ---
 
             clockObserver(); // Update time immediately after init
 
@@ -441,7 +456,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// <param name="e"></param>
     private void BtnCouriers_Click(object sender, RoutedEventArgs e)
     {
-        if (Configuration == null) 
+        if (Configuration == null)
             return;
 
         var courierList = new PL.Courier.CourierListWindow(Configuration.AdminId);
@@ -464,6 +479,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         s_bl.Admin.RemoveClockObserver(clockObserver);
         s_bl.Admin.RemoveConfigObserver(configObserver);
+
+        // --- תוספת: ניקוי ה-Observer של ההזמנות ---
+        s_bl.Order.RemoveObserver(OrderObserver);
     }
 
     //placeholder - to be implemented in the future
@@ -472,7 +490,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// </summary>
     private void BtnList_Click(object sender, RoutedEventArgs e)
     {
-        if (Configuration == null) 
+        if (Configuration == null)
             return;
 
         var orderList = new PL.Order.OrderListWindow(Configuration.AdminId);

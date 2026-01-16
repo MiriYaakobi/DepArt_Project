@@ -300,79 +300,38 @@ internal static class CourierManager
     /// </returns>
     internal static BO.OrderInProgress MapOpenDeliveryToOrderInProgress(DO.Delivery openDelivery)
     {
-        // read base entities
+        // retrieve associated order and courier
         DO.Order doOrder = s_dal.Order.Read(openDelivery.OrderId)!;
         DO.Courier doCourier = s_dal.Courier.Read(openDelivery.CourierId)!;
 
-        // calculate statuses and times
+        // calculate max delivery time and schedule status
         DateTime maxDeliveryTime = OrderManager.CalculateMaxDeliveryTime(doOrder.Id);
         BO.ScheduleStatus scheduleStatus = OrderManager.CalculateScheduleStatus(doOrder.Id);
 
-        // calculate logistics info
+        // calculate air distance
         double airDistance = Tools.GetAirDistance(
-            s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
-            doOrder.Latitude, doOrder.Longitude);
+                s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
+                doOrder.Latitude, doOrder.Longitude);
 
+        // calculate saved actual distance
+        double savedDistance = openDelivery.ActualDistance ?? 0;
 
-        // try to get actual distance and estimated time from external service
-        (double ActualDistance, TimeSpan EstimatedTime)? travelInfo = Tools.GetActualDistanceAndEstimatedTimeSync(
-            s_dal.Config.CompenyLatitude ?? 0,
-            s_dal.Config.CompenyLongitude ?? 0,
-            doOrder.Latitude,
-            doOrder.Longitude,
-            (BO.DeliveryType)doCourier.TypeOfDelivery);
+        // if no saved distance, use air distance as fallback
+        if (savedDistance == 0) 
+            savedDistance = airDistance;
 
-        // if travelInfo is null, fall back to manual calculation
-        if (travelInfo == null)
+        // calculate estimated delivery time based on courier speed
+        double speed = doCourier.TypeOfDelivery switch
         {
-            double lat1 = s_dal.Config.CompenyLatitude ?? 0;
-            double lon1 = s_dal.Config.CompenyLongitude ?? 0;
-            double lat2 = doOrder.Latitude;
-            double lon2 = doOrder.Longitude;
+            DO.DeliveryType.ByFoot => 5.0,
+            DO.DeliveryType.Bicycle => 20.0,
+            DO.DeliveryType.Motorcycle => 60.0,
+            _ => 50.0
+        };
 
-            // calculate air distance in km (approximation)
-            double distance = Math.Sqrt(Math.Pow(lat1 - lat2, 2) + Math.Pow(lon1 - lon2, 2)) * 110;
+        TimeSpan estimatedTime = TimeSpan.FromHours(savedDistance / speed);
 
-            // define speed based on delivery type
-            double speed = doCourier.TypeOfDelivery switch
-            {
-                DO.DeliveryType.ByFoot => 5.0,        // by foot
-                DO.DeliveryType.Bicycle => 20.0,    // by bicycle
-                DO.DeliveryType.Motorcycle => 60.0, // by motorcycle
-                _ => 50.0                           // by car/truck
-            };
-
-            // calculate estimated time
-            TimeSpan time = TimeSpan.FromHours(distance / speed);
-            travelInfo = (distance, time);
-        }
-
-        //
-        //(double ActualDistance, TimeSpan EstimatedTime)? travelInfo = null;
-        //try
-        //{
-        //    travelInfo = Tools.GetActualDistanceAndEstimatedTimeSync(
-        //        s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
-        //        doOrder.Latitude, doOrder.Longitude, (BO.DeliveryType)doCourier.TypeOfDelivery);
-        //}
-        //catch
-        //{
-        //    // אם חישוב המסלול נכשל (בגלל אינטרנט או קואורדינטות שגויות), נתעלם מזה
-        //    // והמשתנה travelInfo יישאר null.
-        //}
-
-
-        //// get actual distance and estimated time
-        //var travelInfo = Tools.GetActualDistanceAndEstimatedTimeSync(
-        //    s_dal.Config.CompenyLatitude ?? 0, s_dal.Config.CompenyLongitude ?? 0,
-        //    doOrder.Latitude, doOrder.Longitude, (BO.DeliveryType)doCourier.TypeOfDelivery); // cast DO to BO
-
-
-        // calculate ExpectedDeliveryTime
-        // assume DeliveryStartTime is Non-Nullable
-        DateTime expectedDeliveryTime = travelInfo.HasValue ? openDelivery.DeliveryStartTime.Add(travelInfo.Value.EstimatedTime) : default;
-
-        // build BO.OrderInProgress
+        // map to BO.OrderInProgress
         return new BO.OrderInProgress
         {
             DeliveryId = openDelivery.Id,
@@ -380,13 +339,13 @@ internal static class CourierManager
             TypeOfOrder = (BO.OrderType)doOrder.TypeOfOrder,
             Description = doOrder.Description,
             Address = doOrder.Address,
-            AirDistance = airDistance,
-            ActualDistance = travelInfo?.ActualDistance ?? 0,
             CustomerName = doOrder.CustomerName,
             CustomerPhone = doOrder.CustomerPhone,
             OrderOpeningTime = doOrder.OrderOpeningTime,
             DeliveryStartTime = openDelivery.DeliveryStartTime,
-            ExpectedDeliveryTime = expectedDeliveryTime,
+            AirDistance = airDistance,
+            ActualDistance = savedDistance,
+            ExpectedDeliveryTime = openDelivery.DeliveryStartTime.Add(estimatedTime),
             MaxDeliveryTime = maxDeliveryTime,
             StatusOfOrder = BO.OrderStatus.InProgress,
             TimeLinessStatus = scheduleStatus,
@@ -403,22 +362,19 @@ internal static class CourierManager
     /// <exception cref="ArgumentException"></exception>
     internal static BO.UserRole Login(int userId, string password)
     {
-        // --- 1. בדיקת מנהל ---
+        // check for valid input
         if (s_dal.Config != null && userId == s_dal.Config.AdminId)
         {
             string storedPass = s_dal.Config.AdminPassword ?? "";
 
-            // תיקון "חכם": בודק גם הצפנה וגם טקסט רגיל (למקרה שהאתחול שמר כטקסט)
+            // verify password (both hashed and plain text for backward compatibility)
             bool isMatch = (Tools.VerifyPassword(password, storedPass)) || (password == storedPass);
 
             if (isMatch)
                 return BO.UserRole.Admin;
-
-            // אם הסיסמה לא נכונה למנהל, אנחנו ממשיכים לבדוק אם זה שליח
-            // (אולי בטעות הקלדת ID של שליח שנראה כמו מנהל)
         }
 
-        // --- 2. בדיקת שליח ---
+        // check for courier
         DO.Courier? doCourier = null;
         try { doCourier = s_dal.Courier.Read(userId); } catch { }
 
@@ -429,73 +385,18 @@ internal static class CourierManager
 
             string storedPass = doCourier.Password ?? "";
 
-            // תיקון "חכם": בודק גם הצפנה וגם טקסט רגיל
+            // verify password (both hashed and plain text for backward compatibility)
             bool isMatch = (Tools.VerifyPassword(password, storedPass)) || (password == storedPass);
 
             if (isMatch)
                 return BO.UserRole.Courier;
 
-            // כאן זורקים שגיאה ספציפית כי ה-ID קיים
+            // incorrect password
             throw new BO.BlLoginFailedException("Incorrect password.");
         }
 
-        // --- 3. לא נמצא כלום ---
+        // user ID not found
         throw new BO.BlLoginFailedException("User ID not found or incorrect password.");
-
-        //// check for valid input
-        //if (s_dal.Config != null && userId == s_dal.Config.AdminId)
-        //{
-        //    // checking admin first
-        //    if (Tools.VerifyPassword(password, s_dal.Config.AdminPassword))
-        //        return BO.UserRole.Admin;
-        //}
-
-        //// check for courier
-        //DO.Courier? doCourier = s_dal.Courier.Read(userId);
-
-        //// if courier found
-        //if (doCourier != null)
-        //{
-        //    // check if active
-        //    if (!doCourier.IsActive)
-        //        throw new BO.BlLoginFailedException("Account is inactive.");
-
-        //    // check password
-        //    if (Tools.VerifyPassword(password, doCourier.Password))
-        //        return BO.UserRole.Courier;
-
-        //    // incorrect password
-        //    throw new BO.BlLoginFailedException("Incorrect password.");
-        //}
-
-        //// if neither admin nor courier login succeeded
-        //throw new BO.BlLoginFailedException("User ID not found or incorrect password.");
-
-
-        //// first, check if the user is admin
-        //if (userId == s_dal.Config.AdminId)
-        //{
-        //    if (Tools.VerifyPassword(password, s_dal.Config.AdminPassword))
-        //        return BO.UserRole.Admin;
-        //}
-
-        //// then, check if the user is a courier
-        //try
-        //{
-        //    // trying to read the courier record
-        //    DO.Courier doCourier = s_dal.Courier.Read(userId)!;
-
-        //    // verify the password
-        //    if (Tools.VerifyPassword(password, doCourier.Password))
-        //        return BO.UserRole.Courier;
-        //}
-        //catch (BO.BlDoesNotExistException) // if courier not found
-        //{
-        //    // continue to next step to throw a general failure exception.
-        //}
-
-        //// if neither admin nor courier login succeeded
-        //throw new BO.BlLoginFailedException("Login failed: Invalid ID or password.");
     }
 
     /// <summary>

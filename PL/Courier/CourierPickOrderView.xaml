@@ -64,28 +64,47 @@
         </Style>
 
         <Style TargetType="Button" x:Key="PickButtonStyle">
-            <Setter Property="Background" Value="#4CAF50"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#8986CC"/>
+            <Setter Property="BorderBrush" Value="#8986CC"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="25,8"/>
             <Setter Property="Cursor" Value="Hand"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="20">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                        </Border>
+                        <Grid>
+                            <Border x:Name="shadow" CornerRadius="20" Background="Black" Margin="0,2,0,0" Opacity="0.1">
+                                <Border.Effect>
+                                    <BlurEffect Radius="5"/>
+                                </Border.Effect>
+                            </Border>
+
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="20">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                        </Grid>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#45A049"/>
+                                <Setter TargetName="border" Property="Background" Value="#8986CC"/>
+                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
+
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.95" ScaleY="0.95" CenterX="50" CenterY="15"/>
                                     </Setter.Value>
                                 </Setter>
+                                <Setter TargetName="shadow" Property="Visibility" Value="Collapsed"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -212,8 +231,7 @@
                                   ItemsSource="{Binding SortOptions}"
                                   SelectedItem="{Binding SelectedSortOption}"
                                   Style="{StaticResource PurpleComboBox}"
-                                  VerticalContentAlignment="Center" Padding="5"
-                                  SelectionChanged="Filter_SelectionChanged"/>
+                                  VerticalContentAlignment="Center" Padding="5"/>
 
                         <TextBlock Text="(Showing orders within your max distance)" Foreground="Gray" FontSize="12" VerticalAlignment="Center" Margin="15,0,0,0"/>
                     </StackPanel>

@@ -240,11 +240,11 @@ public class DeleteVisibilityConverter : IValueConverter
 public class OrderStatusToBrushConverter : IValueConverter
 {
     // colors definition
-    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#855A9D")!;
-    private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#DBC9EF")!;
-    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#007B87")!;
-    private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#13A2A4")!;
-    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#B9EBE0")!;
+    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#8986CC")!;
+    private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#FFA07A")!;
+    private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#3CB371")!;
+    private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#ff5555")!;
+    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#5F9EA0")!;
 
     /// <summary>
     /// Converts an OrderStatus enum value to a corresponding color brush.

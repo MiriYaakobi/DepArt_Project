@@ -47,12 +47,12 @@ namespace PL.Order
         {
             LoadData();
             // כאן תוסיפי את ה-Observer כשהוא יהיה מוכן ב-BL
-            // s_bl.Order.AddObserver(OrderListObserver);
+            s_bl.Order.AddObserver(OrderListObserver);
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            // s_bl.Order.RemoveObserver(OrderListObserver);
+            s_bl.Order.RemoveObserver(OrderListObserver);
         }
 
         private void OrderListObserver()

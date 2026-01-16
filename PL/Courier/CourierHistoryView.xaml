@@ -247,10 +247,28 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <Border Grid.Column="2" Padding="15,5" CornerRadius="12" VerticalAlignment="Center" MinWidth="100"
-                                        Background="{Binding OrderClosedStatus, Converter={StaticResource EndStatusToBrushKey}}">
+                                <Border Grid.Column="2" 
+                                        Padding="20,8" 
+                                        CornerRadius="20" 
+                                        VerticalAlignment="Center" 
+                                        MinWidth="120"
+                                        Background="{Binding OrderClosedStatus, Converter={StaticResource EndStatusToBrushKey}}"
+                                        BorderBrush="White" 
+                                        BorderThickness="2">
 
-                                    <TextBlock Text="{Binding OrderClosedStatus}" HorizontalAlignment="Center" FontWeight="Bold" Foreground="#4A4A6A"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Gray" BlurRadius="10" Opacity="0.2" ShadowDepth="3"/>
+                                    </Border.Effect>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding OrderClosedStatus}" 
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="ExtraBold" 
+                                                   FontSize="13" 
+                                                   Foreground="#4A4A6A"
+                                                   TextOptions.TextFormattingMode="Display"/>
+                                    </StackPanel>
                                 </Border>
                             </Grid>
                         </Border>

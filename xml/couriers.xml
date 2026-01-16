@@ -71,8 +71,8 @@
     <Name>Tamar Rosen</Name>
     <Phone>053-617-2359</Phone>
     <Email>tamar.rosen@gmail.com</Email>
-    <Password>tamar#rosen14</Password>
-    <IsActive>false</IsActive>
+    <Password>07ab59f4731b0790d0acfded6a52d2c53e7e3c6a1e241f6dfe3a41f3072e07fb</Password>
+    <IsActive>true</IsActive>
     <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2021-09-20T11:34:53.7067348+03:00</StartWorkTime>
     <MaxDistance>9</MaxDistance>
