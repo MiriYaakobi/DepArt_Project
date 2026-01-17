@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:BO="clr-namespace:BO;assembly=BL"
         xmlns:converters="clr-namespace:PL" 
         mc:Ignorable="d"
         Title="Courier Dashboard" Height="850" Width="1400"
@@ -136,19 +138,37 @@
             <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItem}"/>
         </Style>
 
+        <ObjectDataProvider x:Key="OrderEndStatusProvider" 
+                        MethodName="GetValues" 
+                        ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="BO:OrderEndStatus"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
         <DataTemplate x:Key="ActiveOrderTemplate">
-            <Border Background="White" CornerRadius="15" Padding="20">
+            <Border Background="White" CornerRadius="15" Padding="20" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect Color="#E0E0E0" BlurRadius="15" ShadowDepth="0"/>
                 </Border.Effect>
+
                 <StackPanel>
-                    <TextBlock Text="📦 Your Current Order" FontSize="18" FontWeight="Bold" Foreground="#8986CC" Margin="0,0,0,15"/>
-                    <Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="📦 Mission Details" FontSize="18" FontWeight="Bold" Foreground="#8986CC"/>
+                        <TextBlock Text="{Binding OrderId, StringFormat=' #{0}'}" FontSize="18" FontWeight="Bold" Foreground="#8986CC"/>
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -156,32 +176,75 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Order ID:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OrderId}" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Customer: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CustomerName}" FontWeight="Bold"/>
 
-                        <TextBlock Grid.Row="1" Text="Address:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="Phone: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding CustomerPhone}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Address: " Style="{StaticResource LabelStyle}"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Address}" FontWeight="Bold" TextWrapping="Wrap"/>
 
-                        <TextBlock Grid.Row="2" Text="Customer:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CustomerName}" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="Type: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding TypeOfOrder}" FontWeight="Bold"/>
 
-                        <TextBlock Grid.Row="3" Text="Phone:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CustomerPhone}" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Air Distance: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AirDistance, StringFormat='{}{0:F2} km'}" FontWeight="Bold"/>
 
-                        <TextBlock Grid.Row="4" Text="Opened At:" Style="{StaticResource LabelStyle}" Margin="0,0,10,10"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding OrderOpeningTime, StringFormat='dd/MM HH:mm'}" FontWeight="Bold"/>
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="Actual Distance: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding ActualDistance, StringFormat='{}{0:F2} km', TargetNullValue='-'}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Start Time: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DeliveryStartTime, StringFormat='dd/MM/yy HH:mm'}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="3" Text="Expected: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding ExpectedDeliveryTime, StringFormat='dd/MM/yy HH:mm'}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Deadline: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding MaxDeliveryTime, StringFormat='dd/MM/yy HH:mm'}" FontWeight="Bold" Foreground="#D32F2F"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="3" Text="Time Left: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding RemainingDeliveryTime, StringFormat='{}{0:%d\\.hh\\:mm}'}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Open At : " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding OrderOpeningTime, StringFormat='dd/MM/yy HH:mm'}" FontWeight="Bold"/>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Description: " Style="{StaticResource LabelStyle}" Margin="0,35,0,0"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Description, TargetNullValue='No description'}" 
+                           FontStyle="Italic" TextWrapping="Wrap" Margin="0,35,0,0"/>
+
+                        <TextBlock Grid.Row="5" Grid.Column="3" Text="Timeliness: " Style="{StaticResource LabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="4" Text="{Binding TimeLinessStatus}"  FontWeight="Bold"/>
+
                     </Grid>
-                    <Separator Margin="0,15"/>
-                    <TextBlock Text="Action:" Style="{StaticResource LabelStyle}"/>
-                    <Button Content="✅ Mark as Delivered" Click="BtnFinishOrder_Click"
-                            Margin="0,10,0,0"
-                            Background="#8986CC" Foreground="White" FontWeight="Bold" Height="45" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="22"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+
+                    <Separator Margin="0,10"/>
+
+                    <TextBlock Text="Update Status &amp; Finish:" Style="{StaticResource LabelStyle}" Margin="0,5"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox Grid.Column="0"
+                                  ItemsSource="{Binding Source={StaticResource OrderEndStatusProvider}}"
+                                  SelectedItem="{Binding SelectedEndStatus, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                                  Style="{StaticResource PurpleComboBox}" 
+                                  Height="40" Margin="0,0,10,0"/>
+
+                        <Button Grid.Column="1" Content="✅ Finish" Click="BtnFinishOrder_Click"
+                        Width="100" Height="40"
+                        Background="#8986CC" Foreground="White" FontWeight="Bold" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </Grid>
+
                 </StackPanel>
             </Border>
         </DataTemplate>
