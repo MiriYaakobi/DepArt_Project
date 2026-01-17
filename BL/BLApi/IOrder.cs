@@ -13,7 +13,7 @@ public interface IOrder : IObservable
     void Delete(int requestingUserId, int orderId);
     void Cancel(int requestingUserId, int orderId);
     int[] GetOrderSummaryQuantities(int requestingUserId);
-    void CompleteDelivery(int requestingUserId, int courierId, int deliveryId);
+    void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, BO.OrderEndStatus status);
     void ChooseOrder(int requestingUserId, int courierId, int orderId);
     IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null);
     IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.OpenOrderFieldSort? sortBy = null);

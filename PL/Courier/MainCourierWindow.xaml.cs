@@ -8,8 +8,19 @@ namespace PL.Courier
     public partial class MainCourierWindow : Window
     {
         private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-        private int _courierId;
+        private int courierId;
         private string enteredPassword = "";
+        public Array OrderEndStatuses { get; } = Enum.GetValues(typeof(BO.OrderEndStatus));
+
+        // 1. הגדרת המשתנה בחלון
+        public BO.OrderEndStatus SelectedEndStatus
+        {
+            get { return (BO.OrderEndStatus)GetValue(SelectedEndStatusProperty); }
+            set { SetValue(SelectedEndStatusProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedEndStatusProperty =
+            DependencyProperty.Register("SelectedEndStatus", typeof(BO.OrderEndStatus), typeof(MainCourierWindow), new PropertyMetadata(BO.OrderEndStatus.Delivered));
 
         public object? MainViewContent
         {
@@ -60,7 +71,7 @@ namespace PL.Courier
         public MainCourierWindow(int courierId)
         {
             InitializeComponent();
-            _courierId = courierId;
+            this.courierId = courierId;
             DataContext = this;
             RefreshCourierState();
         }
@@ -69,7 +80,7 @@ namespace PL.Courier
         {
             try
             {
-                CurrentCourier = s_bl.Courier.Read(_courierId, _courierId)!;
+                CurrentCourier = s_bl.Courier.Read(courierId, courierId)!;
                 VisualPassword = "********";
                 enteredPassword = "";
             }
@@ -92,7 +103,7 @@ namespace PL.Courier
         private void BtnHistory_Click(object sender, RoutedEventArgs e)
         {
             var historyView = new PL.Courier.CourierHistoryView();
-            historyView.CourierId = _courierId;
+            historyView.CourierId = courierId;
 
             historyView.RequestDashboardView += (s, args) =>
             {
@@ -122,7 +133,7 @@ namespace PL.Courier
 
             // 2. יצירת המסך
             var pickOrderView = new PL.Courier.CourierPickOrderView();
-            pickOrderView.CourierId = _courierId;
+            pickOrderView.CourierId = courierId;
 
             // 3. הרשמה לאירועי ניווט (חזרה לדשבורד או להיסטוריה)
             pickOrderView.RequestDashboardView += (s, args) =>
@@ -178,13 +189,17 @@ namespace PL.Courier
             }
         }
 
-        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e) { e.CanExecute = false; e.Handled = true; }
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = false;
+            e.Handled = true;
+        }
 
         private void BtnUpdate_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                BO.Courier savedCourier = s_bl.Courier.Read(_courierId, _courierId)!;
+                BO.Courier savedCourier = s_bl.Courier.Read(courierId, courierId)!;
                 double? companyLimit = s_bl.Admin.GetConfig().DeliveryMaxDistance;
                 if (companyLimit.HasValue && CurrentCourier.MaxDistance.HasValue && CurrentCourier.MaxDistance.Value > companyLimit.Value)
                 {
@@ -205,7 +220,7 @@ namespace PL.Courier
                     CurrentCourier.Password = originalCourierFromDb.Password;
                 }
 
-                s_bl.Courier.Update(_courierId, CurrentCourier);
+                s_bl.Courier.Update(courierId, CurrentCourier);
                 CustomMessageBox.Show("Profile updated successfully!", "Success");
                 RefreshCourierState();
             }
@@ -215,28 +230,22 @@ namespace PL.Courier
         private void BtnFinishOrder_Click(object sender, RoutedEventArgs e)
         {
             // 1. הגנה: אם אין הזמנה פעילה, אין מה לסיים
-            if (CurrentCourier.CurrentOrder == null) return;
+            if (CurrentCourier.CurrentOrder == null)
+                return;
 
             // 2. שאלת אישור
             if (CustomMessageBox.ShowQuestion("Mark this order as Delivered?", "Confirm Completion"))
             {
                 try
                 {
-                    // === הנה התשובה לשאלתך ===
-                    // המזהה נמצא בתוך האובייקט של ההזמנה הנוכחית
-                    // (ייתכן שב-BO קראת לזה Id או OrderId, תבדקי מה משלים לך ה-Intellisense)
                     int deliveryId = CurrentCourier.CurrentOrder.DeliveryId;
 
-                    // 3. קריאה לפונקציה בממשק
-                    // הפרמטרים:
-                    // 1. requestingUserId -> ה-ID של השליח (כי הוא המשתמש המחובר)
-                    // 2. courierId -> ה-ID של השליח שמבצע
-                    // 3. deliveryId -> ה-ID ששלפנו הרגע מהאובייקט
-                    s_bl.Order.CompleteDelivery(_courierId, _courierId, deliveryId);
+                    BO.OrderEndStatus selectedStatus = this.SelectedEndStatus;
 
-                    CustomMessageBox.Show("Order delivery completed!", "Great Job", MessageType.Success);
+                    s_bl.Order.CompleteDelivery(courierId, courierId, deliveryId, selectedStatus);
 
-                    // 4. רענון המסך (ההזמנה תיעלם והסטטוס יתעדכן)
+                    CustomMessageBox.Show("Order delivery completed!", "Great Job!", MessageType.Success);
+
                     RefreshCourierState();
                 }
                 catch (Exception ex)

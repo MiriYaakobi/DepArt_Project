@@ -117,13 +117,13 @@ internal class OrderImplementation : IOrder
     /// <param name="requestingUserId"></param>
     /// <param name="courierId"></param>
     /// <param name="deliveryId"></param>
-    public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId)
+    public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, BO.OrderEndStatus status)
     {
         // access control: only Admin or the courier himself can complete a delivery
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
         // call to DeliveryManager to complete the delivery
-        DeliveryManager.CompleteDeliveryUpdate(courierId, deliveryId);
+        DeliveryManager.CompleteDeliveryUpdate(courierId, deliveryId, status);
     }
 
     /// <summary>

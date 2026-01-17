@@ -113,7 +113,7 @@ internal static class DeliveryManager
     /// <param name="courierId"></param>
     /// <param name="deliveryId"></param>
     /// <exception cref="BO.BlInvalidOperationException"></exception>
-    internal static void CompleteDeliveryUpdate(int courierId, int deliveryId)
+    internal static void CompleteDeliveryUpdate(int courierId, int deliveryId, BO.OrderEndStatus status)
     {
         // validate delivery existence
         DO.Delivery doDelivery = GetExistingDelivery(deliveryId);
@@ -130,7 +130,7 @@ internal static class DeliveryManager
         DO.Delivery updatedDelivery = doDelivery with
         {
             DeliveryEndTime = AdminManager.Now,
-            OrderClosedStatus = DO.OrderEndStatus.Delivered
+            OrderClosedStatus = (DO.OrderEndStatus)status
         };
 
         // save update to DAL
