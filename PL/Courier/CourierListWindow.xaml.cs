@@ -148,6 +148,8 @@ public partial class CourierListWindow : UserControl
                 try
                 {
                     s_bl.Courier.Delete(AdminID, courierToDelete.Id);
+
+                    new CustomMessageBox($"{courierToDelete.Name} deleted successfully!", "Deleted", false).ShowDialog();
                     // לא צריך לקרוא ל-LoadData ידנית כי ה-Observer יעשה את זה!
                     // אבל אם רוצים תגובה מיידית:
                     LoadData();

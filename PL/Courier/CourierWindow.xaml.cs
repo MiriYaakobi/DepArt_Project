@@ -141,14 +141,14 @@ public partial class CourierWindow : Window
             return;
         }
 
-        // Confirm deletion
-        if (CustomMessageBox.ShowQuestion("Are you sure you want to delete this courier?", "Delete Confirmation"))
+        string msg = $"Are you sure you want to delete {CurrentCourier.Name}?";
+
+        if (CustomMessageBox.ShowQuestion(msg, "Delete Confirmation"))
         {
-            // Proceed with deletion
             try
             {
                 s_bl.Courier.Delete(currentAdminId, CurrentCourier.Id);
-                CustomMessageBox.Show("Courier deleted successfully.", "Deleted");
+                CustomMessageBox.Show($"{CurrentCourier.Name} was deleted successfully.", "Deleted");
                 this.Close();
             }
             catch (Exception ex)
