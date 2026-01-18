@@ -280,6 +280,10 @@
 
                                     <TextBlock Text="{Binding Address}" Foreground="#4A4A6A" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" FontSize="15" Margin="0,0,0,3"/>
                                     <TextBlock Text="{Binding PackageDetails}" Foreground="Gray" TextTrimming="CharacterEllipsis" FontSize="13"/>
+
+                                    <TextBlock Text="{Binding TypeOfOrder}" Foreground="#4A4A6A" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" FontSize="15" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding TimeLinessStatus}" Foreground="Gray" TextTrimming="CharacterEllipsis" FontSize="13"/>
+
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="20,0">

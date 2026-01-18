@@ -53,37 +53,18 @@ public partial class LoginWindow : Window
         if (parameter is not PasswordBox passwordBox)
             return;
 
-        // 1. הופך את השדות לאדומים אם הם לא תקינים
-        ForceValidation(this);
-
         string inputIdText = UserId;
         string rawPassword = passwordBox.Password;
 
-        // 2. בדיקה מפוצלת:
-
-        // אם התעודת זהות ריקה - אנחנו עוצרים כאן.
-        // לא מקפיצים הודעה, כי התיבה כבר אדומה והמשתמש רואה "Field is required".
-        if (string.IsNullOrWhiteSpace(inputIdText))
+        // Validation
+        if (string.IsNullOrWhiteSpace(inputIdText) || string.IsNullOrWhiteSpace(rawPassword))
         {
-            var textBox = FindFirstTextBox(this);
-            textBox?.Focus();
+            CustomMessageBox.Show("Please enter ID and Password.", "Validation Error", MessageType.Warning);
             return;
         }
 
-        // אם הסיסמה ריקה - כאן כן נקפיץ הודעה, כי לסיסמה אין מסגרת אדומה
-        if (string.IsNullOrWhiteSpace(rawPassword))
-        {
-            CustomMessageBox.Show("Please enter your password.", "Validation Error", MessageType.Warning);
-            passwordBox.Focus(); // נחזיר את המשתמש לכתוב סיסמה
-            return;
-        }
-
-        // --- מכאן הכל נשאר רגיל ---
-
-        // המרה למספר (למרות שהולידציה בודקת, זה ליתר ביטחון)
         if (!int.TryParse(inputIdText, out int idVal))
         {
-            // כאן אפשר גם לעצור בשקט אם רוצים, אבל הודעה זה בסדר כי זה מקרה נדיר
             CustomMessageBox.Show("ID must be a number.", "Validation Error", MessageType.Warning);
             return;
         }
@@ -92,22 +73,22 @@ public partial class LoginWindow : Window
         {
             BO.UserRole role = s_bl.Courier.Login(idVal, rawPassword);
 
-            // ... המשך הקוד המקורי שלך (Admin/Courier) ...
+            // === Admin Login Logic ===
             if (role == BO.UserRole.Admin)
             {
-                // וכו'... (להעתיק את שאר הלוגיקה מהקוד הקודם)
+                // בדיקה אם חלון מנהל כבר פתוח
                 if (!ActivateWindowIfExists<MainWindow>())
                 {
                     new MainWindow().Show();
                 }
             }
+            // === Courier Login Logic ===
             else if (role == BO.UserRole.Courier)
             {
-                // ...
                 BO.Courier? courier = s_bl.Courier.Read(idVal, idVal);
                 if (courier != null)
                 {
-                    // לוגיקת פתיחת חלון שליח...
+                    // בדיקה אם חלון שליח כבר פתוח (ובודקים שזה אותו שליח!)
                     bool found = false;
                     foreach (Window window in Application.Current.Windows)
                     {
@@ -116,7 +97,7 @@ public partial class LoginWindow : Window
                             if (window.WindowState == WindowState.Minimized)
                                 window.WindowState = WindowState.Normal;
 
-                            window.Activate();
+                            window.Activate(); // הבאת החלון לקדמה
                             found = true;
                             break;
                         }
@@ -182,42 +163,6 @@ public partial class LoginWindow : Window
     {
         if (e.ChangedButton == MouseButton.Left)
             this.DragMove();
-    }
-
-    /// <summary>
-    /// Recursive method to force validation on all input fields in the window
-    /// </summary>
-    private void ForceValidation(DependencyObject parent)
-    {
-        // עוברים על כל הילדים של האלמנט הנוכחי
-        foreach (object child in LogicalTreeHelper.GetChildren(parent))
-        {
-            if (child is DependencyObject node)
-            {
-                // אם מצאנו TextBox - נפעיל את הולידציה שלו
-                if (node is TextBox tb)
-                {
-                    tb.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
-                }
-
-                // ממשיכים לחפש עמוק יותר (רקורסיה)
-                ForceValidation(node);
-            }
-        }
-    }
-
-    private TextBox? FindFirstTextBox(DependencyObject parent)
-    {
-        foreach (object child in LogicalTreeHelper.GetChildren(parent))
-        {
-            if (child is DependencyObject node)
-            {
-                if (node is TextBox tb) return tb;
-                var found = FindFirstTextBox(node);
-                if (found != null) return found;
-            }
-        }
-        return null;
     }
 } // --- סוף המחלקה LoginWindow ---
 

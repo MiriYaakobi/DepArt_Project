@@ -171,6 +171,23 @@ public class NullToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Validation rule that checks if a field is not empty.
+/// </summary>
+public class NotEmptyValidationRule : ValidationRule
+{
+    /// <summary>
+    /// Validates that the field is not empty.
+    /// </summary>
+    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+    {
+        if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+            return new ValidationResult(false, "Field is required.");
+
+        return ValidationResult.ValidResult;
+    }
+}
+
+/// <summary>
 /// Converts a boolean value to a button title.
 /// </summary>
 public class DeleteVisibilityConverter : IValueConverter

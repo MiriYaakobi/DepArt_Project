@@ -23,6 +23,17 @@
     <MaxDistance>119</MaxDistance>
   </Courier>
   <Courier>
+    <Id>203019777</Id>
+    <Name>Yael Barak</Name>
+    <Phone>051-409-7249</Phone>
+    <Email>yael.barak@gmail.com</Email>
+    <Password>yael#barak06</Password>
+    <IsActive>true</IsActive>
+    <TypeOfDelivery>Bicycle</TypeOfDelivery>
+    <StartWorkTime>2021-08-11T16:11:34.7067348+03:00</StartWorkTime>
+    <MaxDistance>2</MaxDistance>
+  </Courier>
+  <Courier>
     <Id>998576980</Id>
     <Name>Roi Avrahami</Name>
     <Phone>051-499-8390</Phone>
@@ -76,6 +87,17 @@
     <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2025-06-26T07:23:21.7067348+03:00</StartWorkTime>
     <MaxDistance>340</MaxDistance>
+  </Courier>
+  <Courier>
+    <Id>269380756</Id>
+    <Name>Shira Neuman</Name>
+    <Phone>050-471-4208</Phone>
+    <Email>shira.neuman@gmail.com</Email>
+    <Password>shira#neuman13</Password>
+    <IsActive>false</IsActive>
+    <TypeOfDelivery>ByFoot</TypeOfDelivery>
+    <StartWorkTime>2025-02-27T06:16:48.7067348+02:00</StartWorkTime>
+    <MaxDistance>2</MaxDistance>
   </Courier>
   <Courier>
     <Id>494770582</Id>
@@ -186,5 +208,16 @@
     <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2023-01-24T15:21:39.7067348+02:00</StartWorkTime>
     <MaxDistance>139</MaxDistance>
+  </Courier>
+  <Courier>
+    <Id>133173179</Id>
+    <Name>Noam Ben-David</Name>
+    <Phone>054-400-9269</Phone>
+    <Email>noam.ben-david@gmail.com</Email>
+    <Password>noam#ben-david06</Password>
+    <IsActive>true</IsActive>
+    <TypeOfDelivery>Bicycle</TypeOfDelivery>
+    <StartWorkTime>2021-11-19T07:06:52.7067348+02:00</StartWorkTime>
+    <MaxDistance>4</MaxDistance>
   </Courier>
 </ArrayOfCourier>

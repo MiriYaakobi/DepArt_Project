@@ -900,17 +900,10 @@ internal class Program
             return;
         }
 
-        Console.WriteLine("Enter Delivery End Status (0: Delivered, 1: Failed, 2: Returned): ");
-        BO.OrderEndStatus status;
-        while (!Enum.TryParse(Console.ReadLine(), true, out status))
-        {
-            Console.WriteLine("Invalid status. Please enter: Delivered, Failed, or Returned (or 0/1/2).");
-        }
-
         try
         {
-            s_bl.Order.CompleteDelivery(requestingUserId, courierId, deliveryId, status);
-            Console.WriteLine($"\nDelivery {deliveryId} successfully marked as {status}.");
+            s_bl.Order.CompleteDelivery(requestingUserId, courierId, deliveryId);
+            Console.WriteLine($"\nDelivery {deliveryId} successfully marked as Delivered.");
         }
         catch (BO.BlNotAuthorizedException ex) { PrintException(ex); }
         catch (BO.BlDoesNotExistException ex) { PrintException(ex); }

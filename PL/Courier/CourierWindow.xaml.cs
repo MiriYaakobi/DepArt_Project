@@ -98,22 +98,15 @@ public partial class CourierWindow : Window
                 return;
             }
 
-            // Additional validation can be added here as needed
+            // Update existing courier
             if (IsUpdateMode)
             {
-                // If password is not changed, retain the original password
-                if (string.IsNullOrEmpty(CurrentCourier.Password))
-                {
-                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(currentAdminId, CurrentCourier.Id)!;
-
-                    CurrentCourier.Password = originalCourierFromDb!.Password;
-                }
-
-                // Update existing courier
                 s_bl.Courier.Update(currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier updated successfully!", "Success");
             }
-            else // Add new courier
+
+            //Add new courier
+            else
             {
                 // Ensure password is provided for new courier
                 if (string.IsNullOrEmpty(CurrentCourier.Password))
@@ -148,14 +141,14 @@ public partial class CourierWindow : Window
             return;
         }
 
-        string msg = $"Are you sure you want to delete {CurrentCourier.Name}?";
-
-        if (CustomMessageBox.ShowQuestion(msg, "Delete Confirmation"))
+        // Confirm deletion
+        if (CustomMessageBox.ShowQuestion("Are you sure you want to delete this courier?", "Delete Confirmation"))
         {
+            // Proceed with deletion
             try
             {
                 s_bl.Courier.Delete(currentAdminId, CurrentCourier.Id);
-                CustomMessageBox.Show($"{CurrentCourier.Name} was deleted successfully.", "Deleted");
+                CustomMessageBox.Show("Courier deleted successfully.", "Deleted");
                 this.Close();
             }
             catch (Exception ex)

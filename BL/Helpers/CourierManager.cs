@@ -136,23 +136,24 @@ internal static class CourierManager
     /// updates an existing courier's information.
     /// </summary>
     /// <param name="courier"></param>
+    /// <exception cref="Exception"></exception>
     internal static void UpdateCourier(BO.Courier courier)
     {
-        // retrieve existing courier or throw if not found by calling helper method
+        // Retrieve existing courier or throw if not found
         DO.Courier existingCourier = GetExistingCourier(courierId: courier.Id);
 
-        if (courier.IsActive == false)
+        // Prevent deactivation if courier has an active order
+        if (courier.IsActive == false && courier.CurrentOrder != null)
         {
-            if (courier.CurrentOrder != null)
-            {
-                throw new Exception("Cannot deactivate courier while they have an active order assigned.");
-            }
+            throw new Exception("Cannot deactivate courier while they have an active order assigned.");
         }
 
-        // determine password to store
-        string passwordToStore = string.IsNullOrEmpty(courier.Password) ? existingCourier.Password : Tools.HashPassword(courier.Password);
+        // Determine password to store
+        string passwordToStore = (string.IsNullOrEmpty(courier.Password) || courier.Password == "********")
+            ? existingCourier.Password
+            : Tools.HashPassword(courier.Password);
 
-        // map updated fields
+        // Map updated fields
         DO.Courier updatedCourier = existingCourier with
         {
             Name = courier.Name!,
@@ -164,9 +165,9 @@ internal static class CourierManager
             MaxDistance = courier.MaxDistance
         };
 
-        // perform the update
         s_dal.Courier.Update(updatedCourier);
 
+        // Notify observers about the update
         Observers.NotifyItemUpdated(courier.Id);
         Observers.NotifyListUpdated();
     }
