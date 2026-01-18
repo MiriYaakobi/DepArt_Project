@@ -164,7 +164,7 @@ namespace PL.Courier
         {
             if (VisualPassword == "********") { VisualPassword = ""; enteredPassword = ""; }
             enteredPassword += e.Text;
-            if (sender is TextBox txt) { txt.Text += "●"; txt.CaretIndex = txt.Text.Length; }
+            if (sender is TextBox txt) { txt.Text += "*"; txt.CaretIndex = txt.Text.Length; }
             e.Handled = true;
         }
 

@@ -98,22 +98,15 @@ public partial class CourierWindow : Window
                 return;
             }
 
-            // Additional validation can be added here as needed
+            // Update existing courier
             if (IsUpdateMode)
             {
-                // If password is not changed, retain the original password
-                if (string.IsNullOrEmpty(CurrentCourier.Password))
-                {
-                    BO.Courier originalCourierFromDb = s_bl.Courier.Read(currentAdminId, CurrentCourier.Id)!;
-
-                    CurrentCourier.Password = originalCourierFromDb!.Password;
-                }
-
-                // Update existing courier
                 s_bl.Courier.Update(currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier updated successfully!", "Success");
             }
-            else // Add new courier
+
+            //Add new courier
+            else
             {
                 // Ensure password is provided for new courier
                 if (string.IsNullOrEmpty(CurrentCourier.Password))
