@@ -9,7 +9,6 @@
              d:DesignHeight="700" d:DesignWidth="1000"
              FlowDirection="LeftToRight"
              Background="{StaticResource AliceBlue}"
-             DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}"
              Loaded="UserControl_Loaded"       
              Unloaded="UserControl_Unloaded">
     <UserControl.Resources>
@@ -311,7 +310,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource AliceBlue}">
+    <Grid Background="{StaticResource AliceBlue}" DataContext="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>
@@ -360,20 +359,18 @@
                             SelectedValue="{Binding StatusFilter, Mode=TwoWay}"
                             Style="{StaticResource PurpleComboBox}"
                             Width="180" Height="35" 
-                            VerticalContentAlignment="Center"
-                            SelectionChanged="Filter_Changed"/>
+                            VerticalContentAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🔍 Search Courier:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <Border Background="White" BorderBrush="#8986CC" BorderThickness="1" CornerRadius="8" Width="200" Height="35">
-                            <TextBox x:Name="SearchBox" 
-                                     Background="Transparent" 
+                            <TextBox Background="Transparent" 
                                      BorderThickness="0" 
                                      VerticalContentAlignment="Center" 
                                      Padding="10,0" 
                                      FontSize="14"
-                                     TextChanged="Filter_Changed"/>
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
                         </Border>
                     </StackPanel>
                 </Grid>
@@ -387,7 +384,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="📋 Couriers List" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DeepPurple}" Margin="0,0,0,10"/>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding CourierList}" SelectedItem="{Binding SelectedCourier}" MouseDoubleClick="ListView_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="ID" Width="80">
@@ -455,7 +452,8 @@
                                         <DataTemplate>
                                             <Button Style="{StaticResource TrashButtonStyle}" 
                                                     Click="BtnDelete_Click" 
-                                                    Visibility="{Binding Converter={StaticResource DeleteVisibilityConverterKey}}"/>
+                                                    Visibility="{Binding Converter={StaticResource DeleteVisibilityConverterKey}}"
+                                                    CommandParameter="{Binding Id}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

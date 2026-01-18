@@ -212,56 +212,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Updates the visual representation of a single bar in a bar chart based on the specified value and its relation
-    /// to other values.
-    /// </summary>
-    /// <remarks>The method adjusts the height and opacity of the bar proportionally to the specified value
-    /// relative to the maximum value in the dataset. - Bars with a value of 0 are assigned a minimum height of 5 and a
-    /// reduced opacity of 0.2. - Bars with non-zero values are guaranteed a minimum height of 20. - The maximum height
-    /// of a bar is capped at 150.</remarks>
-    /// <param name="bar">The <see cref="Border"/> element representing the bar to be updated.</param>
-    /// <param name="textVal">The <see cref="TextBlock"/> element displaying the value associated with the bar.</param>
-    /// <param name="value">The value to be represented by the bar. Must be non-negative.</param>
-    /// <param name="allValues">An array of all values in the dataset, used to determine the relative height and opacity of the bar.</param>
-    private void UpdateSingleBar(Border bar, TextBlock textVal, int value, int[] allValues)
-    {
-        // Update the text value
-        textVal.Text = value.ToString();
-        int maxValue = allValues.Max();
-
-        // Prevent division by zero
-        if (maxValue == 0)
-            maxValue = 1;
-
-        // Calculate new height
-        double maxHeight = 115;
-        double newHeight = ((double)value / maxValue) * maxHeight;
-
-        // Ensure minimum height for non-zero values
-        if (value > 0 && newHeight < 20)
-            newHeight = 20;
-
-        // Ensure minimum height for zero values
-        if (value == 0)
-            newHeight = 5;
-
-        // Update bar height and opacity
-        bar.Height = newHeight;
-        double minOpacity = 0.3;
-        double maxOpacity = 1.0;
-        double ratio = (double)value / maxValue;
-        double newOpacity = minOpacity + (ratio * (maxOpacity - minOpacity));
-
-        // Ensure minimum opacity for zero values
-        if (value == 0)
-            newOpacity = 0.2;
-
-        bar.Opacity = newOpacity;
-    }
-
-    /// <summary>
     /// Handles the click event of the "Save Configuration" button. Saves the current configuration settings, including
     /// updating the admin password if modified.
+    /// In writing this class, we used AI to understand the connections between this code and
+    /// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
     /// </summary>
     /// <remarks>If the password field contains a value other than "********", the admin password is updated.
     /// Displays a success message upon successful save, or an error message if the operation fails.</remarks>

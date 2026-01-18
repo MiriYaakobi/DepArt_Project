@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using BO;
 
-namespace PL.Order // בתוך תיקיית Order
+namespace PL.Order
 {
     public class OrderStatusCollection : IEnumerable
     {

@@ -334,7 +334,13 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🔍 Search ID:" Foreground="{StaticResource TextDark}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <Border Background="White" BorderBrush="#8986CC" BorderThickness="1" CornerRadius="8" Width="200" Height="35">
-                            <TextBox x:Name="SearchBox" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" Padding="10,0" FontSize="14" TextChanged="Filter_Changed"/>
+                            <TextBox Background="Transparent" 
+                                BorderThickness="0" 
+                                VerticalContentAlignment="Center" 
+                                Padding="10,0" 
+                                FontSize="14" 
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                TextChanged="Filter_Changed"/>
                         </Border>
                     </StackPanel>
                 </Grid>
@@ -348,7 +354,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="📋 Orders List" FontSize="18" FontWeight="Bold" Foreground="{StaticResource DeepPurple}" Margin="0,0,0,10"/>
 
-                    <ListView Grid.Row="1" ItemsSource="{Binding OrderList}" MouseDoubleClick="OrderList_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
+                    <ListView Grid.Row="1" ItemsSource="{Binding OrderList}" SelectedItem="{Binding SelectedOrder}" MouseDoubleClick="OrderList_MouseDoubleClick" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource TextDark}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Order ID" Width="80">

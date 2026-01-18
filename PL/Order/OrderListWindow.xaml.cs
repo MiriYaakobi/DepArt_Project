@@ -10,18 +10,26 @@ using System.Windows.Input;
 
 namespace PL.Order
 {
+    /// <summary>
+    /// Interaction logic for OrderListWindow.xaml
+    /// In writing this class, we used AI to understand the connections between this code and
+    /// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+    /// </summary>
     public partial class OrderListWindow : UserControl
     {
-        // גישה לשכבת ה-BL
+        // bl instance
         private BlApi.IBl s_bl = BlApi.Factory.Get();
 
-        // משתנה לשמירת ה-ID של המנהל המחובר
+        // admin ID
         private int AdminID;
 
+        // events for navigation
         public event EventHandler? RequestDashboard;
         public event EventHandler? RequestCouriers;
 
-        // תכונת תלות לרשימת ההזמנות
+        // Dependency Properties
+
+        //order list property to bind to the DataGrid
         public IEnumerable<BO.OrderInList> OrderList
         {
             get { return (IEnumerable<BO.OrderInList>)GetValue(OrderListProperty); }
@@ -31,11 +39,40 @@ namespace PL.Order
         public static readonly DependencyProperty OrderListProperty =
             DependencyProperty.Register("OrderList", typeof(IEnumerable<BO.OrderInList>), typeof(OrderListWindow));
 
-        // תכונה לסינון (סטטוס)
-        public object StatusFilter { get; set; } = "All";
+        // search text property for filtering
+        public string SearchText
+        {
+            get { return (string)GetValue(SearchTextProperty); }
+            set { SetValue(SearchTextProperty, value); }
+        }
+
+        public static readonly DependencyProperty SearchTextProperty =
+            DependencyProperty.Register("SearchText", typeof(string), typeof(OrderListWindow), new PropertyMetadata(string.Empty)); // ערך התחלתי ריק
+
+        // selected order property for tracking the selected order in the DataGrid
+        public object? SelectedOrder
+        {
+            get { return (object?)GetValue(SelectedOrderProperty); }
+            set { SetValue(SelectedOrderProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedOrderProperty =
+            DependencyProperty.Register("SelectedOrder", typeof(object), typeof(OrderListWindow));
+
+        // status filter property for filtering orders by status
+        public object StatusFilter
+        {
+            get { return (object)GetValue(StatusFilterProperty); }
+            set { SetValue(StatusFilterProperty, value); }
+        }
+
+        public static readonly DependencyProperty StatusFilterProperty =
+            DependencyProperty.Register("StatusFilter", typeof(object), typeof(OrderListWindow), new PropertyMetadata("All"));
+
+        // all orders fetched from BL
         private IEnumerable<BO.OrderInList>? AllOrders;
 
-        // בנאי המקבל את מזהה המנהל (ברירת מחדל 1 אם לא נשלח)
+        // constructor
         public OrderListWindow(int adminId = 1)
         {
             InitializeComponent();
@@ -43,28 +80,30 @@ namespace PL.Order
             StatusFilter = "All";
         }
 
+        // event handlers
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             LoadData();
-            // כאן תוסיפי את ה-Observer כשהוא יהיה מוכן ב-BL
             s_bl.Order.AddObserver(OrderListObserver);
         }
 
+        // un-register observer on unload to prevent memory leaks
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             s_bl.Order.RemoveObserver(OrderListObserver);
         }
 
+        // observer method to reload data when notified
         private void OrderListObserver()
         {
             Dispatcher.Invoke(() => LoadData());
         }
 
+        // load data from BL
         private void LoadData()
         {
             try
             {
-                // תיקון השגיאה: העברת AdminID לפונקציה ReadAll
                 AllOrders = s_bl.Order.ReadAll(AdminID);
                 ApplyFilters();
             }
@@ -74,54 +113,60 @@ namespace PL.Order
             }
         }
 
+        // apply filters to the order list
         private void ApplyFilters()
         {
-            if (AllOrders == null) return;
+            if (AllOrders == null) 
+                return;
 
             var tempAddList = AllOrders;
 
-            // סינון סטטוס
+            // filtering by status
             if (StatusFilter is BO.OrderStatus selectedStatus)
-            {
                 tempAddList = tempAddList.Where(item => item.StatusOfOrder == selectedStatus);
-            }
 
-            // סינון חיפוש (לפי ID או OrderID)
-            string searchText = SearchBox.Text;
-            if (!string.IsNullOrWhiteSpace(searchText))
+            // filtering by search text
+            if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 tempAddList = tempAddList.Where(item =>
-                    (item.Id?.ToString().Contains(searchText) ?? false) ||
-                    (item.OrderId.ToString().Contains(searchText))
+                    (item.Id?.ToString().Contains(SearchText) ?? false) ||
+                    (item.OrderId.ToString().Contains(SearchText))
                 );
             }
 
             OrderList = tempAddList.ToList();
         }
 
+        // event handler for filter changes
         private void Filter_Changed(object sender, RoutedEventArgs e)
         {
             ApplyFilters();
         }
 
+        // event handler for search text changes
         private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
         {
             new OrderWindow().Show();
         }
 
+        // open order window for viewing/editing
         private void OpenOrderWindow(int id = 0)
         {
             var window = new OrderWindow(id);
-            window.Closed += (s, args) => LoadData();
             window.Show();
         }
 
+        // double-click event to open selected order
         private void OrderList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ListView listView && listView.SelectedItem is BO.OrderInList selectedOrder)
+            if (SelectedOrder is BO.OrderInList selectedOrder)
+            {
                 OpenOrderWindow(selectedOrder.OrderId);
+                SelectedOrder = null;
+            }
         }
 
+        // cancel order button click event
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
             //safty check to ensure sender is a button and its DataContext is an OrderInList
@@ -140,17 +185,10 @@ namespace PL.Order
 
                 if (CustomMessageBox.ShowQuestion($"Are you sure you want to CANCEL Order #{idToCancel}?", "Confirm Cancellation"))
                 {
-                    try
+                    try // attempt to cancel the order via BL
                     {
-                        // --- קריאה ל-BL ---
-                        // ה-BL כבר דואג לשלוח את המייל בתוך הפונקציה הזו!
                         s_bl.Order.Cancel(AdminID, idToCancel);
-
-                        // הצגת הודעת הצלחה למשתמש
                         CustomMessageBox.Show("Order cancelled successfully (Courier notified via email).", "Success");
-
-                        // רענון הרשימה
-                        LoadData();
                     }
                     catch (Exception ex)
                     {
@@ -159,19 +197,20 @@ namespace PL.Order
                 }
             }
         }
-        // 1. חזרה לדשבורד
+
+        // route navigation event handlers
         private void BtnDashboard_Click(object sender, RoutedEventArgs e)
         {
             RequestDashboard?.Invoke(this, EventArgs.Empty);
         }
 
-        // 2. מעבר לרשימת שליחים (השם חייב להיות זהה למה שכתוב ב-XAML)
+        // couriers list navigation
         private void BtnCouriers_Click(object sender, RoutedEventArgs e)
         {
             RequestCouriers?.Invoke(this, EventArgs.Empty);
         }
 
-        // 3. רשימת הזמנות (אנחנו כבר כאן - לא עושה כלום)
+        // orders list navigation (no action needed)
         private void BtnList_Click(object sender, RoutedEventArgs e)
         {
             // Do nothing, we are already here

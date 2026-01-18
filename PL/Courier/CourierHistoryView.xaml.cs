@@ -1,127 +1,175 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace PL.Courier
+namespace PL.Courier;
+
+/// <summary>
+/// history view for a courier, displaying closed deliveries and allowing filtering by status.
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+/// </summary>
+public partial class CourierHistoryView : UserControl
 {
-    public partial class CourierHistoryView : UserControl
+    private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    // Dependency Properties
+
+    //courier current data
+    public BO.Courier CurrentCourier
     {
-        private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+        get { return (BO.Courier)GetValue(CurrentCourierProperty); }
+        set { SetValue(CurrentCourierProperty, value); }
+    }
 
-        public BO.Courier CurrentCourier
+    public static readonly DependencyProperty CurrentCourierProperty =
+        DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierHistoryView));
+
+    //courier id
+    public int CourierId
+    {
+        get { return (int)GetValue(CourierIdProperty); }
+        set { SetValue(CourierIdProperty, value); }
+    }
+
+    public static readonly DependencyProperty CourierIdProperty =
+        DependencyProperty.Register("CourierId", typeof(int), typeof(CourierHistoryView), new PropertyMetadata(0, OnCourierIdChanged));
+
+    // Observable Collection for Deliveries
+    public ObservableCollection<BO.ClosedDeliveryInList> DeliveriesList { get; set; } = new();
+
+    // Status filter options
+    public IEnumerable<object> StatusOptions { get; } =
+        new List<object> { "All" }
+        .Concat(Enum.GetValues(typeof(BO.OrderEndStatus)).Cast<object>())
+        .ToList();
+
+    // Current selected status filter
+    public object SelectedStatusFilter
+    {
+        get { return GetValue(SelectedStatusFilterProperty); }
+        set { SetValue(SelectedStatusFilterProperty, value); }
+    }
+
+    public static readonly DependencyProperty SelectedStatusFilterProperty =
+        DependencyProperty.Register("SelectedStatusFilter", typeof(object), typeof(CourierHistoryView), new PropertyMetadata("All"));
+
+    // Events to request navigation
+    public event EventHandler? RequestDashboardView;
+    public event EventHandler? RequestPickOrderView;
+
+    /// <summary>
+    /// constructor for CourierHistoryView.
+    /// </summary>
+    public CourierHistoryView()
+    {
+        InitializeComponent();
+        SelectedStatusFilter = "All";
+
+        //wiring up Loaded and Unloaded events
+        this.Loaded += UserControl_Loaded;
+        this.Unloaded += UserControl_Unloaded;
+    }
+
+    /// <summary>
+    /// observer method for order changes.
+    /// </summary>
+    private void OrderObserver()
+    {
+        Dispatcher.Invoke(() => RefreshList());
+    }
+
+    /// <summary>
+    /// called when the UserControl is loaded; registers the order observer and refreshes the list.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Order.AddObserver(OrderObserver);
+        RefreshList();
+    }
+
+    /// <summary>
+    /// called when the UserControl is unloaded; removes the order observer.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Order.RemoveObserver(OrderObserver);
+    }
+
+    /// <summary>
+    /// callback for when the CourierId property changes; refreshes the list.
+    /// </summary>
+    /// <param name="d"></param>
+    /// <param name="e"></param>
+    private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is CourierHistoryView view)
         {
-            get { return (BO.Courier)GetValue(CurrentCourierProperty); }
-            set { SetValue(CurrentCourierProperty, value); }
+            view.RefreshList();
         }
-        public static readonly DependencyProperty CurrentCourierProperty =
-            DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierHistoryView));
+    }
 
-        public int CourierId
+    /// <summary>
+    /// refreshes the list of closed deliveries for the courier,
+    /// applying any selected status filter.
+    /// </summary>
+    public void RefreshList()
+    {
+        if (CourierId == 0)
+            return;
+
+        try
         {
-            get { return (int)GetValue(CourierIdProperty); }
-            set { SetValue(CourierIdProperty, value); }
+            // Fetch closed deliveries for the courier
+            IEnumerable<BO.ClosedDeliveryInList> list = s_bl.Order.GetClosedDeliveriesForCourier(CourierId, CourierId);
+
+            // Apply status filter if selected
+            if (SelectedStatusFilter is BO.OrderEndStatus statusEnum)
+                list = list.Where(d => d.OrderClosedStatus == statusEnum);
+
+            DeliveriesList.Clear();
+
+            // Populate the observable collection
+            foreach (var item in list)
+                DeliveriesList.Add(item);
         }
-        public static readonly DependencyProperty CourierIdProperty =
-            DependencyProperty.Register("CourierId", typeof(int), typeof(CourierHistoryView), new PropertyMetadata(0, OnCourierIdChanged));
-
-        public ObservableCollection<BO.ClosedDeliveryInList> DeliveriesList { get; set; } = new();
-
-        public IEnumerable<object> StatusOptions { get; } =
-            new List<object> { "All" }
-            .Concat(Enum.GetValues(typeof(BO.OrderEndStatus)).Cast<object>())
-            .ToList();
-
-        public object SelectedStatusFilter
+        catch (Exception ex)
         {
-            get { return GetValue(SelectedStatusFilterProperty); }
-            set { SetValue(SelectedStatusFilterProperty, value); }
+            CustomMessageBox.Show($"Error fetching deliveries: {ex.Message}", "System Error", MessageType.Error);
         }
-        public static readonly DependencyProperty SelectedStatusFilterProperty =
-            DependencyProperty.Register("SelectedStatusFilter", typeof(object), typeof(CourierHistoryView), new PropertyMetadata("All"));
+    }
 
-        public event EventHandler? RequestDashboardView;
-        public event EventHandler? RequestPickOrderView;
+    /// <summary>
+    /// selection changed event handler for the status filter; refreshes the list.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        RefreshList();
+    }
 
-        public CourierHistoryView()
-        {
-            InitializeComponent();
-            DataContext = this;
-            SelectedStatusFilter = "All";
+    /// <summary>
+    /// dashboard button click event handler; requests navigation to the dashboard view.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        RequestDashboardView?.Invoke(this, EventArgs.Empty);
+    }
 
-            // === הוספת האזנה לעדכונים אוטומטיים ===
-            this.Loaded += UserControl_Loaded;
-            this.Unloaded += UserControl_Unloaded;
-        }
-
-        // פונקציית האזנה - תופעל כשמשהו משתנה במערכת
-        private void OrderObserver()
-        {
-            Dispatcher.Invoke(() => RefreshList());
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            s_bl.Order.AddObserver(OrderObserver); // הרשמה
-            RefreshList();
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            s_bl.Order.RemoveObserver(OrderObserver); // ביטול הרשמה
-        }
-        // ==========================================
-
-        private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is CourierHistoryView view)
-            {
-                view.RefreshList();
-            }
-        }
-
-        public void RefreshList()
-        {
-            if (CourierId == 0) return;
-
-            try
-            {
-                CurrentCourier = s_bl.Courier.Read(CourierId, CourierId)!;
-
-                IEnumerable<BO.ClosedDeliveryInList> list = s_bl.Order.GetClosedDeliveriesForCourier(CourierId, CourierId);
-
-                if (SelectedStatusFilter is BO.OrderEndStatus statusEnum)
-                {
-                    list = list.Where(d => d.OrderClosedStatus == statusEnum);
-                }
-
-                DeliveriesList.Clear();
-                foreach (var item in list)
-                {
-                    DeliveriesList.Add(item);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error fetching deliveries: {ex.Message}");
-            }
-        }
-
-        private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            RefreshList();
-        }
-
-        private void BtnDashboard_Click(object sender, RoutedEventArgs e)
-        {
-            RequestDashboardView?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void BtnPickOrder_Click(object sender, RoutedEventArgs e)
-        {
-            RequestPickOrderView?.Invoke(this, EventArgs.Empty);
-        }
+    /// <summary>
+    /// pick order button click event handler; requests navigation to the pick order view.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnPickOrder_Click(object sender, RoutedEventArgs e)
+    {
+        RequestPickOrderView?.Invoke(this, EventArgs.Empty);
     }
 }

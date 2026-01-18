@@ -182,7 +182,7 @@
 
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource AliceBlue}">
+    <Grid Background="{StaticResource AliceBlue}" DataContext="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>
@@ -301,7 +301,8 @@
                                 <Button Grid.Column="3" Content="Pick Order" 
                                         Click="BtnPick_Click"
                                         Style="{StaticResource PickButtonStyle}"
-                                        VerticalAlignment="Center"/>
+                                        VerticalAlignment="Center"
+                                        CommandParameter="{Binding OrderId}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>

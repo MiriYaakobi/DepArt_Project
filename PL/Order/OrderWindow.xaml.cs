@@ -1,144 +1,196 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
-namespace PL.Order;
-
-public partial class OrderWindow : Window
+namespace PL.Order
 {
-    private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-
-    public bool IsUpdateMode { get; private set; }
-
-    private int currentAdminId;
-
-    // Dependency Properties
-    public BO.Order CurrentOrder
+    /// <summary>
+    /// Interaction logic for OrderWindow.xaml
+    /// In writing this class, we used AI to understand the connections between this code and
+    /// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+    /// </summary>
+    public partial class OrderWindow : Window
     {
-        get { return (BO.Order)GetValue(CurrentOrderProperty); }
-        set { SetValue(CurrentOrderProperty, value); }
-    }
+        // bl instance
+        private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+        private int currentAdminId;
 
-    public static readonly DependencyProperty CurrentOrderProperty =
-        DependencyProperty.Register("CurrentOrder", typeof(BO.Order), typeof(OrderWindow), new PropertyMetadata(null));
+        // global enum array for order types
+        public Array OrderTypes { get; } = Enum.GetValues(typeof(BO.OrderType));
 
-    public Array OrderTypes { get; } = Enum.GetValues(typeof(BO.OrderType));
+        // Dependency Properties
 
-    public OrderWindow(int orderId = 0)
-    {
-        InitializeComponent();
-
-        try
+        // used to determine if we are in update mode or add mode
+        public bool IsUpdateMode
         {
-            currentAdminId = s_bl.Admin.GetConfig().AdminId;
-        }
-        catch
-        {
-            currentAdminId = 123456782;
+            get { return (bool)GetValue(IsUpdateModeProperty); }
+            set { SetValue(IsUpdateModeProperty, value); }
         }
 
-        if (orderId == 0) // Add mode
+        public static readonly DependencyProperty IsUpdateModeProperty =
+            DependencyProperty.Register("IsUpdateMode", typeof(bool), typeof(OrderWindow), new PropertyMetadata(false));
+
+
+        // indicates if the fields are editable
+        public bool IsEditable
         {
-            IsUpdateMode = false;
-            // יצירת הזמנה חדשה בזיכרון (לא קוראים ל-BL)
-            CurrentOrder = new BO.Order
+            get { return (bool)GetValue(IsEditableProperty); }
+            set { SetValue(IsEditableProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsEditableProperty =
+            DependencyProperty.Register("IsEditable", typeof(bool), typeof(OrderWindow), new PropertyMetadata(true));
+
+
+        // the current order being added/updated
+        public BO.Order CurrentOrder
+        {
+            get { return (BO.Order)GetValue(CurrentOrderProperty); }
+            set { SetValue(CurrentOrderProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentOrderProperty =
+            DependencyProperty.Register("CurrentOrder", typeof(BO.Order), typeof(OrderWindow),
+                new PropertyMetadata(null, OnCurrentOrderChanged));
+
+        // Callback when CurrentOrder changes to recalculate IsEditable
+        private static void OnCurrentOrderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is OrderWindow window)
             {
-                OrderOpeningTime = s_bl.Admin.GetClock(),
-                StatusOfOrder = BO.OrderStatus.Open,
-            };
-        }
-        else // Update mode
-        {
-            IsUpdateMode = true;
-            try
-            {
-                // קריאה לדאטה בייס רק כשיש ID אמיתי
-                CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
+                window.RecalculateIsEditable();
             }
-            catch (Exception ex)
-            {
-                CustomMessageBox.Show($"Could not load order #{orderId}.\nError: {ex.Message}", "Error");
-                CurrentOrder = new BO.Order();
-                IsUpdateMode = false;
-                this.Close(); // עדיף לסגור אם הטעינה נכשלה
-            }
         }
 
-        // --- מחקתי את השורה הבעייתית שהייתה כאן! ---
-
-        DataContext = this;
-    }
-
-    private void BtnAddUpdate_Click(object sender, RoutedEventArgs e)
-    {
-        try
+        // Helper function to determine if the screen is editable
+        private void RecalculateIsEditable()
         {
-            // ולידציה
-            if (string.IsNullOrWhiteSpace(CurrentOrder.CustomerName) ||
-                string.IsNullOrWhiteSpace(CurrentOrder.Address) ||
-                string.IsNullOrWhiteSpace(CurrentOrder.CustomerPhone))
+            if (!IsUpdateMode)
             {
-                CustomMessageBox.Show("Please fill required fields (Name, Phone, Address).", "Validation Error");
-                return;
-            }
-
-            if (IsUpdateMode)
-            {
-                s_bl.Order.Update(currentAdminId, CurrentOrder);
-                CustomMessageBox.Show("Order updated successfully!", "Success");
+                // In add mode - always editable
+                IsEditable = true;
             }
             else
             {
-                s_bl.Order.Create(currentAdminId, CurrentOrder);
-                CustomMessageBox.Show("Order added successfully!", "Success");
+                // In update mode - editable only if the order is open and exists
+                IsEditable = CurrentOrder != null && CurrentOrder.StatusOfOrder == BO.OrderStatus.Open;
             }
-            this.Close();
         }
-        catch (Exception ex)
+
+        // Constructor
+        public OrderWindow(int orderId = 0)
         {
-            CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
+            InitializeComponent();
+
+            try // get current admin ID
+            {
+                currentAdminId = s_bl.Admin.GetConfig().AdminId;
+            }
+            catch
+            {
+                currentAdminId = 123456782;
+            }
+
+            // check if we are adding a new order or updating an existing one
+            if (orderId == 0)
+            {
+                IsUpdateMode = false;
+
+                // Creating a new order
+                CurrentOrder = new BO.Order
+                {
+                    OrderOpeningTime = s_bl.Admin.GetClock(),
+                    StatusOfOrder = BO.OrderStatus.Open,
+                };
+            }
+            else
+            {
+                IsUpdateMode = true;
+                try
+                {
+                    // Loading existing order
+                    CurrentOrder = s_bl.Order.Read(currentAdminId, orderId)!;
+                }
+                catch (Exception ex)
+                {
+                    CustomMessageBox.Show($"Could not load order #{orderId}.\nError: {ex.Message}", "Error");
+                    this.Close();
+                    return;
+                }
+            }
+
+            // Initial calculation of edit mode
+            RecalculateIsEditable();
+
+            DataContext = this;
         }
-    }
 
-    /// <summary>
-    /// returns true if the order fields are editable based on the mode and order status.
-    /// </summary>
-    public bool IsEditable
-    {
-        get
-        {
-            //if it's add mode - always editable
-            if (!IsUpdateMode)
-                return true;
-
-            //can edit only if order is open
-            return CurrentOrder != null && CurrentOrder.StatusOfOrder == BO.OrderStatus.Open;
-        }
-    }
-
-    private void BtnCancelOrder_Click(object sender, RoutedEventArgs e)
-    {
-        if (CurrentOrder.StatusOfOrder != BO.OrderStatus.Open && CurrentOrder.StatusOfOrder != BO.OrderStatus.InProgress)
-        {
-            CustomMessageBox.Show("Cannot cancel close order", "Validation Error");
-            return;
-        }
-
-        if (CustomMessageBox.ShowQuestion("Cancel this order?", "Confirmation"))
+        private void BtnAddUpdate_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                s_bl.Order.Cancel(currentAdminId, CurrentOrder.Id);
-                CustomMessageBox.Show("Order canceled successfully.", "Success");
+                // basic validation
+                if (CurrentOrder == null ||
+                    string.IsNullOrWhiteSpace(CurrentOrder.CustomerName) ||
+                    string.IsNullOrWhiteSpace(CurrentOrder.Address) ||
+                    string.IsNullOrWhiteSpace(CurrentOrder.CustomerPhone))
+                {
+                    CustomMessageBox.Show("Please fill required fields (Name, Phone, Address).", "Validation Error");
+                    return;
+                }
+
+                // perform add or update
+                if (IsUpdateMode)
+                {
+                    s_bl.Order.Update(currentAdminId, CurrentOrder);
+                    CustomMessageBox.Show("Order updated successfully!", "Success");
+                }
+                else // add mode
+                {
+                    s_bl.Order.Create(currentAdminId, CurrentOrder);
+                    CustomMessageBox.Show("Order added successfully!", "Success");
+                }
+
                 this.Close();
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Failed to cancel: {ex.Message}", "Error");
+                CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
             }
         }
-    }
 
-    private void BtnCancel_Click(object sender, RoutedEventArgs e)
-    {
-        this.Close();
+        // Cancel order button click handler
+        private void BtnCancelOrder_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentOrder == null) 
+                return;
+
+            // only open or in-progress orders can be canceled
+            if (CurrentOrder.StatusOfOrder != BO.OrderStatus.Open && CurrentOrder.StatusOfOrder != BO.OrderStatus.InProgress)
+            {
+                CustomMessageBox.Show("Cannot cancel closed order", "Validation Error");
+                return;
+            }
+
+            // confirm cancellation
+            if (CustomMessageBox.ShowQuestion("Cancel this order?", "Confirmation"))
+            {
+                try // attempt to cancel the order
+                {
+                    s_bl.Order.Cancel(currentAdminId, CurrentOrder.Id);
+                    CustomMessageBox.Show("Order canceled successfully.", "Success");
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    CustomMessageBox.Show($"Failed to cancel: {ex.Message}", "Error");
+                }
+            }
+        }
+
+        // Cancel button click handler
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

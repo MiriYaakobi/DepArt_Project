@@ -10,6 +10,8 @@ namespace PL;
 
 /// <summary>
 /// Converts a status value to a corresponding color brush for UI representation.
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
 /// </summary>
 /// <remarks>This value converter is typically used in data binding scenarios to visually indicate status, such as
 /// active or inactive states, by mapping a boolean value to a <see cref="Brush"/>. For example, an inactive status may
@@ -171,23 +173,6 @@ public class NullToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
-/// Validation rule that checks if a field is not empty.
-/// </summary>
-public class NotEmptyValidationRule : ValidationRule
-{
-    /// <summary>
-    /// Validates that the field is not empty.
-    /// </summary>
-    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
-    {
-        if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
-            return new ValidationResult(false, "Field is required.");
-
-        return ValidationResult.ValidResult;
-    }
-}
-
-/// <summary>
 /// Converts a boolean value to a button title.
 /// </summary>
 public class DeleteVisibilityConverter : IValueConverter
@@ -240,11 +225,11 @@ public class DeleteVisibilityConverter : IValueConverter
 public class OrderStatusToBrushConverter : IValueConverter
 {
     // colors definition
-    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#8986CC")!;
+    private readonly Brush _openColor = (Brush)new BrushConverter().ConvertFrom("#DB7093")!;
     private readonly Brush _inProgressColor = (Brush)new BrushConverter().ConvertFrom("#FFA07A")!;
     private readonly Brush _deliveredColor = (Brush)new BrushConverter().ConvertFrom("#3CB371")!;
     private readonly Brush _errorColor = (Brush)new BrushConverter().ConvertFrom("#ff5555")!;
-    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#5F9EA0")!;
+    private readonly Brush _cancelledColor = (Brush)new BrushConverter().ConvertFrom("#008B8B")!;
 
     /// <summary>
     /// Converts an OrderStatus enum value to a corresponding color brush.

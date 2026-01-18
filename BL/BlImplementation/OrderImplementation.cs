@@ -109,6 +109,33 @@ internal class OrderImplementation : IOrder
 
         // call to DeliveryManager to create the delivery record
         DeliveryManager.CreateNewDeliveryForOrder(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
+
+        try
+        {
+            //string courierEmail = !string.IsNullOrEmpty(boCourier.Email) ? boCourier.Email : "depart.ilv@gmail.com"; // use courier email if available
+            string courierEmail = "depart.ilv@gmail.com"; // for testing purposes, send to our company email
+
+            string subject = $"New Delivery Assigned! Order #{orderId}";
+            string body = $@"Hello {boCourier.Name},
+
+             You have successfully picked up Order #{orderId}.
+
+                📦 Order Details:
+                ------------------
+                Address: {boOrder.Address}
+                Package: {boOrder.PackageDetails}
+                Customer: {boOrder.CustomerName}
+                Phone: {boOrder.CustomerPhone}
+
+                Navigate safely!
+                Delivery System";
+
+            EmailService.SendNotification(courierEmail, subject, body);
+        }
+        catch
+        {
+            Console.WriteLine($"Warning: Failed to send email notification.");
+        }
     }
 
     /// <summary>

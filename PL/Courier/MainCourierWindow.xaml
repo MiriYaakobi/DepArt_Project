@@ -10,7 +10,8 @@
         Title="Courier Dashboard" Height="850" Width="1400"
         Icon="/Images/logo.png"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource AliceBlue}">
+        Background="{StaticResource AliceBlue}"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Window.Resources>
         <SolidColorBrush x:Key="DeepPurple" Color="#8986CC"/>

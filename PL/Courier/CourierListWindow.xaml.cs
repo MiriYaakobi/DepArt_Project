@@ -1,60 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using PL; // חובה עבור CustomMessageBox
 
 namespace PL.Courier;
 
 /// <summary>
-/// Represents a user control that displays and manages a list of couriers for an administrator.
+/// courier list window logic.
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
 /// </summary>
-/// <remarks><para> <b>CourierListWindow</b> provides functionality for viewing, filtering, adding, and deleting
-/// couriers. The control supports filtering couriers by delivery type and by search text, and allows administrators to
-/// manage the courier list interactively. </para> <para> The control raises the <see cref="RequestDashboard"/> event to
-/// request navigation back to the dashboard. </para></remarks>
 public partial class CourierListWindow : UserControl
 {
-    // Reference to the business logic layer for courier operations.
     static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-
-    // The ID of the current admin user.
     private readonly int AdminID;
-
-    // The complete list of couriers loaded from the business logic layer.
     private IEnumerable<BO.CourierInList>? AllCouriers;
 
-    /// <summary>
-    /// Event raised to request navigation back to the dashboard and order list.
-    /// </summary>
+    // Event raised to request navigation to the dashboard.
     public event EventHandler? RequestDashboard;
     public event EventHandler? RequestOrderList;
 
-    /// <summary>
-    /// Gets or sets the selected status filter for the courier list.
-    /// </summary>
-    public object StatusFilter { get; set; } = "All";
+    //Dependency properties
 
-    /// <summary>
-    /// Gets or sets the list of couriers to display.
-    /// </summary>
+    //courier list
     public IEnumerable<BO.CourierInList> CourierList
     {
         get { return (IEnumerable<BO.CourierInList>)GetValue(CourierListProperty); }
         set { SetValue(CourierListProperty, value); }
     }
 
-    /// <summary>
-    /// Identifies the dependency property for the CourierList property.
-    /// </summary>
     public static readonly DependencyProperty CourierListProperty =
         DependencyProperty.Register("CourierList", typeof(IEnumerable<BO.CourierInList>), typeof(CourierListWindow), new PropertyMetadata(null));
 
+    //search text
+    public string SearchText
+    {
+        get { return (string)GetValue(SearchTextProperty); }
+        set { SetValue(SearchTextProperty, value); }
+    }
+
+    public static readonly DependencyProperty SearchTextProperty =
+        DependencyProperty.Register("SearchText", typeof(string), typeof(CourierListWindow),
+        new PropertyMetadata("", (d, e) => ((CourierListWindow)d).ApplyFilters()));
+
+    //status filter
+    public object StatusFilter
+    {
+        get { return GetValue(StatusFilterProperty); }
+        set { SetValue(StatusFilterProperty, value); }
+    }
+    public static readonly DependencyProperty StatusFilterProperty =
+        DependencyProperty.Register("StatusFilter", typeof(object), typeof(CourierListWindow),
+        new PropertyMetadata("All", (d, e) => ((CourierListWindow)d).ApplyFilters()));
+
+    //selected courier
+    public BO.CourierInList SelectedCourier
+    {
+        get { return (BO.CourierInList)GetValue(SelectedCourierProperty); }
+        set { SetValue(SelectedCourierProperty, value); }
+    }
+    public static readonly DependencyProperty SelectedCourierProperty =
+        DependencyProperty.Register("SelectedCourier", typeof(BO.CourierInList), typeof(CourierListWindow), new PropertyMetadata(null));
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="CourierListWindow"/> class.
+    /// constructor for CourierListWindow.
     /// </summary>
+    /// <param name="adminId"></param>
     public CourierListWindow(int adminId)
     {
         InitializeComponent();
@@ -62,7 +72,7 @@ public partial class CourierListWindow : UserControl
 
         StatusFilter = "All";
 
-        // הוספתי את ה-Loading וה-Unloading לפה כדי לוודא שזה רשום
+        // Wiring up Loaded and Unloaded events
         this.Loaded += UserControl_Loaded;
         this.Unloaded += UserControl_Unloaded;
 
@@ -78,19 +88,18 @@ public partial class CourierListWindow : UserControl
         {
             if (AdminID == 0) return;
 
-            // טעינה מחדש מה-BL
+            //load all couriers
             AllCouriers = s_bl.Courier.ReadAll(AdminID);
             ApplyFilters();
         }
         catch (Exception ex)
         {
-            // שימוש ב-CustomMessageBox במקום MessageBox רגיל
             new CustomMessageBox($"Error loading data: {ex.Message}", "Error", false).ShowDialog();
         }
     }
 
     /// <summary>
-    /// Applies filters to the courier list based on user input.
+    /// applies the selected filters to the courier list.
     /// </summary>
     private void ApplyFilters()
     {
@@ -103,8 +112,9 @@ public partial class CourierListWindow : UserControl
         if (StatusFilter is BO.DeliveryType selectedType)
             tempAddList = tempAddList.Where(item => item.TypeOfDelivery == selectedType);
 
+        string searchText = SearchText;
+
         // Filter by search text
-        string searchText = SearchBox.Text;
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             // Case-insensitive search in courier names
@@ -117,40 +127,37 @@ public partial class CourierListWindow : UserControl
     }
 
     /// <summary>
-    /// Handles changes to the filter controls.
+    /// adds a new courier by opening the courier window.
     /// </summary>
-    private void Filter_Changed(object sender, RoutedEventArgs e)
-    {
-        ApplyFilters();
-    }
-
-    /// <summary>
-    /// Opens the courier window for adding a new courier.
-    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnAddCourier_Click(object sender, RoutedEventArgs e)
     {
         OpenCourierWindow(null);
-        SearchBox.Text = "";
+        SearchText = "";
         StatusFilter = "All";
     }
 
     /// <summary>
-    /// Deletes the selected courier.
+    /// deletes the selected courier after confirmation.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
-        // Confirm deletion
-        if (sender is Button btn && btn.DataContext is BO.CourierInList courierToDelete)
+        // Get the courier ID from the button's CommandParameter
+        if (sender is Button btn && btn.CommandParameter is int courierIdToDelete)
         {
-            // שימוש ב-CustomMessageBox לשאלה
-            if (CustomMessageBox.ShowQuestion($"Are you sure you want to delete {courierToDelete.Name}?", "Delete Courier"))
+            var courierToDelete = CourierList.FirstOrDefault(c => c.Id == courierIdToDelete);
+            string courierName = courierToDelete?.Name ?? "Selected Courier";
+
+            // Confirm deletion
+            if (CustomMessageBox.ShowQuestion($"Are you sure you want to delete {courierName}?", "Delete Courier"))
             {
                 try
                 {
-                    s_bl.Courier.Delete(AdminID, courierToDelete.Id);
-                    // לא צריך לקרוא ל-LoadData ידנית כי ה-Observer יעשה את זה!
-                    // אבל אם רוצים תגובה מיידית:
-                    LoadData();
+                    s_bl.Courier.Delete(AdminID, courierIdToDelete);
+                    new CustomMessageBox($"{courierName} deleted successfully!", "Deleted", false).ShowDialog();
                 }
                 catch (Exception ex)
                 {
@@ -161,63 +168,83 @@ public partial class CourierListWindow : UserControl
     }
 
     /// <summary>
-    /// Opens the dashboard window.
+    /// opens the dashboard view.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnDashboard_Click(object sender, RoutedEventArgs e)
     {
         RequestDashboard?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
-    /// Opens the list management window.
+    /// opens the order list view.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnList_Click(object sender, RoutedEventArgs e)
     {
         RequestOrderList?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
-    /// Opens the courier window for adding a new courier.
+    /// opens the courier window for adding or updating a courier.
     /// </summary>
+    /// <param name="id"></param>
     private void OpenCourierWindow(int? id = null)
     {
         var window = new CourierWindow(id);
-        // window.Closed += (s, args) => LoadData(); // אין צורך, ה-Observer יטפל בעדכון!
         window.Show();
     }
 
     /// <summary>
-    /// Handles double-click events on the courier list.
+    /// opens the courier window on double click.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (sender is ListView listView && listView.SelectedItem is BO.CourierInList selectedCourier)
-            OpenCourierWindow(selectedCourier.Id);
+        if (SelectedCourier != null)
+            OpenCourierWindow(SelectedCourier.Id);
     }
 
     /// <summary>
-    /// Observer method for courier list changes.
+    /// observer method for courier list changes.
     /// </summary>
     private void CourierListObserver()
     {
         Dispatcher.Invoke(() =>
         {
-            // תיקון חשוב: טעינה מחדש מה-DB ולא רק סינון
             LoadData();
         });
     }
 
+    /// <summary>
+    /// opens the courier list and subscribes to updates.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.AddObserver(CourierListObserver);
-        LoadData(); // טעינה ראשונית כשהמסך עולה
+        LoadData();
     }
 
+    /// <summary>
+    /// on unload, unsubscribes from courier updates.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.RemoveObserver(CourierListObserver);
     }
 
+    /// <summary>
+    /// does nothing, we are already in the courier list. but needed for button consistency.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnCouriers_Click(object sender, RoutedEventArgs e)
     {
         // Do nothing, we are already here

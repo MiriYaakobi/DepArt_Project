@@ -96,11 +96,19 @@ internal static class OrderManager
 
             if (openDelivery != null)
             {
-                // calculate estimated delivery duration by calling helper method
-                // EstimatedDuration = AirDistance / ShipperSpeed
-                TimeSpan estimatedDuration = CalculateEstimatedDeliveryDuration(openDelivery, doOrder);
-                // ExpectedDeliveryTime = DeliveryStartTime + estimatedDuration
-                expectedDeliveryTime = openDelivery.DeliveryStartTime.Add(estimatedDuration);
+                try
+                {   
+                    // calculate estimated delivery duration by calling helper method
+                    // EstimatedDuration = AirDistance / ShipperSpeed
+                    TimeSpan estimatedDuration = CalculateEstimatedDeliveryDuration(openDelivery, doOrder);
+                    // ExpectedDeliveryTime = DeliveryStartTime + estimatedDuration
+                    expectedDeliveryTime = openDelivery.DeliveryStartTime.Add(estimatedDuration);
+                }
+                catch
+                {
+                    // if estimation fails, leave ExpectedDeliveryTime as null
+                }
+
             }
         }
 

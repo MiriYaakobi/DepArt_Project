@@ -8,6 +8,11 @@ using System.Windows.Input;
 
 namespace PL;
 
+/// <summary>
+/// Login window for the application
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+/// </summary>
 public partial class LoginWindow : Window
 {
     private IBl s_bl = BlApi.Factory.Get();
@@ -53,16 +58,29 @@ public partial class LoginWindow : Window
         if (parameter is not PasswordBox passwordBox)
             return;
 
+        // validate all input fields
+        ForceValidation(this);
+
         string inputIdText = UserId;
         string rawPassword = passwordBox.Password;
 
-        // Validation
-        if (string.IsNullOrWhiteSpace(inputIdText) || string.IsNullOrWhiteSpace(rawPassword))
+        // if ID is empty, focus the first textbox (ID)
+        if (string.IsNullOrWhiteSpace(inputIdText))
         {
-            CustomMessageBox.Show("Please enter ID and Password.", "Validation Error", MessageType.Warning);
+            var textBox = FindFirstTextBox(this);
+            textBox?.Focus();
             return;
         }
 
+        // if password is empty, show message and focus password box
+        if (string.IsNullOrWhiteSpace(rawPassword))
+        {
+            CustomMessageBox.Show("Please enter your password.", "Validation Error", MessageType.Warning);
+            passwordBox.Focus(); // return focus to password box
+            return;
+        }
+
+        // validate that ID is a number
         if (!int.TryParse(inputIdText, out int idVal))
         {
             CustomMessageBox.Show("ID must be a number.", "Validation Error", MessageType.Warning);
@@ -73,31 +91,32 @@ public partial class LoginWindow : Window
         {
             BO.UserRole role = s_bl.Courier.Login(idVal, rawPassword);
 
-            // === Admin Login Logic ===
+            // open the appropriate window based on role
             if (role == BO.UserRole.Admin)
             {
-                // בדיקה אם חלון מנהל כבר פתוח
+                // Check if MainWindow is already open
                 if (!ActivateWindowIfExists<MainWindow>())
                 {
                     new MainWindow().Show();
                 }
             }
-            // === Courier Login Logic ===
-            else if (role == BO.UserRole.Courier)
+            else if (role == BO.UserRole.Courier) // open courier window
             {
                 BO.Courier? courier = s_bl.Courier.Read(idVal, idVal);
-                if (courier != null)
+                if (courier != null) // should always be true here
                 {
-                    // בדיקה אם חלון שליח כבר פתוח (ובודקים שזה אותו שליח!)
                     bool found = false;
+                    // Check if MainCourierWindow for this courier is already open
                     foreach (Window window in Application.Current.Windows)
                     {
+                        // Check if the window is a MainCourierWindow and matches the logged-in courier
                         if (window is MainCourierWindow courierWin && courierWin.CurrentCourier?.Id == courier.Id)
                         {
+                            // If minimized, restore it
                             if (window.WindowState == WindowState.Minimized)
                                 window.WindowState = WindowState.Normal;
 
-                            window.Activate(); // הבאת החלון לקדמה
+                            window.Activate();
                             found = true;
                             break;
                         }
@@ -125,10 +144,12 @@ public partial class LoginWindow : Window
     /// </summary>
     private bool ActivateWindowIfExists<TWindow>() where TWindow : Window
     {
+        // Iterate through open windows to find an existing instance
         foreach (Window window in Application.Current.Windows)
         {
             if (window is TWindow)
             {
+                // If minimized, restore it
                 if (window.WindowState == WindowState.Minimized)
                     window.WindowState = WindowState.Normal;
 
@@ -164,27 +185,80 @@ public partial class LoginWindow : Window
         if (e.ChangedButton == MouseButton.Left)
             this.DragMove();
     }
-} // --- סוף המחלקה LoginWindow ---
 
-// --- תחילת המחלקה RelayCommand (מחוץ ל-LoginWindow!) ---
+    /// <summary>
+    /// Recursive method to force validation on all input fields in the window
+    /// </summary>
+    private void ForceValidation(DependencyObject parent)
+    {
+        // go through all children in the logical tree
+        foreach (object child in LogicalTreeHelper.GetChildren(parent))
+        {
+            if (child is DependencyObject node)
+            {
+                // if it's a TextBox, update its binding source to trigger validation
+                if (node is TextBox tb)
+                    tb.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+
+                // recurse into child elements
+                ForceValidation(node);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Find the first TextBox in the visual tree.
+    /// </summary>
+    private TextBox? FindFirstTextBox(DependencyObject parent)
+    {
+        // go through all children in the logical tree
+        foreach (object child in LogicalTreeHelper.GetChildren(parent))
+        {
+            // if it's a DependencyObject, check if it's a TextBox or recurse
+            if (child is DependencyObject node)
+            {
+                if (node is TextBox tb) 
+                    return tb;
+                var found = FindFirstTextBox(node);
+                if (found != null) 
+                    return found;
+            }
+        }
+        return null;
+    }
+} 
+
 /// <summary>
 /// helper class for commands
 /// </summary>
 public class RelayCommand : ICommand
 {
+    // delegates for execute and canExecute logic
     private readonly Action<object?> _execute;
     private readonly Predicate<object?>? _canExecute;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RelayCommand"/> class.
+    /// </summary>
     public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
     {
         _execute = execute;
         _canExecute = canExecute;
     }
 
+    /// <summary>
+    /// Determines whether the command can be executed.
+    /// </summary>
     public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
 
+    /// <summary>
+    /// Executes the command.
+    /// </summary>
     public void Execute(object? parameter) => _execute(parameter);
 
+    /// <summary>
+    /// Occurs when the ability of the command to execute has changed.
+    /// </summary>
     public event EventHandler? CanExecuteChanged
     {
         add { CommandManager.RequerySuggested += value; }
