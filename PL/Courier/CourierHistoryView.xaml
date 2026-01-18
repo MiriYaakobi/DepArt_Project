@@ -136,7 +136,7 @@
 
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource AliceBlue}">
+    <Grid Background="{StaticResource AliceBlue}" DataContext="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>

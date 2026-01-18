@@ -234,7 +234,7 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid>
+    <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
             <RowDefinition Height="*"/>

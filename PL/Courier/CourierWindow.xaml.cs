@@ -3,46 +3,34 @@
 namespace PL.Courier;
 
 /// <summary>
-/// Represents a window for adding, updating, viewing, or deleting courier information within the application.
+/// courier add/update window
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
 /// </summary>
-/// <remarks><para> The <see cref="CourierWindow"/> provides a user interface for managing courier records,
-/// supporting both creation of new couriers and modification or deletion of existing ones. The window adapts its
-/// behavior based on whether a courier ID is provided at construction time: </para> <list type="bullet">   <item>    
-/// <description>If <c>courierId</c> is <see langword="null"/>, the window operates in add mode, allowing entry of a new
-/// courier's details.</description>   </item>   <item>     <description>If <c>courierId</c> is specified, the window
-/// loads the corresponding courier for editing or deletion.</description>   </item> </list> <para> The window exposes
-/// properties for data binding, including the current courier being edited and available delivery types. It also
-/// provides feedback to the user for validation errors and operation results. </para></remarks>
 public partial class CourierWindow : Window
 {
-    // Reference to the business logic layer for courier operations.
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
-
-    // Indicates whether the window is in update mode (true) or add mode (false).
     public bool IsUpdateMode { get; private set; }
-
-    // The ID of the current admin user performing the operation.
     private int currentAdminId;
 
-    // Array of available delivery types for selection in the UI.
     public Array DeliveryTypes { get; } = Enum.GetValues(typeof(BO.DeliveryType));
 
-    /// The courier currently being added or edited.
+    //Dependency Property
+
+    //current courier
     public BO.Courier CurrentCourier
     {
         get { return (BO.Courier)GetValue(CurrentCourierProperty); }
         set { SetValue(CurrentCourierProperty, value); }
     }
 
-    /// <summary>
-    /// Identifies the dependency property for the CurrentCourier property.
-    /// </summary>
     public static readonly DependencyProperty CurrentCourierProperty =
         DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierWindow), new PropertyMetadata(null));
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CourierWindow"/> class.
+    /// constructor for CourierWindow
     /// </summary>
+    /// <param name="courierId"></param>
     public CourierWindow(int? courierId = null)
     {
         InitializeComponent();
@@ -52,6 +40,7 @@ public partial class CourierWindow : Window
         }
         catch
         {
+            // Default admin ID if config retrieval fails
             currentAdminId = 123456782;
         }
 
@@ -62,7 +51,8 @@ public partial class CourierWindow : Window
             CurrentCourier = new BO.Courier();
         }
 
-        else //update mode
+        // Update mode
+        else
         {
             IsUpdateMode = true;
 
@@ -79,16 +69,15 @@ public partial class CourierWindow : Window
                 Close();
             }
         }
-
-        DataContext = this;
     }
 
     /// <summary>
-    /// Handles the click event for the Add/Update button.
+    /// adds or updates a courier based on the current mode.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnAddUpdate_Click(object sender, RoutedEventArgs e)
     {
-        // Validate required fields
         try
         {
             // Basic validation
@@ -115,23 +104,26 @@ public partial class CourierWindow : Window
                     return;
                 }
 
-                // Create new courier
                 s_bl.Courier.Create(currentAdminId, CurrentCourier);
                 CustomMessageBox.Show("Courier added successfully!", "Success");
             }
             this.Close();
         }
-        catch (Exception ex) // Catch any exceptions from BL layer
+        catch (Exception ex)
         {
+            // Hide password in case of error during update
             if (IsUpdateMode) 
                 CurrentCourier.Password = "********";
+
             CustomMessageBox.Show($"Operation failed: {ex.Message}", "Error");
         }
     }
 
     /// <summary>
-    /// Handles the click event for the Delete button.
+    /// deletes the current courier after confirmation.
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
         // Prevent deletion if the courier has an active order
@@ -143,6 +135,7 @@ public partial class CourierWindow : Window
 
         string msg = $"Are you sure you want to delete {CurrentCourier.Name}?";
 
+        // Confirm deletion
         if (CustomMessageBox.ShowQuestion(msg, "Delete Confirmation"))
         {
             try
@@ -159,8 +152,10 @@ public partial class CourierWindow : Window
     }
 
     /// <summary>
-    /// Handles the click event for the View Order button.
+    /// 
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnViewOrder_Click(object sender, RoutedEventArgs e)
     {
         // Ensure there is a current order to view
@@ -176,9 +171,7 @@ public partial class CourierWindow : Window
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             ResizeMode = ResizeMode.NoResize,
             Background = (System.Windows.Media.Brush)FindResource("DeepPurple"),
-
             Content = CurrentCourier.CurrentOrder,
-
             ContentTemplate = (DataTemplate)FindResource("OrderDetailsTemplate")
         };
 
@@ -189,8 +182,10 @@ public partial class CourierWindow : Window
     }
 
     /// <summary>
-    /// Handles the click event for the Cancel button.
+    /// cancel button click handler
     /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
         this.Close();

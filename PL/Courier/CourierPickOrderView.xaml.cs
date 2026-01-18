@@ -1,196 +1,233 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using PL; // חובה בשביל CustomMessageBox
 
-namespace PL.Courier
+namespace PL.Courier;
+
+/// <summary>
+/// pick order view for courier
+/// </summary>
+public partial class CourierPickOrderView : UserControl
 {
-    public partial class CourierPickOrderView : UserControl
+    private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    public event EventHandler? RequestDashboardView;
+    public event EventHandler? RequestHistoryView;
+
+    //Dependency Properties
+
+    // courier current data
+    public BO.Courier CurrentCourier
     {
-        private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+        get { return (BO.Courier)GetValue(CurrentCourierProperty); }
+        set { SetValue(CurrentCourierProperty, value); }
+    }
+    public static readonly DependencyProperty CurrentCourierProperty =
+        DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierPickOrderView));
 
-        // --- אירועים (Events) ---
-        public event EventHandler? RequestDashboardView;
-        public event EventHandler? RequestHistoryView;
+    //courier id
+    public int CourierId
+    {
+        get { return (int)GetValue(CourierIdProperty); }
+        set { SetValue(CourierIdProperty, value); }
+    }
+    public static readonly DependencyProperty CourierIdProperty =
+        DependencyProperty.Register("CourierId", typeof(int), typeof(CourierPickOrderView),
+            new PropertyMetadata(0, OnCourierIdChanged));
 
-        // --- Dependency Properties ---
+    //orders list
+    public ObservableCollection<BO.OpenOrderInList> OrdersList
+    {
+        get { return (ObservableCollection<BO.OpenOrderInList>)GetValue(OrdersListProperty); }
+        set { SetValue(OrdersListProperty, value); }
+    }
+    public static readonly DependencyProperty OrdersListProperty =
+        DependencyProperty.Register("OrdersList", typeof(ObservableCollection<BO.OpenOrderInList>), typeof(CourierPickOrderView));
 
-        // 1. פרטי השליח
-        public BO.Courier CurrentCourier
+    // sort options list
+    public IEnumerable<object> SortOptions { get; } = new List<object>
+    {
+        "All",
+        BO.OpenOrderFieldSort.AirDistance,
+        BO.OpenOrderFieldSort.ExpectedDeliveryTime,
+        BO.OpenOrderFieldSort.TimeLinessStatus,
+        BO.OpenOrderFieldSort.Id
+    };
+
+    //current selected sort option
+    public object SelectedSortOption
+    {
+        get { return GetValue(SelectedSortOptionProperty); }
+        set { SetValue(SelectedSortOptionProperty, value); }
+    }
+
+    public static readonly DependencyProperty SelectedSortOptionProperty =
+        DependencyProperty.Register("SelectedSortOption", typeof(object), typeof(CourierPickOrderView),
+            new PropertyMetadata("All", OnSortChanged));
+
+
+    /// <summary>
+    /// constructor for CourierPickOrderView.
+    /// </summary>
+    public CourierPickOrderView()
+    {
+        InitializeComponent();
+
+        this.Loaded += UserControl_Loaded;
+        this.Unloaded += UserControl_Unloaded;
+    }
+
+    //monitor order list changes
+    private void OrderListObserver() => RefreshList();
+
+    //loaded and unloaded events
+
+    /// <summary>
+    /// loaded event handler
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Order.AddObserver(OrderListObserver);
+        RefreshList();
+    }
+
+    /// <summary>
+    /// unloaded event handler
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        s_bl.Order.RemoveObserver(OrderListObserver);
+    }
+
+    //callbacks
+
+    /// <summary>
+    /// called when courier id changes
+    /// </summary>
+    /// <param name="d"></param>
+    /// <param name="e"></param>
+    private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is CourierPickOrderView view)
+            view.RefreshList();
+    }
+
+    /// <summary>
+    /// called when sort option changes
+    /// </summary>
+    /// <param name="d"></param>
+    /// <param name="e"></param>
+    private static void OnSortChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is CourierPickOrderView view)
         {
-            get { return (BO.Courier)GetValue(CurrentCourierProperty); }
-            set { SetValue(CurrentCourierProperty, value); }
+            view.RefreshList();
         }
-        public static readonly DependencyProperty CurrentCourierProperty =
-            DependencyProperty.Register("CurrentCourier", typeof(BO.Courier), typeof(CourierPickOrderView));
+    }
 
-        // 2. מזהה שליח (כולל טריגר לשינוי)
-        public int CourierId
+    /// <summary>
+    /// method to refresh the orders list based on current courier and sort option
+    /// </summary>
+    public void RefreshList()
+    {
+        if (CourierId == 0)
+            return;
+
+        try
         {
-            get { return (int)GetValue(CourierIdProperty); }
-            set { SetValue(CourierIdProperty, value); }
-        }
-        public static readonly DependencyProperty CourierIdProperty =
-            DependencyProperty.Register("CourierId", typeof(int), typeof(CourierPickOrderView),
-                new PropertyMetadata(0, OnCourierIdChanged));
+            if (CurrentCourier == null)
+                CurrentCourier = s_bl.Courier.Read(CourierId, CourierId)!;
 
-        // 3. רשימת ההזמנות
-        public ObservableCollection<BO.OpenOrderInList> OrdersList
-        {
-            get { return (ObservableCollection<BO.OpenOrderInList>)GetValue(OrdersListProperty); }
-            set { SetValue(OrdersListProperty, value); }
-        }
-        public static readonly DependencyProperty OrdersListProperty =
-            DependencyProperty.Register("OrdersList", typeof(ObservableCollection<BO.OpenOrderInList>), typeof(CourierPickOrderView));
+            //reading all open orders
+            IEnumerable<BO.OpenOrderInList> list = s_bl.Order.ReadAllOpenOrders(CourierId, CourierId);
 
-        // 4. אפשרויות המיון (רשימה מותאמת אישית)
-        public IEnumerable<object> SortOptions { get; } = new List<object>
-        {
-            "All",                                      // ברירת מחדל
-            BO.OpenOrderFieldSort.AirDistance,          // מרחק אווירי
-            BO.OpenOrderFieldSort.ExpectedDeliveryTime, // דחיפות
-            BO.OpenOrderFieldSort.TimeLinessStatus,     // סטטוס איחור
-            BO.OpenOrderFieldSort.Id                    // סדר רץ
-        };
+            // filtre by max distance
+            double maxDist = CurrentCourier.MaxDistance ?? double.MaxValue;
+            list = list.Where(o => o.AirDistance <= maxDist);
 
-        // 5. המיון שנבחר (כולל טריגר לשינוי!)
-        public object SelectedSortOption
-        {
-            get { return GetValue(SelectedSortOptionProperty); }
-            set { SetValue(SelectedSortOptionProperty, value); }
-        }
-        public static readonly DependencyProperty SelectedSortOptionProperty =
-            DependencyProperty.Register("SelectedSortOption", typeof(object), typeof(CourierPickOrderView),
-                new PropertyMetadata("All", OnSortChanged));
-
-
-        // --- בנאי (Constructor) ---
-        public CourierPickOrderView()
-        {
-            InitializeComponent();
-            DataContext = this;
-
-            this.Loaded += UserControl_Loaded;
-            this.Unloaded += UserControl_Unloaded;
-        }
-
-        // --- ניהול אירועי טעינה ---
-        private void OrderListObserver() => RefreshList();
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            s_bl.Order.AddObserver(OrderListObserver);
-            RefreshList();
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            s_bl.Order.RemoveObserver(OrderListObserver);
-        }
-
-        // --- פונקציות טריגר (Callbacks) ---
-
-        // נקראת כאשר ה-CourierId משתנה
-        private static void OnCourierIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is CourierPickOrderView view)
+            // sorting by selected option
+            if (SelectedSortOption is BO.OpenOrderFieldSort sortEnum)
             {
-                view.RefreshList();
+                list = sortEnum switch
+                {
+                    BO.OpenOrderFieldSort.AirDistance => list.OrderBy(o => o.AirDistance),
+                    BO.OpenOrderFieldSort.ExpectedDeliveryTime => list.OrderBy(o => o.RemainingTime),
+                    BO.OpenOrderFieldSort.TimeLinessStatus => list.OrderBy(o => o.TimeLinessStatus),
+                    BO.OpenOrderFieldSort.Id => list.OrderBy(o => o.OrderId),
+                    _ => list.OrderBy(o => o.OrderId)
+                };
             }
-        }
 
-        // נקראת כאשר אפשרות המיון משתנה (OnSortChanged)
-        private static void OnSortChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is CourierPickOrderView view)
-            {
-                view.RefreshList();
-            }
-        }
+            // default sort by order id
+            else
+                list = list.OrderBy(o => o.OrderId);
 
-        // --- הלוגיקה הראשית: רענון ומיון הרשימה ---
-        public void RefreshList()
+            // updating the observable collection
+            OrdersList = new ObservableCollection<BO.OpenOrderInList>(list);
+        }
+        catch (Exception ex)
         {
-            if (CourierId == 0) return;
+            new CustomMessageBox($"Error: {ex.Message}", "Error", false).ShowDialog();
+        }
+    }
+
+    //button click handlers
+
+    /// <summary>
+    /// pick order button click handler
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnPick_Click(object sender, RoutedEventArgs e)
+    {
+        // getting the order to pick from button data context
+        if (sender is Button btn && btn.CommandParameter is int orderIdToPick)
+        {
+            // find the order in the list 
+            var orderToPick = OrdersList.FirstOrDefault(o => o.OrderId == orderIdToPick);
+
+            if (orderToPick == null)
+                return;
 
             try
             {
-                // קריאת פרטי שליח
-                var courierData = s_bl.Courier.Read(CourierId, CourierId)!;
-                CurrentCourier = courierData;
+                // calling BL to choose the order
+                s_bl.Order.ChooseOrder(CourierId, CourierId, orderToPick.OrderId);
+                OrdersList.Remove(orderToPick);
 
-                // קריאת רשימת הזמנות (מהירה, ללא חישובי מסלול כבדים)
-                IEnumerable<BO.OpenOrderInList> list = s_bl.Order.ReadAllOpenOrders(CourierId, CourierId);
+                new CustomMessageBox($"Order #{orderToPick.OrderId} picked successfully!", "Success", false).ShowDialog();
 
-                // סינון לפי מרחק מקסימלי
-                double maxDist = courierData.MaxDistance ?? double.MaxValue;
-                list = list.Where(o => o.AirDistance <= maxDist);
-
-                // מיון לפי הבחירה
-                if (SelectedSortOption is BO.OpenOrderFieldSort sortEnum)
-                {
-                    list = sortEnum switch
-                    {
-                        BO.OpenOrderFieldSort.AirDistance => list.OrderBy(o => o.AirDistance),
-                        BO.OpenOrderFieldSort.ExpectedDeliveryTime => list.OrderBy(o => o.RemainingTime),
-                        BO.OpenOrderFieldSort.TimeLinessStatus => list.OrderBy(o => o.TimeLinessStatus),
-                        BO.OpenOrderFieldSort.Id => list.OrderBy(o => o.OrderId),
-                        _ => list.OrderBy(o => o.OrderId)
-                    };
-                }
-                else
-                {
-                    // ברירת מחדל ("All")
-                    list = list.OrderBy(o => o.OrderId);
-                }
-
-                // עדכון המסך
-                OrdersList = new ObservableCollection<BO.OpenOrderInList>(list);
+                //auto navigate to dashboard after picking an order
+                RequestDashboardView?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
-                new CustomMessageBox($"Error: {ex.Message}", "Error", false).ShowDialog();
+                new CustomMessageBox($"Failed to pick order: {ex.Message}", "Error", false).ShowDialog();
             }
         }
+    }
 
-        // --- כפתורים ---
-        private void BtnPick_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is BO.OpenOrderInList orderToPick)
-            {
-                try
-                {
-                    // 1. ביצוע הפעולה מול ה-BL
-                    s_bl.Order.ChooseOrder(CourierId, CourierId, orderToPick.OrderId);
+    /// <summary>
+    /// click handler to navigate to dashboard view
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        RequestDashboardView?.Invoke(this, EventArgs.Empty);
+    }
 
-                    // 2. הסרה מהרשימה (כדי שזה ירגיש מהיר)
-                    OrdersList.Remove(orderToPick);
-
-                    // 3. הודעת הצלחה מעוצבת
-                    new CustomMessageBox($"Order #{orderToPick.OrderId} picked successfully!", "Success", false).ShowDialog();
-
-                    // 4. מעבר אוטומטי למסך הראשי (מונע לקיחת הזמנה נוספת)
-                    RequestDashboardView?.Invoke(this, EventArgs.Empty);
-                }
-                catch (Exception ex)
-                {
-                    // הודעת שגיאה מעוצבת
-                    new CustomMessageBox($"Failed to pick order: {ex.Message}", "Error", false).ShowDialog();
-                }
-            }
-        }
-
-        private void BtnDashboard_Click(object sender, RoutedEventArgs e)
-        {
-            RequestDashboardView?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void BtnHistory_Click(object sender, RoutedEventArgs e)
-        {
-            RequestHistoryView?.Invoke(this, EventArgs.Empty);
-        }
+    /// <summary>
+    /// click handler to navigate to history view
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnHistory_Click(object sender, RoutedEventArgs e)
+    {
+        RequestHistoryView?.Invoke(this, EventArgs.Empty);
     }
 }
