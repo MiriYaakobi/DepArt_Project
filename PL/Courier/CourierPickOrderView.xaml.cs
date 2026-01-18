@@ -199,7 +199,7 @@ public partial class CourierPickOrderView : UserControl
                 s_bl.Order.ChooseOrder(CourierId, CourierId, orderToPick.OrderId);
                 OrdersList.Remove(orderToPick);
 
-                new CustomMessageBox($"Order #{orderToPick.OrderId} picked successfully!", "Success", false).ShowDialog();
+                new CustomMessageBox($"Order #{orderToPick.OrderId} picked successfully!\nAn email with the full details has been sent to you.", "Success", false).ShowDialog();
 
                 //auto navigate to dashboard after picking an order
                 RequestDashboardView?.Invoke(this, EventArgs.Empty);

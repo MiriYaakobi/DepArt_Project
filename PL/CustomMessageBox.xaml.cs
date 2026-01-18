@@ -4,10 +4,19 @@ namespace PL
 {
     public enum MessageType { Info, Success, Warning, Error, Question }
 
+    /// <summary>
+    /// Custom message box for displaying messages to the user.
+    /// In writing this class, we used AI to understand the connections between this code and
+    /// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+    /// </summary>
     public partial class CustomMessageBox : Window
     {
         //setup Dependency Properties for data binding
         public bool Result { get; private set; } = false;
+
+        /// <summary>
+        /// Gets or sets the message text displayed in the message box.
+        /// </summary>
 
         public string MessageText
         {

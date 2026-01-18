@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <NextDeliveryId>1047</NextDeliveryId>
-  <NextOrderId>1052</NextOrderId>
-  <Clock>2026-01-15T21:16:16.1990772+02:00</Clock>
+  <NextDeliveryId>1040</NextDeliveryId>
+  <NextOrderId>1050</NextOrderId>
+  <Clock>2026-01-18T22:02:49.1422200+02:00</Clock>
   <AdminId>123456782</AdminId>
   <AdminPassword>Deafult1234$</AdminPassword>
   <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>

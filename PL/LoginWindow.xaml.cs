@@ -8,6 +8,11 @@ using System.Windows.Input;
 
 namespace PL;
 
+/// <summary>
+/// Login window for the application
+/// In writing this class, we used AI to understand the connections between this code and
+/// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
+/// </summary>
 public partial class LoginWindow : Window
 {
     private IBl s_bl = BlApi.Factory.Get();
@@ -53,16 +58,13 @@ public partial class LoginWindow : Window
         if (parameter is not PasswordBox passwordBox)
             return;
 
-        // 1. הופך את השדות לאדומים אם הם לא תקינים
+        // validate all input fields
         ForceValidation(this);
 
         string inputIdText = UserId;
         string rawPassword = passwordBox.Password;
 
-        // 2. בדיקה מפוצלת:
-
-        // אם התעודת זהות ריקה - אנחנו עוצרים כאן.
-        // לא מקפיצים הודעה, כי התיבה כבר אדומה והמשתמש רואה "Field is required".
+        // if ID is empty, focus the first textbox (ID)
         if (string.IsNullOrWhiteSpace(inputIdText))
         {
             var textBox = FindFirstTextBox(this);
@@ -70,20 +72,17 @@ public partial class LoginWindow : Window
             return;
         }
 
-        // אם הסיסמה ריקה - כאן כן נקפיץ הודעה, כי לסיסמה אין מסגרת אדומה
+        // if password is empty, show message and focus password box
         if (string.IsNullOrWhiteSpace(rawPassword))
         {
             CustomMessageBox.Show("Please enter your password.", "Validation Error", MessageType.Warning);
-            passwordBox.Focus(); // נחזיר את המשתמש לכתוב סיסמה
+            passwordBox.Focus(); // return focus to password box
             return;
         }
 
-        // --- מכאן הכל נשאר רגיל ---
-
-        // המרה למספר (למרות שהולידציה בודקת, זה ליתר ביטחון)
+        // validate that ID is a number
         if (!int.TryParse(inputIdText, out int idVal))
         {
-            // כאן אפשר גם לעצור בשקט אם רוצים, אבל הודעה זה בסדר כי זה מקרה נדיר
             CustomMessageBox.Show("ID must be a number.", "Validation Error", MessageType.Warning);
             return;
         }
@@ -92,27 +91,28 @@ public partial class LoginWindow : Window
         {
             BO.UserRole role = s_bl.Courier.Login(idVal, rawPassword);
 
-            // ... המשך הקוד המקורי שלך (Admin/Courier) ...
+            // open the appropriate window based on role
             if (role == BO.UserRole.Admin)
             {
-                // וכו'... (להעתיק את שאר הלוגיקה מהקוד הקודם)
+                // Check if MainWindow is already open
                 if (!ActivateWindowIfExists<MainWindow>())
                 {
                     new MainWindow().Show();
                 }
             }
-            else if (role == BO.UserRole.Courier)
+            else if (role == BO.UserRole.Courier) // open courier window
             {
-                // ...
                 BO.Courier? courier = s_bl.Courier.Read(idVal, idVal);
-                if (courier != null)
+                if (courier != null) // should always be true here
                 {
-                    // לוגיקת פתיחת חלון שליח...
                     bool found = false;
+                    // Check if MainCourierWindow for this courier is already open
                     foreach (Window window in Application.Current.Windows)
                     {
+                        // Check if the window is a MainCourierWindow and matches the logged-in courier
                         if (window is MainCourierWindow courierWin && courierWin.CurrentCourier?.Id == courier.Id)
                         {
+                            // If minimized, restore it
                             if (window.WindowState == WindowState.Minimized)
                                 window.WindowState = WindowState.Normal;
 
@@ -144,10 +144,12 @@ public partial class LoginWindow : Window
     /// </summary>
     private bool ActivateWindowIfExists<TWindow>() where TWindow : Window
     {
+        // Iterate through open windows to find an existing instance
         foreach (Window window in Application.Current.Windows)
         {
             if (window is TWindow)
             {
+                // If minimized, restore it
                 if (window.WindowState == WindowState.Minimized)
                     window.WindowState = WindowState.Normal;
 
@@ -189,57 +191,74 @@ public partial class LoginWindow : Window
     /// </summary>
     private void ForceValidation(DependencyObject parent)
     {
-        // עוברים על כל הילדים של האלמנט הנוכחי
+        // go through all children in the logical tree
         foreach (object child in LogicalTreeHelper.GetChildren(parent))
         {
             if (child is DependencyObject node)
             {
-                // אם מצאנו TextBox - נפעיל את הולידציה שלו
+                // if it's a TextBox, update its binding source to trigger validation
                 if (node is TextBox tb)
-                {
                     tb.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
-                }
 
-                // ממשיכים לחפש עמוק יותר (רקורסיה)
+                // recurse into child elements
                 ForceValidation(node);
             }
         }
     }
 
+    /// <summary>
+    /// Find the first TextBox in the visual tree.
+    /// </summary>
     private TextBox? FindFirstTextBox(DependencyObject parent)
     {
+        // go through all children in the logical tree
         foreach (object child in LogicalTreeHelper.GetChildren(parent))
         {
+            // if it's a DependencyObject, check if it's a TextBox or recurse
             if (child is DependencyObject node)
             {
-                if (node is TextBox tb) return tb;
+                if (node is TextBox tb) 
+                    return tb;
                 var found = FindFirstTextBox(node);
-                if (found != null) return found;
+                if (found != null) 
+                    return found;
             }
         }
         return null;
     }
-} // --- סוף המחלקה LoginWindow ---
+} 
 
-// --- תחילת המחלקה RelayCommand (מחוץ ל-LoginWindow!) ---
 /// <summary>
 /// helper class for commands
 /// </summary>
 public class RelayCommand : ICommand
 {
+    // delegates for execute and canExecute logic
     private readonly Action<object?> _execute;
     private readonly Predicate<object?>? _canExecute;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RelayCommand"/> class.
+    /// </summary>
     public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
     {
         _execute = execute;
         _canExecute = canExecute;
     }
 
+    /// <summary>
+    /// Determines whether the command can be executed.
+    /// </summary>
     public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
 
+    /// <summary>
+    /// Executes the command.
+    /// </summary>
     public void Execute(object? parameter) => _execute(parameter);
 
+    /// <summary>
+    /// Occurs when the ability of the command to execute has changed.
+    /// </summary>
     public event EventHandler? CanExecuteChanged
     {
         add { CommandManager.RequerySuggested += value; }
