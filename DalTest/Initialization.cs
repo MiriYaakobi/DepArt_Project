@@ -70,24 +70,48 @@ public static class Initialization
     }
 
     /// <summary>
-    /// generates a random maximum distance based on the delivery type
+    /// calculates a random maximum distance for a courier based on their delivery type and company limit
     /// </summary>
     /// <param name="type"></param>
-    /// <param name="rand"></param>
+    /// <param name="companyLimit"></param>
     /// <returns></returns>
-    private static double getRandomMaxDistance(DeliveryType type, Random rand)
+    private static double getRandomMaxDistance(DeliveryType type, double companyLimit)
     {
-        // Define distance ranges for each delivery type
-        var (min, max) = type switch
-        {
-            DeliveryType.Car => (50, 350),
-            DeliveryType.Motorcycle => (2, 50),
-            DeliveryType.Bicycle => (1, 15),
-            DeliveryType.ByFoot => (1, 5),
-            _ => (1, 10)
-        };
+        double minRange = 1;
+        double maxRange = 5;
 
-        return rand.Next(min, max + 1);
+        //determine base ranges based on delivery type
+        switch (type)
+        {
+            case DeliveryType.ByFoot:
+                minRange = 0.5;
+                maxRange = 3;
+                break;
+            case DeliveryType.Bicycle:
+                minRange = 2;
+                maxRange = 8;
+                break;
+            case DeliveryType.Motorcycle:
+                minRange = 5;
+                maxRange = 20;
+                break;
+            case DeliveryType.Car:
+                minRange = 10;
+                maxRange = 60;
+                break;
+        }
+
+        //adjust max range based on company limit
+        double actualMax = Math.Min(maxRange, companyLimit);
+
+        // validate ranges
+        if (actualMax < minRange)
+            actualMax = minRange;
+
+        // randomly generate distance within the range
+        double result = s_rand.NextDouble() * (actualMax - minRange) + minRange;
+
+        return Math.Round(result, 2);
     }
     /// <summary>
     /// haversine formula to calculate distance between two lat/lon points - written as a base by AI and rewritten and corrected by us
@@ -178,10 +202,12 @@ public static class Initialization
             string phone = RandomPhoneNumber();
             string email = RandomEmail(name);
             string password = RandomPassword(name);
-            bool isActive = s_rand.Next(0, 100) < 80; // 80% chance to be active
-            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4); // Random delivery type
-            DateTime startWorkTime = RandomHistoryTime(s_dal!.Config.Clock); // Random start work time
-            double? maxDist = getRandomMaxDistance(deliveryType, s_rand); // Random max distance
+            bool isActive = s_rand.Next(0, 100) < 80;                             // 80% chance to be active
+            DeliveryType deliveryType = (DeliveryType)s_rand.Next(0, 4);         // Random delivery type
+            DateTime startWorkTime = RandomHistoryTime(s_dal!.Config.Clock);    // Random start work time
+
+            double companyLimit = s_dal!.Config.DeliveryMaxDistance ?? 50;     //max distane based on company limit
+            double? maxDist = getRandomMaxDistance(deliveryType, companyLimit);
 
             // Create and add the courier to the DAL
             s_dal!.Courier.Create(new Courier(id, name, phone, email, password, isActive, deliveryType, startWorkTime, maxDist));

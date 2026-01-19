@@ -1,4 +1,6 @@
-﻿namespace Dal;
+﻿using System.Runtime.CompilerServices;
+
+namespace Dal;
 
 /// <summary>
 /// class to hold configuration settings and provide unique identifiers for deliveries and orders.
@@ -34,6 +36,7 @@ static internal class Config
     /// <summary>
     /// resets all configuration settings to their default values.
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     internal static void Reset()
     {
         nextDeliveryId = NextDeliveryId;

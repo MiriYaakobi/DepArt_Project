@@ -3,6 +3,7 @@ using DalApi;
 using DO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// a class that implements the IDelivery interface to manage Delivery entities in the data source.
@@ -13,6 +14,7 @@ internal class DeliveryImplementation : IDelivery
     /// creates a new delivery and adds it to the data source.
     /// </summary>
     /// <param name="Item"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Create(Delivery Item)
     {
         int IdEntity = Config.NextDeliveryId;
@@ -25,6 +27,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="IdEntity"></param>
     /// <exception cref="Exception"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Delete(int IdEntity)
     {
         if (Read(IdEntity) is null)
@@ -39,6 +42,7 @@ internal class DeliveryImplementation : IDelivery
     /// <summary>
     /// deletes all deliveries from the data source.
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void DeleteAll()
     {
         DataSource.Deliveries.Clear();
@@ -49,6 +53,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="IdEntity"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Delivery? Read(int IdEntity)
     {
         return DataSource.Deliveries.FirstOrDefault(c => c.Id == IdEntity);
@@ -59,6 +64,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public DO.Delivery? Read(Func<DO.Delivery, bool> filter)
     => DataSource.Deliveries.FirstOrDefault(filter);
 
@@ -66,6 +72,7 @@ internal class DeliveryImplementation : IDelivery
     /// retrieves all deliveries from the data source.
     /// </summary>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public IEnumerable<Delivery> ReadAll(Func<Delivery, bool>? filter = null)
         => filter == null
        ? DataSource.Deliveries.Select(c => c)
@@ -76,6 +83,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="Item"></param>
     /// <exception cref="Exception"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Update(Delivery Item)
     {
         if (Read(Item.Id) is null)

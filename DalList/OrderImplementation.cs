@@ -3,6 +3,7 @@ using DalApi;
 using DO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Provides methods to manage orders, including creating, reading, updating, and deleting orders.
@@ -16,6 +17,7 @@ internal class OrderImplementation : IOrder
     /// creates a new order and adds it to the data source.
     /// </summary>
     /// <param name="Item"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Create(Order Item)
     {
         int IdEntity = Config.NextOrderId;
@@ -28,6 +30,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="IdEntity"></param>
     /// <exception cref="Exception"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Delete(int IdEntity)
     {
         if (Read(IdEntity) is null)
@@ -42,6 +45,7 @@ internal class OrderImplementation : IOrder
     /// <summary>
     /// deletes all orders from the data source.
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void DeleteAll()
     {
         DataSource.Orders.Clear();
@@ -52,6 +56,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="IdEntity"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Order? Read(int IdEntity)
     {
         return DataSource.Orders.FirstOrDefault(c => c.Id == IdEntity); // find the order by its Id
@@ -62,6 +67,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public DO.Order? Read(Func<DO.Order, bool> filter)
         => DataSource.Orders.FirstOrDefault(filter);
 
@@ -69,6 +75,7 @@ internal class OrderImplementation : IOrder
     /// retrieves all orders from the data source.
     /// </summary>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public IEnumerable<Order> ReadAll(Func<Order, bool>? filter = null)
         => filter == null
             ? DataSource.Orders.Select(c => c)
@@ -79,6 +86,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="Item"></param>
     /// <exception cref="Exception"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Update(Order Item)
     {
         if (Read(Item.Id) is null)
