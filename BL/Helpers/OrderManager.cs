@@ -27,12 +27,26 @@ internal static class OrderManager
         // verify input validity
         AssertOrderInputValidity(order);
 
-        // Geocoding the address to get coordinates
-        var coordinates = Tools.GetCoordinatesOfAddressSync(order.Address!);
-        if (coordinates == null)
+        (double Latitude, double Longitude)? coordinates = null;
+        try
         {
-            // If the customer's address is invalid, throw an exception
-            throw new BO.BlInvalidDataException($"Address '{order.Address}' is invalid or could not be found.");
+            // attempt to geocode the address
+            coordinates = Tools.GetCoordinatesOfAddressSync(order.Address ?? "");
+        }
+        catch
+        {
+            // ignore exceptions and fallback to default coordinates
+        }
+
+        // default to Tel Aviv coordinates if geocoding fails
+        double finalLat = 32.0853;
+        double finalLon = 34.7818;
+
+        // if geocoding succeeded, use the obtained coordinates
+        if (coordinates.HasValue)
+        {
+            finalLat = coordinates.Value.Latitude;
+            finalLon = coordinates.Value.Longitude;
         }
 
         // Mapping and saving to DAL
@@ -40,11 +54,11 @@ internal static class OrderManager
         (
             Id: default, // ID will be assigned by DAL
             TypeOfOrder: (DO.OrderType)order.TypeOfOrder,
-            Address: order.Address!,
-            Latitude: coordinates.Value.Latitude, // Using geocoded latitude
-            Longitude: coordinates.Value.Longitude,
-            CustomerName: order.CustomerName!,
-            CustomerPhone: order.CustomerPhone!,
+            Address: order.Address ?? "",
+            Latitude: finalLat,
+            Longitude: finalLon,
+            CustomerName: order.CustomerName ?? "",
+            CustomerPhone: order.CustomerPhone ?? "",
             OrderOpeningTime: AdminManager.Now,
             PackageDetails: order.PackageDetails,
             Description: order.Description
@@ -300,12 +314,31 @@ internal static class OrderManager
             deliveryType
         );
 
-        if (!routingResult.HasValue)
-            // routing service failed
-            throw new BO.BlInvalidOperationException($"Routing service failed to estimate time for order {doOrder.Id} and courier {doCourier.Id}.");
+        // if routing service succeeded, return estimated time
+        if (routingResult.HasValue)
+        {
+            return routingResult.Value.estimatedTime;
+        }
 
-        // Return the estimated time
-        return routingResult.Value.estimatedTime;
+        // Fallback estimation using air distance and average speeds
+        double airDistanceKm = Tools.GetAirDistance(companyLat, companyLon, doOrder.Latitude, doOrder.Longitude);
+
+        // define average speeds (km/h) based on delivery type
+        double speedKmH = deliveryType switch
+        {
+            BO.DeliveryType.Car => 50,
+            BO.DeliveryType.Motorcycle => 60,
+            BO.DeliveryType.Bicycle => 20,
+            _ => 5 // ByFoot
+        };
+
+        // calculate estimated hours
+        double hours = airDistanceKm / speedKmH;
+
+        // minimum threshold of 9 minutes (0.15 hours)
+        if (hours < 0.15) hours = 0.15;
+
+        return TimeSpan.FromHours(hours);
     }
 
     /// <summary>

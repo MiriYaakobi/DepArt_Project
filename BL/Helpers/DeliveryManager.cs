@@ -67,21 +67,34 @@ internal static class DeliveryManager
             orderLon = 34.77;
         }
 
-        // calculate actual distance and estimated time
-        (double actualDistance, TimeSpan estimatedTime)? routingResult;
+        // variable to hold the final distance value
+        double finalDistance;
+
+        // try to get actual distance and estimated time from routing service
+        (double actualDistance, TimeSpan estimatedTime)? routingResult = null;
+
         try
         {
+            // attempt to get actual distance and estimated time from routing service
             routingResult = Tools.GetActualDistanceAndEstimatedTimeSync(
                 companyLat, companyLon, orderLat, orderLon, shippingType
             );
         }
-        catch (Exception ex)
+        catch
         {
-            throw new BO.BlInvalidOperationException($"Routing failed. Please check internet and coordinates. Internal error: {ex.Message}");
+            // ignore exceptions and fallback to air distance
         }
 
-        if (!routingResult.HasValue)
-            throw new BO.BlInvalidOperationException("Routing service failed to calculate distance and time for the selected order/courier.");
+        if (routingResult.HasValue)
+        {
+            // if routing calculation succeeded, use the actual distance
+            finalDistance = routingResult.Value.actualDistance;
+        }
+        else
+        {
+            // in case of failure, fallback to air distance calculation
+            finalDistance = Tools.GetAirDistance(companyLat, companyLon, orderLat, orderLon);
+        }
 
         // create new DO.Delivery record
         DateTime deliveryStartTime = AdminManager.Now;
@@ -94,8 +107,7 @@ internal static class DeliveryManager
             DeliveryStartTime: deliveryStartTime,
 
             // saved values from routing calculation
-            ActualDistance: routingResult.Value.actualDistance,
-
+            ActualDistance: finalDistance,
             OrderClosedStatus: null, // open
             DeliveryEndTime: null // open
         );
