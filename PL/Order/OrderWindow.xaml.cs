@@ -118,6 +118,15 @@ namespace PL.Order
                 }
             }
 
+            // Register observer for order updates
+            s_bl.Order.AddObserver(OrderUpdateObserver);
+
+            //unregister observer on window closing
+            this.Closing += (s, e) =>
+            {
+                s_bl.Order.RemoveObserver(OrderUpdateObserver);
+            };
+
             // Initial calculation of edit mode
             RecalculateIsEditable();
 
@@ -191,6 +200,33 @@ namespace PL.Order
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        /// <summary>
+        /// observer method for order updates.
+        /// </summary>
+        private void OrderUpdateObserver()
+        {
+            //relevant only in update mode with a current order
+            if (!IsUpdateMode || CurrentOrder == null) return;
+
+            // Ensure the update occurs on the UI thread
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    var updatedOrder = s_bl.Order.Read(currentAdminId, CurrentOrder.Id);
+
+                    if (updatedOrder != null)
+                    {
+                        CurrentOrder = updatedOrder;
+                    }
+                }
+                catch
+                {
+                    this.Close();
+                }
+            });
         }
     }
 }

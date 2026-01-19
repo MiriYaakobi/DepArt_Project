@@ -3,6 +3,7 @@ using DalApi;
 using DO;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 /// <summary>
@@ -15,6 +16,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="item"></param>
     /// <exception cref="DalAlreadyExistsException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Create(Courier item)
     {
         // load the couriers XML
@@ -36,6 +38,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="id"></param>
     /// <exception cref="DalDoesNotExistException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Delete(int id)
     {
         XElement couriersRoot = XMLTools.LoadListFromXMLElement(Config.s_couriers_xml);
@@ -52,6 +55,7 @@ internal class CourierImplementation : ICourier
     /// <summary>
     /// deletes all couriers
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void DeleteAll()
     {
         XElement couriersRoot = XMLTools.LoadListFromXMLElement(Config.s_couriers_xml);
@@ -64,6 +68,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Courier? Read(int id)
     {
         XElement couriersRoot = XMLTools.LoadListFromXMLElement(Config.s_couriers_xml);
@@ -78,6 +83,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Courier? Read(Func<Courier, bool> filter)
     {
         return XMLTools.LoadListFromXMLElement(Config.s_couriers_xml).Elements()
@@ -90,6 +96,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public IEnumerable<Courier> ReadAll(Func<Courier, bool>? filter = null)
     {
         return XMLTools.LoadListFromXMLElement(Config.s_couriers_xml).Elements()
@@ -103,6 +110,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="item"></param>
     /// <exception cref="DalDoesNotExistException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Update(Courier item)
     {
         XElement couriersRoot = XMLTools.LoadListFromXMLElement(Config.s_couriers_xml);
@@ -124,6 +132,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     private Courier? ConvertXElementToCourier(XElement? element)
     {
         if (element == null)
@@ -147,6 +156,7 @@ internal class CourierImplementation : ICourier
     /// </summary>
     /// <param name="item"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     private XElement CreateCourierElement(Courier item)
     {
         return 

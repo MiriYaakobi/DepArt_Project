@@ -3,6 +3,8 @@ using DalApi;
 using DO;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
 
 /// <summary>
 /// Delivery implementation of the data access layer
@@ -13,6 +15,7 @@ internal class DeliveryImplementation : IDelivery
     /// Create a new delivery
     /// </summary>
     /// <param name="item"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Create(Delivery item)
     {
         int nextId = Config.NextDeliveryId;
@@ -33,6 +36,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="id"></param>
     /// <exception cref="DalDoesNotExistException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Delete(int id)
     {
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);
@@ -47,6 +51,7 @@ internal class DeliveryImplementation : IDelivery
     /// <summary>
     /// delete all deliveries
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void DeleteAll()
     {
         // save an empty list to the xml file
@@ -58,6 +63,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Delivery? Read(int id)
     {
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);
@@ -69,6 +75,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Delivery? Read(Func<Delivery, bool> filter)
     {
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);
@@ -80,6 +87,7 @@ internal class DeliveryImplementation : IDelivery
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public IEnumerable<Delivery> ReadAll(Func<Delivery, bool>? filter = null)
     {
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);
@@ -95,6 +103,7 @@ internal class DeliveryImplementation : IDelivery
     /// Update an existing delivery
     /// </summary>
     /// <param name="item"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Update(Delivery item)
     {
         List<Delivery> deliveries = XMLTools.LoadListFromXMLSerializer<Delivery>(Config.s_deliveries_xml);

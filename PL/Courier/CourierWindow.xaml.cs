@@ -69,6 +69,15 @@ public partial class CourierWindow : Window
                 Close();
             }
         }
+
+        //register observer for courier updates
+        s_bl.Courier.AddObserver(CourierUpdateObserver);
+
+        // unregister observer on window closing
+        this.Closing += (s, e) =>
+        {
+            s_bl.Courier.RemoveObserver(CourierUpdateObserver);
+        };
     }
 
     /// <summary>
@@ -189,5 +198,33 @@ public partial class CourierWindow : Window
     private void BtnCancel_Click(object sender, RoutedEventArgs e)
     {
         this.Close();
+    }
+
+    /// <summary>
+    /// observer method for courier updates.
+    /// </summary>
+    private void CourierUpdateObserver()
+    {
+        //relevant only in update mode with a current order
+        if (!IsUpdateMode || CurrentCourier == null) return;
+
+        // Ensure the update occurs on the UI thread
+        Dispatcher.Invoke(() =>
+        {
+            try
+            {
+                var updatedCourier = s_bl.Courier.Read(currentAdminId, CurrentCourier.Id);
+
+                if (updatedCourier != null)
+                {
+                    updatedCourier.Password = "********"; // Preserve password masking
+                    CurrentCourier = updatedCourier;     // Refresh the current courier details
+                }
+            }
+            catch
+            {
+                this.Close();
+            }
+        });
     }
 }

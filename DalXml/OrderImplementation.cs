@@ -3,6 +3,7 @@ using DalApi;
 using DO;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Order implementation of the data access layer
@@ -13,6 +14,7 @@ internal class OrderImplementation : IOrder
     /// create a new order
     /// </summary>
     /// <param name="item"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Create(Order item)
     {
         int nextId = Config.NextOrderId;
@@ -33,6 +35,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="id"></param>
     /// <exception cref="DalDoesNotExistException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Delete(int id)
     {
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
@@ -48,6 +51,7 @@ internal class OrderImplementation : IOrder
     /// <summary>
     /// delete all orders
     /// </summary>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void DeleteAll()
     {
         // save an empty list to the xml file
@@ -59,6 +63,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Order? Read(int id)
     {
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
@@ -70,6 +75,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public Order? Read(Func<Order, bool> filter)
     {
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
@@ -81,6 +87,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public IEnumerable<Order> ReadAll(Func<Order, bool>? filter = null)
     {
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
@@ -97,6 +104,7 @@ internal class OrderImplementation : IOrder
     /// </summary>
     /// <param name="item"></param>
     /// <exception cref="DalDoesNotExistException"></exception>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public void Update(Order item)
     {
         List<Order> orders = XMLTools.LoadListFromXMLSerializer<Order>(Config.s_orders_xml);
