@@ -3,8 +3,8 @@
   <NextDeliveryId>1040</NextDeliveryId>
   <NextOrderId>1050</NextOrderId>
   <Clock>2026-01-18T22:02:49.1422200+02:00</Clock>
-  <AdminId>123456782</AdminId>
-  <AdminPassword>Deafult1234$</AdminPassword>
+  <AdminId>123456789</AdminId>
+  <AdminPassword>987654321</AdminPassword>
   <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>
   <CompenyLatitude>32.0641632</CompenyLatitude>
   <CompenyLongitude>34.7692375</CompenyLongitude>
