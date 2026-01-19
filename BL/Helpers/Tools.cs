@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using System.Collections.Concurrent;
 
 namespace Helpers;
 
@@ -15,6 +16,10 @@ namespace Helpers;
 /// required.</remarks>
 internal static class Tools
 {
+    // Optimization: Cache for routing requests to prevent duplicate network calls
+    // Key: string (composed of type + coordinates), Value: Tuple of distance and time
+    private static readonly ConcurrentDictionary<string, (double Distance, TimeSpan Time)> s_routeCache = new();
+
     // Static HttpClient instance for making HTTP requests
     private static readonly HttpClient s_httpClient = new HttpClient();
 
@@ -329,5 +334,129 @@ internal static class Tools
 
         //compare the hashed entered password with the stored hash
         return hashedEnteredPassword == storedHash;
+    }
+
+
+    /// <summary>
+    /// ASYNC version: Gets the geographical coordinates for a given address.
+    /// </summary>
+    internal static async Task<(double Latitude, double Longitude)?> GetCoordinatesOfAddressAsync(string address)
+    {
+        // Validate input
+        if (string.IsNullOrWhiteSpace(address))
+            return null;
+
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+
+        try
+        {
+            string encodedAddress = HttpUtility.UrlEncode(address);
+            string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={effectiveKey}&q={encodedAddress}&format=json";
+
+            // שינוי 1: שימוש ב-await במקום .Result
+            HttpResponseMessage response = await s_httpClient.GetAsync(apiUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // שינוי 2: קריאה אסינכרונית לתוכן
+                string resultJson = await response.Content.ReadAsStringAsync();
+
+                using (JsonDocument doc = JsonDocument.Parse(resultJson))
+                {
+                    if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
+                    {
+                        JsonElement firstResult = doc.RootElement[0];
+                        if (firstResult.TryGetProperty("lat", out JsonElement latElement) &&
+                            firstResult.TryGetProperty("lon", out JsonElement lonElement) &&
+                            double.TryParse(latElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double latitude) &&
+                            double.TryParse(lonElement.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double longitude))
+                        {
+                            return (latitude, longitude);
+                        }
+                    }
+                }
+            }
+            // במקרה של כישלון - נחזיר null (במקום לזרוק שגיאה שעוצרת הכל)
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// ASYNC version with CACHING: Gets actual distance and estimated time.
+    /// </summary>
+    internal static async Task<(double ActualDistance, TimeSpan EstimatedTime)?> GetActualDistanceAndEstimatedTimeAsync(
+          double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
+    {
+        // 1. יצירת מפתח ייחודי לבקשה (סוג משלוח + קואורדינטות)
+        string cacheKey = $"{shippingType}|{startLat}|{startLon}|{endLat}|{endLon}";
+
+        // 2. בדיקה האם התוצאה כבר קיימת בזיכרון (Cache)
+        if (s_routeCache.TryGetValue(cacheKey, out var cachedResult))
+        {
+            // איזה כיף! חסכנו פנייה לרשת. נחזיר את מה ששמרנו פעם קודמת.
+            return cachedResult;
+        }
+
+        // --- אם הגענו לכאן, התוצאה לא בזיכרון. נצטרך לפנות לאינטרנט ---
+
+        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+        string profile = shippingType switch
+        {
+            BO.DeliveryType.Car or BO.DeliveryType.Motorcycle => "driving",
+            BO.DeliveryType.Bicycle => "cycling",
+            _ => "walking"
+        };
+
+        try
+        {
+            string coordinates = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0},{1};{2},{3}", startLon, startLat, endLon, endLat);
+
+            string apiUrl = $"https://us1.locationiq.com/v1/directions/driving/{coordinates}?key={effectiveKey}&overview=false";
+
+            if (profile != "driving")
+                apiUrl = apiUrl.Replace("driving", profile);
+
+            HttpResponseMessage response = await s_httpClient.GetAsync(apiUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string resultJson = await response.Content.ReadAsStringAsync();
+
+                using (JsonDocument doc = JsonDocument.Parse(resultJson))
+                {
+                    if (doc.RootElement.TryGetProperty("routes", out JsonElement routesElement) &&
+                        routesElement.ValueKind == JsonValueKind.Array && routesElement.GetArrayLength() > 0)
+                    {
+                        JsonElement route = routesElement[0];
+                        if (route.TryGetProperty("distance", out JsonElement distanceElement) &&
+                            route.TryGetProperty("duration", out JsonElement durationElement))
+                        {
+                            double actualDistanceMeters = distanceElement.GetDouble();
+                            double durationSeconds = durationElement.GetDouble();
+
+                            double actualDistanceKm = actualDistanceMeters / 1000.0;
+                            TimeSpan estimatedTime = TimeSpan.FromSeconds(durationSeconds);
+
+                            var result = (actualDistanceKm, estimatedTime);
+
+                            // 3. שמירת התוצאה בזיכרון לפעם הבאה!
+                            s_routeCache.TryAdd(cacheKey, result);
+
+                            return result;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -18,7 +18,7 @@ internal static class AdminManager //stage 4
     internal static event Action? ConfigUpdatedObservers; //stage 5 - for config update observers
     internal static event Action? ClockUpdatedObservers; //stage 5 - for clock update observers
 
-    private static Task? _periodicTask = null; //stage 7
+    //private static Task? _periodicTask = null; //stage 7
 
     /// <summary>
     /// Method to update application's clock from any BL class as may be required
@@ -28,10 +28,19 @@ internal static class AdminManager //stage 4
     {
         var oldClock = s_dal.Config.Clock; //stage 4
         s_dal.Config.Clock = newClock; //stage 4
+        
+        //Add calls here to any logic method that should be called periodically,
+        //after each clock update
+        //for example, Periodic students' updates:
+        // - Go through all students to update properties that are affected by the clock update
+        // - (students become not active after 5 years etc.)
 
-        //stage 7
-        if (_periodicTask is null || _periodicTask.IsCompleted) //stage 7
-            _periodicTask = Task.Run(() => CourierManager.PeriodicCourierUpdates(oldClock, newClock));
+        CourierManager.PeriodicCourierUpdates(oldClock, newClock); //stage 4. to be removed in stage 7 and replaced as below
+
+        //TO_DO: //stage 7
+        //if (_periodicTask is null || _periodicTask.IsCompleted) //stage 7
+        //    _periodicTask = Task.Run(() => StudentManager.PeriodicStudentsUpdates(oldClock, newClock));
+        //...
 
         //Calling all the observers of clock update
         ClockUpdatedObservers?.Invoke();
@@ -65,11 +74,21 @@ internal static class AdminManager //stage 4
     };
 
     /// <summary>
-    /// updates the application's configuration settings after validating the provided data.
+    /// Updates the system configuration with the specified settings.   [MethodImpl(MethodImplOptions.Synchronized)] //stage 7
     /// </summary>
-    /// <param name="configuration"></param>
-    /// <exception cref="BO.BlInvalidDataException"></exception>
-    /// <exception cref="BO.BlDoesNotExistException"></exception>
+    /// <remarks>This method validates the provided configuration values before applying them. The following
+    /// conditions must be met: <list type="bullet"> <item><description>The <paramref name="configuration"/> must have a
+    /// valid 9-digit <c>AdminId</c>.</description></item> <item><description>The <c>CompenyAddress</c> must not be
+    /// empty and must be a valid address.</description></item> <item><description>All speed values and the maximum
+    /// delivery distance must be positive.</description></item> <item><description>If an <c>AdminPassword</c> is
+    /// provided, it must be at least 8 characters long.</description></item> </list> If the company address is updated,
+    /// its geographic coordinates are recalculated. Observers are notified of configuration changes if any updates are
+    /// applied.</remarks>
+    /// <param name="configuration">The new configuration settings to apply. This includes administrative details, company address, delivery
+    /// parameters, and speed settings.</param>
+    /// <exception cref="BO.BlInvalidDataException">Thrown if any of the validation conditions are not met, such as an invalid <c>AdminId</c>, an empty or invalid
+    /// <c>CompenyAddress</c>, non-positive speed or distance values, or an <c>AdminPassword</c> that is too short.</exception>
+    /// <exception cref="BO.BlDoesNotExistException">Thrown if the provided <c>CompenyAddress</c> cannot be verified.</exception>
     internal static void SetConfig(BO.Config configuration)
     {
         //admin ID
@@ -242,7 +261,7 @@ internal static class AdminManager //stage 4
     private static int s_interval = 1;
     /// <summary>
     /// The flag that signs whether simulator is running
-    /// </summary>
+    /// 
     private static volatile bool s_stop = false;
 
     [MethodImpl(MethodImplOptions.Synchronized)] //stage 7                                                 
@@ -284,11 +303,11 @@ internal static class AdminManager //stage 4
         {
             UpdateClock(Now.AddMinutes(s_interval));
 
-            //stage 7
+            //TO_DO: //stage 7
             //Add calls here to any logic simulation that was required in stage 7
             //for example: course registration simulation
-            //if (_simulateTask is null || _simulateTask.IsCompleted)//stage 7
-            //    _simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
+            if (_simulateTask is null || _simulateTask.IsCompleted)//stage 7
+                //_simulateTask = Task.Run(() => StudentManager.SimulateCourseRegistrationAndGrade());
 
             //etc...
 

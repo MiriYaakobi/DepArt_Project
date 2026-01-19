@@ -20,4 +20,7 @@ public interface IAdmin
     void AddClockObserver(Action clockObserver);
     void RemoveClockObserver(Action clockObserver);
 
+    //Simulator Control (Stage 7)
+    void StartSimulator(int interval);
+    void StopSimulator();
 }

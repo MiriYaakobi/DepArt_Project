@@ -19,6 +19,8 @@ internal class OrderImplementation : IOrder
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Cancel(int requestingUserId, int orderId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // check authorization - only Admin can cancel orders
         AdminManager.AssertAdmin(requestingUserId);
 
@@ -90,6 +92,8 @@ internal class OrderImplementation : IOrder
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void ChooseOrder(int requestingUserId, int courierId, int orderId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // access control: only Admin or the courier himself can choose an order
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
@@ -146,6 +150,8 @@ internal class OrderImplementation : IOrder
     /// <param name="deliveryId"></param>
     public void CompleteDelivery(int requestingUserId, int courierId, int deliveryId, BO.OrderEndStatus status)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // access control: only Admin or the courier himself can complete a delivery
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
 
@@ -162,6 +168,8 @@ internal class OrderImplementation : IOrder
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Create(int requestingUserId, BO.Order boOrder)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // call to Manager
         try
         {
@@ -188,6 +196,8 @@ internal class OrderImplementation : IOrder
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     public void Delete(int requestingUserId, int orderId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // justification: only Admin can attempt deletion
         AdminManager.AssertAdmin(requestingUserId);
 
@@ -423,4 +433,103 @@ internal class OrderImplementation : IOrder
 
     public void RemoveObserver(int id, Action observer) =>
         OrderManager.Observers.RemoveObserver(id, observer);
+
+    // ----------------------------------------------------------------------
+    // גרסאות אסינכרוניות (שלב 7)
+    // ----------------------------------------------------------------------
+
+    /// <summary>
+    /// ASYNC version: creates a new order in the system.
+    /// </summary>
+    public async Task CreateAsync(int requestingUserId, BO.Order boOrder)
+    {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
+        try
+        {
+            // שימוש בפונקציה האסינכרונית מהמנהל
+            await OrderManager.CreateOrderAsync(boOrder);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new BO.BlInvalidDataException($"Invalid data provided for order creation: {ex.Message}", ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new BO.BlInvalidOperationException($"An internal error occurred during order creation.", ex);
+        }
+    }
+
+    /// <summary>
+    /// ASYNC version: gets details of a specific order.
+    /// </summary>
+    public async Task<BO.Order> ReadAsync(int requestingUserId, int orderId)
+    {
+        try
+        {
+            // בדיקת הרשאות (נשארת סינכרונית כי היא עובדת מול מסד הנתונים בלבד)
+            OrderManager.AssertReadAuthorization(requestingUserId, orderId);
+        }
+        catch (BO.BlDoesNotExistException) { throw; }
+        catch (BO.BlNotAuthorizedException) { throw; }
+        catch (Exception ex)
+        {
+            throw new BO.BlInvalidOperationException($"An internal error occurred during authorization check for Order ID {orderId}.", ex);
+        }
+
+        try
+        {
+            // הקריאה הכבדה (חישוב זמנים) מתבצעת באופן אסינכרוני
+            return await OrderManager.ReadOrderAsync(orderId);
+        }
+        catch (BO.BlDoesNotExistException) { throw; }
+    }
+
+    /// <summary>
+    /// ASYNC version: courier chooses an order.
+    /// </summary>
+    public async Task ChooseOrderAsync(int requestingUserId, int courierId, int orderId)
+    {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
+        // בדיקות מקדימות (נשארות סינכרוניות)
+        AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
+        BO.Order boOrder = OrderManager.ReadOrder(orderId);
+
+        if (boOrder.StatusOfOrder != BO.OrderStatus.Open)
+            throw new BO.BlInvalidOperationException($"Order {orderId} is not available. Only 'Open' orders can be assigned.");
+
+        BO.Courier boCourier = CourierManager.ReadCourier(courierId);
+        if (!boCourier.IsActive)
+            throw new BO.BlInvalidOperationException($"Courier {courierId} is inactive.");
+
+        // הפעולה הכבדה (יצירת משלוח וחישוב מסלול) מתבצעת אסינכרונית
+        await DeliveryManager.CreateNewDeliveryForOrderAsync(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
+
+        // שליחת מייל (נשארת זהה למקור)
+        try
+        {
+            string courierEmail = "depart.ilv@gmail.com";
+            string subject = $"New Delivery Assigned! Order #{orderId}";
+            string body = $@"Hello {boCourier.Name},
+
+             You have successfully picked up Order #{orderId}.
+
+               📦 Order Details:
+               ------------------
+               Address: {boOrder.Address}
+               Package: {boOrder.PackageDetails}
+               Customer: {boOrder.CustomerName}
+               Phone: {boOrder.CustomerPhone}
+
+               Navigate safely!
+               Delivery System";
+
+            EmailService.SendNotification(courierEmail, subject, body);
+        }
+        catch
+        {
+            // התעלמות מכישלון בשליחת מייל
+        }
+    }
 }

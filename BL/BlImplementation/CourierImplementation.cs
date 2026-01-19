@@ -18,6 +18,8 @@ internal class CourierImplementation : ICourier
     /// <exception cref="BO.BlAlreadyExistsException"></exception>
     public void Create(int requestingUserId, BO.Courier boCourier)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         //access control: only admin can create couriers
         AdminManager.AssertAdmin(requestingUserId);
 
@@ -45,6 +47,8 @@ internal class CourierImplementation : ICourier
     /// <exception cref="BO.BlDoesNotExistException"></exception>
     public void Delete(int requestingUserId, int courierId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         //access control: only admin can delete couriers
         AdminManager.AssertAdmin(requestingUserId);
 
@@ -139,6 +143,8 @@ internal class CourierImplementation : ICourier
     /// <exception cref="BO.BlDoesNotExistException"></exception>
     public void Update(int requestingUserId, BO.Courier boCourier)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         //access control: only admin or the courier themselves can update the details
         AdminManager.AssertAdminOrSelf(requestingUserId, boCourier.Id);
 
@@ -168,4 +174,5 @@ internal class CourierImplementation : ICourier
 
     public void RemoveObserver(int id, Action observer) =>
         CourierManager.Observers.RemoveObserver(id, observer);
+
 }

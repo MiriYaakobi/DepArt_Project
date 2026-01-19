@@ -17,4 +17,8 @@ public interface IOrder : IObservable
     void ChooseOrder(int requestingUserId, int courierId, int orderId);
     IEnumerable<BO.ClosedDeliveryInList> GetClosedDeliveriesForCourier(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.ClosedDeliveryFieldSort? sortBy = null);
     IEnumerable<BO.OpenOrderInList> ReadAllOpenOrders(int requestingUserId, int courierId, BO.OrderType? filterByType = null, BO.OpenOrderFieldSort? sortBy = null);
+
+    Task CreateAsync(int requestingUserId, BO.Order boOrder);
+    Task<BO.Order> ReadAsync(int requestingUserId, int orderId);
+    Task ChooseOrderAsync(int requestingUserId, int courierId, int orderId);
 }

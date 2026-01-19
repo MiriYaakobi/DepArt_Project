@@ -18,8 +18,6 @@ public partial class LoginWindow : Window
     private IBl s_bl = BlApi.Factory.Get();
 
     // dependency property for UserId to enable binding
-
-    //user ID property
     public string UserId
     {
         get { return (string)GetValue(UserIdProperty); }
@@ -221,9 +219,7 @@ public partial class LoginWindow : Window
             {
                 if (node is TextBox tb) 
                     return tb;
-
                 var found = FindFirstTextBox(node);
-
                 if (found != null) 
                     return found;
             }

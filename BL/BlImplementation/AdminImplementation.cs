@@ -18,6 +18,8 @@ internal class AdminImplementation : IAdmin
     /// <exception cref="BO.BlInvalidDataException"></exception>
     public void ForwardClock(BO.TimeUnit unit)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         //calculate the new clock time based on the given time unit
         DateTime newClock = unit switch
         {
@@ -59,14 +61,23 @@ internal class AdminImplementation : IAdmin
     public BO.Config GetConfig() =>
         AdminManager.GetConfig();
 
-    public void InitializeDB() =>
+    public void InitializeDB()
+    {
+        AdminManager.ThrowOnSimulatorIsRunning();
         AdminManager.InitializeDB();
+    }
 
-    public void ResetDB() =>
+    public void ResetDB()
+    {
+        AdminManager.ThrowOnSimulatorIsRunning();
         AdminManager.ResetDB();
+    }
 
-    public void SetConfig(BO.Config config) =>
+    public void SetConfig(BO.Config config)
+    {
+        AdminManager.ThrowOnSimulatorIsRunning();
         AdminManager.SetConfig(config);
+    }
 
     public void AddClockObserver(Action clockObserver) =>
         AdminManager.ClockUpdatedObservers += clockObserver;
@@ -80,4 +91,21 @@ internal class AdminImplementation : IAdmin
     public void RemoveConfigObserver(Action configObserver) =>
         AdminManager.ConfigUpdatedObservers -= configObserver;
 
+    /// <summary>
+    /// Starts the simulator with the specified time interval.
+    /// </summary>
+    /// <param name="interval">Simulation speed (seconds per logical minute)</param>
+    public void StartSimulator(int interval)  // stage 7
+    {
+        // בדיקה שהסימולטור לא רץ כבר (אם כן - זורק שגיאה)
+        AdminManager.ThrowOnSimulatorIsRunning();
+
+        // הפעלת הסימולטור
+        AdminManager.Start(interval);
+    }
+
+    /// <summary>
+    /// Stops the simulator.
+    /// </summary>
+    public void StopSimulator() => AdminManager.Stop(); // stage 7
 }

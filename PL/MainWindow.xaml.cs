@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System; // הוספתי כי היה חסר בקוד המקורי ל-Exception ו-Action
+using System.Linq; // הוספתי בשביל Max()
+using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
 
@@ -8,132 +10,49 @@ namespace PL;
 /// Represents the main window of the application, providing the primary user interface for managing administrative
 /// tasks, including configuration, database operations, and data visualization.
 /// </summary>
+/// <remarks>This class serves as the entry point for the application's administrative interface. It interacts
+/// with the business logic layer (BL) to retrieve and update data, and it provides various controls for managing
+/// application settings, visualizing order statuses, and performing database operations.  The <see cref="MainWindow"/>
+/// class is designed to handle user interactions, update the UI in response to data changes, and ensure synchronization
+/// between the UI and the underlying data model. It also includes mechanisms for observing changes in the system clock
+/// and configuration.</remarks>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private BlApi.IBl s_bl = BlApi.Factory.Get();
 
-    //property changed implementation
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
 
-    //visibility and content properties
 
-    //dashboard and content visibility
     private Visibility _dashboardVisibility = Visibility.Visible;
-    public Visibility DashboardVisibility
-    {
-        get => _dashboardVisibility;
-        set { _dashboardVisibility = value; OnPropertyChanged(); }
-    }
+    public Visibility DashboardVisibility { get => _dashboardVisibility; set { _dashboardVisibility = value; OnPropertyChanged(); } }
 
-    //content visibility
     private Visibility _contentVisibility = Visibility.Collapsed;
-    public Visibility ContentVisibility
-    {
-        get => _contentVisibility;
-        set { _contentVisibility = value; OnPropertyChanged(); }
-    }
+    public Visibility ContentVisibility { get => _contentVisibility; set { _contentVisibility = value; OnPropertyChanged(); } }
 
-    //loading overlay visibility
     private Visibility _loadingVisibility = Visibility.Collapsed;
-    public Visibility LoadingVisibility
-    {
-        get => _loadingVisibility;
-        set { _loadingVisibility = value; OnPropertyChanged(); }
-    }
+    public Visibility LoadingVisibility { get => _loadingVisibility; set { _loadingVisibility = value; OnPropertyChanged(); } }
 
-    //main content control
     private object? _mainContent = null;
-    public object? MainContent
-    {
-        get => _mainContent;
-        set { _mainContent = value; OnPropertyChanged(); }
-    }
+    public object? MainContent { get => _mainContent; set { _mainContent = value; OnPropertyChanged(); } }
 
-    //graph bar properties
-    private double _openHeight;
-    public double OpenHeight
-    {
-        get => _openHeight;
-        set { _openHeight = value; OnPropertyChanged(); }
-    }
 
-    //bar value
-    private string _openVal = "0";
-    public string OpenVal
-    {
-        get => _openVal;
-        set { _openVal = value; OnPropertyChanged(); }
-    }
+    private double _openHeight; public double OpenHeight { get => _openHeight; set { _openHeight = value; OnPropertyChanged(); } }
+    private string _openVal = "0"; public string OpenVal { get => _openVal; set { _openVal = value; OnPropertyChanged(); } }
 
-    //following properties are similar for other order statuses
+    private double _inProgressHeight; public double InProgressHeight { get => _inProgressHeight; set { _inProgressHeight = value; OnPropertyChanged(); } }
+    private string _inProgressVal = "0"; public string InProgressVal { get => _inProgressVal; set { _inProgressVal = value; OnPropertyChanged(); } }
 
-    //InProgress
-    private double _inProgressHeight;
-    public double InProgressHeight
-    {
-        get => _inProgressHeight;
-        set { _inProgressHeight = value; OnPropertyChanged(); }
-    }
+    private double _deliveredHeight; public double DeliveredHeight { get => _deliveredHeight; set { _deliveredHeight = value; OnPropertyChanged(); } }
+    private string _deliveredVal = "0"; public string DeliveredVal { get => _deliveredVal; set { _deliveredVal = value; OnPropertyChanged(); } }
 
-    //bar value
-    private string _inProgressVal = "0";
-    public string InProgressVal
-    {
-        get => _inProgressVal;
-        set { _inProgressVal = value; OnPropertyChanged(); }
-    }
+    private double _refusedHeight; public double RefusedHeight { get => _refusedHeight; set { _refusedHeight = value; OnPropertyChanged(); } }
+    private string _refusedVal = "0"; public string RefusedVal { get => _refusedVal; set { _refusedVal = value; OnPropertyChanged(); } }
 
-    //Delivered
-    private double _deliveredHeight;
-    public double DeliveredHeight
-    {
-        get => _deliveredHeight;
-        set { _deliveredHeight = value; OnPropertyChanged(); }
-    }
+    private double _cancelledHeight; public double CancelledHeight { get => _cancelledHeight; set { _cancelledHeight = value; OnPropertyChanged(); } }
+    private string _cancelledVal = "0"; public string CancelledVal { get => _cancelledVal; set { _cancelledVal = value; OnPropertyChanged(); } }
 
-    //bar value
-    private string _deliveredVal = "0";
-    public string DeliveredVal
-    {
-        get => _deliveredVal;
-        set { _deliveredVal = value; OnPropertyChanged(); }
-    }
-
-    //Refused
-    private double _refusedHeight;
-    public double RefusedHeight
-    {
-        get => _refusedHeight;
-        set { _refusedHeight = value; OnPropertyChanged(); }
-    }
-
-    //bar value
-    private string _refusedVal = "0";
-    public string RefusedVal
-    {
-        get => _refusedVal;
-        set { _refusedVal = value; OnPropertyChanged(); }
-    }
-
-    //Cancelled
-    private double _cancelledHeight;
-    public double CancelledHeight
-    {
-        get => _cancelledHeight;
-        set { _cancelledHeight = value; OnPropertyChanged(); }
-    }
-
-    //bar value
-    private string _cancelledVal = "0";
-    public string CancelledVal
-    {
-        get => _cancelledVal;
-        set { _cancelledVal = value; OnPropertyChanged(); }
-    }
-
-    //admin password input binding
     private string _adminPasswordInput = "********";
     public string AdminPasswordInput
     {
@@ -141,31 +60,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         set { _adminPasswordInput = value; OnPropertyChanged(); }
     }
 
-    //Dependency properties
-
-    //current time property
+    /// <summary>
+    /// Gets or sets the current time value.
+    /// </summary>
     public DateTime CurrentTime
     {
         get { return (DateTime)GetValue(CurrentTimeProperty); }
         set { SetValue(CurrentTimeProperty, value); }
     }
 
+    //dependency property for CurrentTime
     public static readonly DependencyProperty CurrentTimeProperty =
         DependencyProperty.Register("CurrentTime", typeof(DateTime), typeof(MainWindow), new PropertyMetadata(DateTime.Now));
 
-    //configuration property
+    /// <summary>
+    /// Gets or sets the configuration settings for the application.
+    /// </summary>
     public BO.Config? Configuration
     {
         get { return (BO.Config?)GetValue(ConfigurationProperty); }
         set { SetValue(ConfigurationProperty, value); }
     }
 
+    //dependency property for Configuration
     public static readonly DependencyProperty ConfigurationProperty =
         DependencyProperty.Register("Configuration", typeof(BO.Config), typeof(MainWindow), new PropertyMetadata());
 
-    /// <summary>
-    /// constructor for main window
-    /// </summary>
+    //ctor
     public MainWindow()
     {
         InitializeComponent();
@@ -173,11 +94,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// load event handler for the window. Initializes data,
-    /// subscribes observers, and sets up the initial UI state.
+    /// Handles the <see cref="Window.Loaded"/> event, initializing the application's state and subscribing to necessary
+    /// observers.
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
+    /// <remarks>This method retrieves the current time and configuration settings from the application's
+    /// backend logic. It also subscribes observers to monitor changes in the clock and configuration. If the
+    /// configuration is available, the password field is masked, and the graph is refreshed. Any errors encountered
+    /// during the loading process are displayed in a custom message box.</remarks>
+    /// <param name="sender">The source of the event, typically the window being loaded.</param>
+    /// <param name="e">The event data associated with the <see cref="Window.Loaded"/> event.</param>
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         try
@@ -190,6 +115,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             s_bl.Admin.AddClockObserver(clockObserver);
             s_bl.Admin.AddConfigObserver(configObserver);
 
+            // --- תוספת: האזנה לשינויים בהזמנות ---
             s_bl.Order.AddObserver(OrderObserver);
 
             //initial UI setup
@@ -205,9 +131,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// observer method for order changes.
-    /// </summary>
+    // --- תוספת: פונקציית עדכון לגרף ---
     private void OrderObserver()
     {
         Dispatcher.Invoke(() => RefreshGraph());
@@ -256,9 +180,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
             int maxVal = quantities.Max();
-
-            if (maxVal == 0)
-                maxVal = 1;
+            if (maxVal == 0) maxVal = 1;
 
             UpdateBarData(quantities[(int)BO.OrderStatus.Open], maxVal, v => OpenVal = v, h => OpenHeight = h);
             UpdateBarData(quantities[(int)BO.OrderStatus.InProgress], maxVal, v => InProgressVal = v, h => InProgressHeight = h);
@@ -283,29 +205,29 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         double maxHeight = 110;
         double newHeight = ((double)value / maxValue) * maxHeight;
 
-        if (value > 0 && newHeight < 20)
-            newHeight = 20;
-
-        if (value == 0)
-            newHeight = 5;
+        if (value > 0 && newHeight < 20) newHeight = 20;
+        if (value == 0) newHeight = 5;
 
         SetHeight(newHeight);
     }
 
     /// <summary>
-    /// handles the click event of the "Save Configuration" button.
-    /// Validates and saves the current configuration.
+    /// Handles the click event of the "Save Configuration" button. Saves the current configuration settings, including
+    /// updating the admin password if modified.
+    /// In writing this class, we used AI to understand the connections between this code and
+    /// the XAML code and to rewrite the code we wrote so that it was accurate and minimal.
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
+    /// <remarks>If the password field contains a value other than "********", the admin password is updated.
+    /// Displays a success message upon successful save, or an error message if the operation fails.</remarks>
+    /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+    /// <param name="e">The event data associated with the click event.</param>
     private void BtnSaveConfig_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (Configuration == null)
-                return;
+            if (Configuration == null) return;
 
-            // Validate configuration
+            // שימוש במשתנה המקושר (Binding) במקום בשם הפקד
             if (AdminPasswordInput != "********")
                 Configuration.AdminPassword = AdminPasswordInput;
 
@@ -313,7 +235,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             CustomMessageBox.Show("Configuration saved successfully!", "Success");
 
-            //initialize password field
+            // איפוס הסיסמה לתצוגה
             AdminPasswordInput = "********";
         }
         catch (Exception ex)
@@ -350,8 +272,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             //temp disconnection of observers to avoid multiple updates during init
             s_bl.Admin.RemoveConfigObserver(configObserver);
             s_bl.Admin.RemoveClockObserver(clockObserver);
-
-            s_bl.Order.RemoveObserver(OrderObserver);
+            s_bl.Order.RemoveObserver(OrderObserver); // --- תוספת ---
 
             // Perform database initialization asynchronously
             await System.Threading.Tasks.Task.Run(() =>
@@ -364,8 +285,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             // Reattach observers
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
-
-            s_bl.Order.AddObserver(OrderObserver);
+            s_bl.Order.AddObserver(OrderObserver); // --- תוספת ---
 
             clockObserver(); // Update time immediately after init
 
@@ -388,18 +308,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             //added block to ensure UI is always released
             LoadingVisibility = Visibility.Collapsed;
-
-            if (btn != null)
-                btn.IsEnabled = true;
+            if (btn != null) btn.IsEnabled = true;
         }
     }
 
     /// <summary>
-    /// handles the click event of the "Reset Database" button.
-    /// Prompts the user for confirmation before
+    /// Handles the click event of the Reset button, resetting the database to its initial state.
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
+    /// <remarks>This operation deletes all data in the database and restores it to its default configuration.
+    /// A confirmation dialog is displayed before proceeding with the reset. During the reset process, a loading overlay
+    /// is shown to indicate progress. If the reset is successful, the database configuration is reloaded, and the UI is
+    /// updated accordingly. In case of an error, an error message is displayed to the user.</remarks>
+    /// <param name="sender">The source of the event, typically the Reset button.</param>
+    /// <param name="e">The event data associated with the click event.</param>
     private async void BtnReset_Click(object sender, RoutedEventArgs e)
     {
         //check if a background process is already running
@@ -416,16 +337,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             //lock the current button
-            if (btn != null)
-                btn.IsEnabled = false;
+            if (btn != null) btn.IsEnabled = false;
 
             LoadingVisibility = Visibility.Visible;
 
             // temp disconnection of observers to avoid multiple updates during reset
             s_bl.Admin.RemoveConfigObserver(configObserver);
             s_bl.Admin.RemoveClockObserver(clockObserver);
-
-            s_bl.Order.RemoveObserver(OrderObserver);
+            s_bl.Order.RemoveObserver(OrderObserver); // --- תוספת ---
 
             // Perform database reset asynchronously
             await System.Threading.Tasks.Task.Run(() =>
@@ -438,8 +357,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             //reattach observers
             s_bl.Admin.AddConfigObserver(configObserver);
             s_bl.Admin.AddClockObserver(clockObserver);
-
-            s_bl.Order.AddObserver(OrderObserver);
+            s_bl.Order.AddObserver(OrderObserver); // --- תוספת ---
 
             clockObserver(); // Update time immediately after init
 
@@ -496,10 +414,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             return;
 
         var courierList = new PL.Courier.CourierListWindow(Configuration.AdminId);
-
         courierList.RequestDashboard += (s, args) => ShowDashboard();
         courierList.RequestOrderList += (s, args) => BtnList_Click(this, new RoutedEventArgs());
 
+        // הצבת התוכן במשתנה MainContent
         MainContent = courierList;
 
         DashboardVisibility = Visibility.Collapsed;
@@ -516,7 +434,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         s_bl.Admin.RemoveClockObserver(clockObserver);
         s_bl.Admin.RemoveConfigObserver(configObserver);
 
-        // cleanup order observer
+        // --- תוספת: ניקוי ה-Observer של ההזמנות ---
         s_bl.Order.RemoveObserver(OrderObserver);
     }
 
@@ -530,7 +448,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             return;
 
         var orderList = new PL.Order.OrderListWindow(Configuration.AdminId);
-
         orderList.RequestDashboard += (s, args) => ShowDashboard();
         orderList.RequestCouriers += (s, args) => BtnCouriers_Click(this, new RoutedEventArgs());
 
@@ -540,16 +457,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ContentVisibility = Visibility.Visible;
     }
 
-    //clock forwarding buttons handlers
-
-    private void BtnAddMinute_Click(object sender, RoutedEventArgs e)
-        => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
-    private void BtnAddHour_Click(object sender, RoutedEventArgs e)
-        => s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
-    private void BtnAddDay_Click(object sender, RoutedEventArgs e)
-        => s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
-    private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
-        => s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
-    private void BtnAddYear_Click(object sender, RoutedEventArgs e)
-        => s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
+    private void BtnAddMinute_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Minutes);
+    private void BtnAddHour_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Hours);
+    private void BtnAddDay_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Days);
+    private void BtnAddMonth_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Months);
+    private void BtnAddYear_Click(object sender, RoutedEventArgs e) => s_bl.Admin.ForwardClock(BO.TimeUnit.Years);
 }
