@@ -1,6 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using PL.Helpers;
 using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace PL;
 
@@ -11,6 +12,38 @@ namespace PL;
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _observerMutex = new();
+
+    // simulator properties
+
+    // simulator interval property
+    private int _simulatorInterval = 1;
+    public int SimulatorInterval
+    {
+        get => _simulatorInterval;
+        set { _simulatorInterval = value; OnPropertyChanged(); }
+    }
+
+    // simulator running state
+    private bool _isSimulatorRunning = false;
+    public bool IsSimulatorRunning
+    {
+        get => _isSimulatorRunning;
+        set
+        {
+            _isSimulatorRunning = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulatorButtonContent)); //update button text
+            OnPropertyChanged(nameof(IsSimulatorNotRunning));  //update button enabled state
+        }
+    }
+
+    //helper property to bind button enabled state
+    public bool IsSimulatorNotRunning => !IsSimulatorRunning;
+
+    // text for simulator button
+    public string SimulatorButtonContent => IsSimulatorRunning ? "Stop" : "Start";
 
     //property changed implementation
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
@@ -210,7 +243,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// </summary>
     private void OrderObserver()
     {
-        Dispatcher.Invoke(() => RefreshGraph());
+        //entry checks and mutex handling
+        if (_observerMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        Dispatcher.BeginInvoke(async () =>
+        {
+            RefreshGraph();
+
+            // exit and check for restart
+            if (await _observerMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                OrderObserver();
+        });
     }
 
     /// <summary>
@@ -220,13 +264,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// updating the <see cref="CurrentTime"/> property.</remarks>
     private void clockObserver()
     {
-        // Ensure the update occurs on the UI thread
-        Dispatcher.Invoke(() =>
+        //entry checks and mutex handling
+        if (_observerMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        Dispatcher.BeginInvoke(async () =>
         {
             CurrentTime = s_bl.Admin.GetClock();
+
+            //exit and check for restart
+            if (await _observerMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                clockObserver();
         });
     }
-
     /// <summary>
     /// Configures the observer by retrieving the current configuration from the admin service.
     /// </summary>
@@ -234,10 +284,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// configuration.</remarks>
     private void configObserver()
     {
-        // Ensure the update occurs on the UI thread
-        Dispatcher.Invoke(() =>
+        //entry checks and mutex handling
+        if (_observerMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        Dispatcher.BeginInvoke(async () =>
         {
             Configuration = s_bl.Admin.GetConfig();
+
+            // exit and check for restart
+            if (await _observerMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                configObserver();
         });
     }
 
@@ -319,6 +376,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch (Exception ex)
         {
             CustomMessageBox.Show($"Failed to save config: {ex.Message}", "Validation Error");
+        }
+    }
+
+    /// <summary>
+    /// starts or stops the simulator based on its current
+    /// state when the corresponding button is clicked.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void BtnSimulator_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!IsSimulatorRunning)
+            {
+                // starting
+                s_bl.Admin.StartSimulator(SimulatorInterval);
+                IsSimulatorRunning = true;
+            }
+            else
+            {
+                // stopping
+                s_bl.Admin.StopSimulator();
+                IsSimulatorRunning = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            CustomMessageBox.Show(ex.Message, "Simulator Error", MessageType.Error);
         }
     }
 
@@ -513,6 +599,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// <param name="e"></param>
     private void Window_Closed(object sender, EventArgs e)
     {
+        //stop simulator if running
+        if (IsSimulatorRunning)
+            s_bl.Admin.StopSimulator();
+
         s_bl.Admin.RemoveClockObserver(clockObserver);
         s_bl.Admin.RemoveConfigObserver(configObserver);
 

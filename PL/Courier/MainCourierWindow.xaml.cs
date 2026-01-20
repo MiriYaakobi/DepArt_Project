@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PL.Helpers;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -12,6 +13,8 @@ namespace PL.Courier;
 public partial class MainCourierWindow : Window
 {
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _clockMutex = new();
 
     private int courierId;
     private string enteredPassword = "";
@@ -88,7 +91,21 @@ public partial class MainCourierWindow : Window
     /// </summary>
     private void CourierObserver()
     {
-        Dispatcher.Invoke(() => RefreshCourierState());
+        //entry checks and mutex handling
+        if (_clockMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        // update UI thread
+        Dispatcher.BeginInvoke(async () =>
+        {
+            RefreshCourierState();
+
+            // exit observer and check for restart
+            if (await _clockMutex.UnsetLoadInProgressAndCheckRestartRequested())
+            {
+                CourierObserver();
+            }
+        });
     }
 
     /// <summary>

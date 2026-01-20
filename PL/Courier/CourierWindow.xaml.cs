@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PL.Helpers;
+using System.Windows;
 
 namespace PL.Courier;
 
@@ -10,6 +11,8 @@ namespace PL.Courier;
 public partial class CourierWindow : Window
 {
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _courierUpdateMutex = new();
     public bool IsUpdateMode { get; private set; }
     private int currentAdminId;
 
@@ -205,11 +208,16 @@ public partial class CourierWindow : Window
     /// </summary>
     private void CourierUpdateObserver()
     {
-        //relevant only in update mode with a current order
-        if (!IsUpdateMode || CurrentCourier == null) return;
+        // relevant only in update mode with a current order
+        if (!IsUpdateMode || CurrentCourier == null)
+            return;
 
-        // Ensure the update occurs on the UI thread
-        Dispatcher.Invoke(() =>
+        //entry checks and mutex handling
+        if (_courierUpdateMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        //update on UI thread
+        Dispatcher.BeginInvoke(async () =>
         {
             try
             {
@@ -218,13 +226,17 @@ public partial class CourierWindow : Window
                 if (updatedCourier != null)
                 {
                     updatedCourier.Password = "********"; // Preserve password masking
-                    CurrentCourier = updatedCourier;     // Refresh the current courier details
+                    CurrentCourier = updatedCourier;      // Refresh the current courier details
                 }
             }
             catch
             {
                 this.Close();
             }
+
+            // exit checks and mutex handling
+            if (await _courierUpdateMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                CourierUpdateObserver();
         });
     }
 }
