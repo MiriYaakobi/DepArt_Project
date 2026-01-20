@@ -359,3 +359,21 @@ public class OrderEndStatusToBrushConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)=> throw new NotImplementedException();
 }
+
+/// <summary>
+/// simulates the status of a simulator to a corresponding button content.
+/// </summary>
+public class SimulatorStatusToContentConverter : IValueConverter
+{
+    // converts the simulator status to button content
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool isRunning && isRunning)
+            return "Stop";
+
+        return "Start";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}

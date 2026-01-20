@@ -1001,6 +1001,8 @@ internal static class OrderManager
     /// <exception cref="BO.BlInvalidDataException"></exception>
     internal static void CreateOrder(BO.Order order)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // verify input validity
         AssertOrderInputValidity(order);
 
@@ -1055,6 +1057,8 @@ internal static class OrderManager
     /// </summary>
     internal static async Task CreateOrderAsync(BO.Order order)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // verify input validity
         AssertOrderInputValidity(order);
 
@@ -1112,8 +1116,8 @@ internal static class OrderManager
 
         try
         {
-            // 2. Random probability: 30% chance to create an order per tick
-            if (s_rand.NextDouble() > 0.3)
+            // 2. Random probability: 10% chance to create an order per tick
+            if (s_rand.NextDouble() > 0.1)
                 return;
 
             // 3. Generate random data
@@ -1153,6 +1157,55 @@ internal static class OrderManager
     }
 
     /// <summary>
+    /// עדכון תקופתי: אחראי רק על סגירת משלוחים שהגיעו ליעדם (InProgress -> Delivered).
+    /// </summary>
+    internal static async Task PeriodicOrderUpdatesAsync(DateTime newTime)
+    {
+        // 1. בדיקת מניעה הדדית
+        if (s_simulationMutex.CheckAndSetInProgress()) return;
+
+        try
+        {
+            // שליפת הזמנות שבדרך (InProgress) בלבד
+            var ordersInTransitIds = await Task.Run(() =>
+                ReadAllOrders()
+                .Where(o => o.StatusOfOrder == BO.OrderStatus.InProgress)
+                .Select(o => o.OrderId)
+                .ToList());
+
+            foreach (var orderId in ordersInTransitIds)
+            {
+                try
+                {
+                    // קריאת ההזמנה המלאה כדי לקבל את ExpectedDeliveryTime
+                    BO.Order fullOrder = await ReadOrderAsync(orderId);
+
+                    // האם לפי הזמן החדש השליח הגיע?
+                    if (fullOrder.ExpectedDeliveryTime.HasValue && fullOrder.ExpectedDeliveryTime.Value <= newTime)
+                    {
+                        int deliveryId = fullOrder.DeliveryList?.Id ?? 0;
+                        int courierId = fullOrder.DeliveryList?.CourierId ?? 0;
+
+                        if (deliveryId != 0 && courierId != 0)
+                        {
+                            // שימוש ב-DeliveryManager לסגירה מסודרת
+                            DeliveryManager.CompleteDeliveryUpdate(courierId, deliveryId, BO.OrderEndStatus.Delivered);
+                        }
+                    }
+                }
+                catch { continue; }
+            }
+
+            // עדכון כללי למסך
+            Observers.NotifyListUpdated();
+        }
+        finally
+        {
+            s_simulationMutex.UnsetInProgress();
+        }
+    }
+
+    /// <summary>
     /// gets a full order by ID, calculating its statuses and related data.
     /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
     /// </summary>
@@ -1160,6 +1213,8 @@ internal static class OrderManager
     /// <returns></returns>
     internal static BO.Order ReadOrder(int orderId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // retrieve existing order
         DO.Order doOrder = GetExistingOrder(orderId); // Has lock inside
 
@@ -1396,6 +1451,8 @@ internal static class OrderManager
     /// <exception cref="BO.BlInvalidOperationException"></exception>
     internal static void UpdateOrder(BO.Order order)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // check for existing order and validate input
         DO.Order existingOrder = GetExistingOrder(order.Id); // Has lock inside
         AssertOrderInputValidity(order);
@@ -1435,6 +1492,8 @@ internal static class OrderManager
     /// <exception cref="BO.BlDoesNotExistException"></exception>
     internal static void DeleteOrder(int orderId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         lock (AdminManager.BlMutex)
         {
             // check for existing deliveries
