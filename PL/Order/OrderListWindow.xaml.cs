@@ -82,12 +82,14 @@ public partial class OrderListWindow : UserControl
     {
         LoadData();
         s_bl.Order.AddObserver(OrderListObserver);
+        s_bl.Courier.AddObserver(OrderListObserver);
     }
 
     // un-register observer on unload to prevent memory leaks
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
     {
         s_bl.Order.RemoveObserver(OrderListObserver);
+        s_bl.Courier.RemoveObserver(OrderListObserver);
     }
 
     /// <summary>

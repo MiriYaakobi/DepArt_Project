@@ -224,6 +224,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             s_bl.Admin.AddConfigObserver(configObserver);
 
             s_bl.Order.AddObserver(OrderObserver);
+            s_bl.Courier.AddObserver(OrderObserver);
 
             //initial UI setup
             if (Configuration != null)
@@ -308,20 +309,45 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            if (Configuration == null)
-                return;
+            if (Configuration == null) return;
 
+            // get order summary quantities from BL
             int[] quantities = s_bl.Order.GetOrderSummaryQuantities(Configuration.AdminId);
-            int maxVal = quantities.Max();
 
-            if (maxVal == 0)
-                maxVal = 1;
+            // Helper function to convert the complex array into simple summaries for the graph
+            int SumStatus(BO.OrderStatus status)
+            {
+                int count = 0;
+                int totalStatuses = Enum.GetNames(typeof(BO.OrderStatus)).Length;
+                int totalSchedules = Enum.GetNames(typeof(BO.ScheduleStatus)).Length;
 
-            UpdateBarData(quantities[(int)BO.OrderStatus.Open], maxVal, v => OpenVal = v, h => OpenHeight = h);
-            UpdateBarData(quantities[(int)BO.OrderStatus.InProgress], maxVal, v => InProgressVal = v, h => InProgressHeight = h);
-            UpdateBarData(quantities[(int)BO.OrderStatus.Delivered], maxVal, v => DeliveredVal = v, h => DeliveredHeight = h);
-            UpdateBarData(quantities[(int)BO.OrderStatus.Refused], maxVal, v => RefusedVal = v, h => RefusedHeight = h);
-            UpdateBarData(quantities[(int)BO.OrderStatus.Cancelled], maxVal, v => CancelledVal = v, h => CancelledHeight = h);
+                // sum across all schedule statuses for the given order status
+                for (int i = 0; i < totalSchedules; i++)
+                {
+                    int index = (int)status + (i * totalStatuses);
+                    if (index < quantities.Length) count += quantities[index];
+                }
+                return count;
+            }
+
+            // calculate values for each order status
+            int valOpen = SumStatus(BO.OrderStatus.Open);
+            int valProgress = SumStatus(BO.OrderStatus.InProgress);
+            int valDelivered = SumStatus(BO.OrderStatus.Delivered);
+            int valRefused = SumStatus(BO.OrderStatus.Refused);
+            int valCancelled = SumStatus(BO.OrderStatus.Cancelled);
+
+            // determine maximum value for scaling
+            var allVals = new[] { valOpen, valProgress, valDelivered, valRefused, valCancelled };
+            int maxVal = allVals.Max();
+            if (maxVal == 0) maxVal = 1;
+
+            // Update the bar data for each order status
+            UpdateBarData(valOpen, maxVal, v => OpenVal = v, h => OpenHeight = h);
+            UpdateBarData(valProgress, maxVal, v => InProgressVal = v, h => InProgressHeight = h);
+            UpdateBarData(valDelivered, maxVal, v => DeliveredVal = v, h => DeliveredHeight = h);
+            UpdateBarData(valRefused, maxVal, v => RefusedVal = v, h => RefusedHeight = h);
+            UpdateBarData(valCancelled, maxVal, v => CancelledVal = v, h => CancelledHeight = h);
         }
         catch (Exception) { }
     }
@@ -608,6 +634,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         // cleanup order observer
         s_bl.Order.RemoveObserver(OrderObserver);
+        s_bl.Courier.RemoveObserver(OrderObserver);
     }
 
     //placeholder - to be implemented in the future

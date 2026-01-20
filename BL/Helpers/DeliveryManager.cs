@@ -516,7 +516,13 @@ internal static class DeliveryManager
         }
 
         // Notify observers about the new delivery
-        Observers.NotifyListUpdated();
+        CourierManager.Observers.NotifyItemUpdated(courierId);
+        OrderManager.Observers.NotifyItemUpdated(orderId);
+
+        // Refresh all lists (in case filtered by status)
+        Observers.NotifyListUpdated(); // Delivery list
+        CourierManager.Observers.NotifyListUpdated(); // Couriers list
+        OrderManager.Observers.NotifyListUpdated(); // Orders list
     }
     /// <summary>
     /// ASYNC version: creates a new delivery record asynchronously.
@@ -589,7 +595,14 @@ internal static class DeliveryManager
             s_dal.Delivery.Create(newDelivery);
         }
 
-        Observers.NotifyListUpdated();
+        // Notify observers about the new delivery
+        CourierManager.Observers.NotifyItemUpdated(courierId);
+        OrderManager.Observers.NotifyItemUpdated(orderId);
+
+        // Refresh all lists (in case filtered by status)
+        Observers.NotifyListUpdated(); // Delivery list
+        CourierManager.Observers.NotifyListUpdated(); // Couriers list
+        OrderManager.Observers.NotifyListUpdated(); // Orders list
     }
 
     /// <summary>
@@ -624,9 +637,16 @@ internal static class DeliveryManager
             s_dal.Delivery.Update(updatedDelivery);
         }
 
-        // Notify observers about the update
-        Observers.NotifyItemUpdated(deliveryId);
+        // Notify courier observers
+        CourierManager.Observers.NotifyItemUpdated(courierId);
+        DO.Delivery delivery = GetExistingDelivery(deliveryId); 
+        OrderManager.Observers.NotifyItemUpdated(delivery.OrderId);
+
+        // Refresh all lists (in case filtered by status)
         Observers.NotifyListUpdated();
+        Observers.NotifyItemUpdated(deliveryId);
+        CourierManager.Observers.NotifyListUpdated();
+        OrderManager.Observers.NotifyListUpdated();
     }
 
     /// <summary>

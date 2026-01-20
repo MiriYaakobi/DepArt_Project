@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <NextDeliveryId>1030</NextDeliveryId>
+  <NextDeliveryId>1035</NextDeliveryId>
   <NextOrderId>1050</NextOrderId>
-  <Clock>2026-05-12T09:22:49.1422200+03:00</Clock>
-  <AdminId>123456789</AdminId>
-  <AdminPassword>987654321</AdminPassword>
+  <Clock>2026-01-21T05:15:41.4706153+02:00</Clock>
+  <AdminId>123456782</AdminId>
+  <AdminPassword>Deafult1234$</AdminPassword>
   <CompenyAddress>Ahad Ha'am St 9 Tel-Aviv</CompenyAddress>
   <CompenyLatitude>32.0641632</CompenyLatitude>
   <CompenyLongitude>34.7692375</CompenyLongitude>
