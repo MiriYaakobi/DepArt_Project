@@ -240,6 +240,7 @@ public partial class CourierListWindow : UserControl
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.AddObserver(CourierListObserver);
+        s_bl.Order.AddObserver(CourierListObserver);
         LoadData();
     }
 
@@ -251,6 +252,7 @@ public partial class CourierListWindow : UserControl
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
     {
         s_bl.Courier.RemoveObserver(CourierListObserver);
+        s_bl.Order.RemoveObserver(CourierListObserver);
     }
 
     /// <summary>
