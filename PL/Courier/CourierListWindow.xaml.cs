@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PL.Helpers;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -12,6 +13,9 @@ namespace PL.Courier;
 public partial class CourierListWindow : UserControl
 {
     static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _listMutex = new();
+
     private readonly int AdminID;
     private IEnumerable<BO.CourierInList>? AllCouriers;
 
@@ -213,9 +217,18 @@ public partial class CourierListWindow : UserControl
     /// </summary>
     private void CourierListObserver()
     {
-        Dispatcher.Invoke(() =>
+        // entry checks and mutex handling
+        if (_listMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        // update on UI thread
+        Dispatcher.BeginInvoke(async () =>
         {
             LoadData();
+
+            // exit critical section and check for restart request
+            if (await _listMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                CourierListObserver();
         });
     }
 

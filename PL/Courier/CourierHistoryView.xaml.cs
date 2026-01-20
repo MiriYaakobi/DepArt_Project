@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using PL.Helpers;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -12,6 +13,8 @@ namespace PL.Courier;
 public partial class CourierHistoryView : UserControl
 {
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _listMutex = new();
 
     // Dependency Properties
 
@@ -76,7 +79,19 @@ public partial class CourierHistoryView : UserControl
     /// </summary>
     private void OrderObserver()
     {
-        Dispatcher.Invoke(() => RefreshList());
+        // entry checks and mutex handling
+        if (_listMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
+
+        // update on UI thread
+        Dispatcher.BeginInvoke(async () =>
+        {
+            RefreshList();
+
+            // exit mutex and check if a restart is needed
+            if (await _listMutex.UnsetLoadInProgressAndCheckRestartRequested())
+                OrderObserver();
+        });
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using PL.Helpers;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,6 +11,8 @@ namespace PL.Courier;
 public partial class CourierPickOrderView : UserControl
 {
     private static readonly BlApi.IBl s_bl = BlApi.Factory.Get();
+
+    private readonly ObserverMutex _pickMutex = new();
 
     public event EventHandler? RequestDashboardView;
     public event EventHandler? RequestHistoryView;
@@ -77,10 +80,27 @@ public partial class CourierPickOrderView : UserControl
         this.Unloaded += UserControl_Unloaded;
     }
 
-    //monitor order list changes
-    private void OrderListObserver() => RefreshList();
+    /// <summary>
+    /// observer method for order changes.
+    /// </summary>
+    private void OrderListObserver()
+    {
+        //entry checks and mutex handling
+        if (_pickMutex.CheckAndSetLoadInProgressOrRestartRequired())
+            return;
 
-    //loaded and unloaded events
+        //update on UI thread
+        Dispatcher.BeginInvoke(async () =>
+        {
+            RefreshList();
+
+            // exit critical section and check for restart
+            if (await _pickMutex.UnsetLoadInProgressAndCheckRestartRequested())
+            {
+                OrderListObserver();
+            }
+        });
+    }
 
     /// <summary>
     /// loaded event handler
