@@ -28,7 +28,7 @@
     <Phone>052-764-8205</Phone>
     <Email>yael.barak@gmail.com</Email>
     <Password>yael#barak08</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2021-05-12T09:06:12.6501018+03:00</StartWorkTime>
     <MaxDistance>17.01</MaxDistance>
@@ -39,7 +39,7 @@
     <Phone>053-598-1948</Phone>
     <Email>roi.avrahami@gmail.com</Email>
     <Password>roi#avrahami00</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>ByFoot</TypeOfDelivery>
     <StartWorkTime>2025-03-01T13:11:14.6501018+02:00</StartWorkTime>
     <MaxDistance>1.5</MaxDistance>
@@ -83,7 +83,7 @@
     <Phone>055-490-4810</Phone>
     <Email>eitan.gabai@gmail.com</Email>
     <Password>eitan#gabai08</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2025-03-19T06:45:04.6501018+02:00</StartWorkTime>
     <MaxDistance>21.03</MaxDistance>
@@ -116,7 +116,7 @@
     <Phone>050-652-6812</Phone>
     <Email>alon.zahavi@gmail.com</Email>
     <Password>alon#zahavi05</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2021-12-24T06:29:05.6501018+02:00</StartWorkTime>
     <MaxDistance>14.09</MaxDistance>
@@ -127,7 +127,7 @@
     <Phone>050-120-5614</Phone>
     <Email>hila.ronen@gmail.com</Email>
     <Password>hila#ronen01</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Car</TypeOfDelivery>
     <StartWorkTime>2021-06-21T10:12:14.6501018+03:00</StartWorkTime>
     <MaxDistance>39.25</MaxDistance>
@@ -149,7 +149,7 @@
     <Phone>050-569-6420</Phone>
     <Email>rotem.tzadok@gmail.com</Email>
     <Password>rotem#tzadok06</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2025-12-24T06:28:36.6501018+02:00</StartWorkTime>
     <MaxDistance>17.28</MaxDistance>
@@ -193,7 +193,7 @@
     <Phone>058-215-6734</Phone>
     <Email>lior.gross@gmail.com</Email>
     <Password>lior#gross13</Password>
-    <IsActive>true</IsActive>
+    <IsActive>false</IsActive>
     <TypeOfDelivery>Motorcycle</TypeOfDelivery>
     <StartWorkTime>2022-07-10T09:37:08.6501018+03:00</StartWorkTime>
     <MaxDistance>18.72</MaxDistance>
