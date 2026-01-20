@@ -376,6 +376,8 @@ internal static class AdminManager
     /// <param name="configuration"></param>
     internal static void SetConfig(BO.Config configuration)
     {
+        ThrowOnSimulatorIsRunning();
+
         // Validation logic
         if (configuration.AdminId <= 100000000 || configuration.AdminId > 999999999)
             throw new BO.BlInvalidDataException("ID must be a 9-digit number");
@@ -450,6 +452,8 @@ internal static class AdminManager
     /// </summary>
     internal static void ResetDB()
     {
+        ThrowOnSimulatorIsRunning();
+
         lock (BlMutex)
         {
             s_dal.ResetDB();
@@ -463,6 +467,8 @@ internal static class AdminManager
     /// </summary>
     internal static void InitializeDB()
     {
+        ThrowOnSimulatorIsRunning();
+
         lock (BlMutex)
         {
             DalTest.Initialization.Do();
@@ -544,19 +550,29 @@ internal static class AdminManager
         }
     }
 
+    /// <summary>
+    /// clock runner method for the simulator thread
+    /// </summary>
     private static void clockRunner()
     {
         while (!s_stop)
         {
-            // Advance clock by 1 minute (simulation time)
-            UpdateClock(Now.AddMinutes(1));
+            DateTime newTime = Now.AddMinutes(s_interval);
+            UpdateClock(newTime);
 
-            try
+            Task.Run(async () =>
             {
-                // Sleep for s_interval seconds (real time)
-                Thread.Sleep(s_interval * 1000);
-            }
-            catch (ThreadInterruptedException) { }
+                // create new orders periodically
+                await OrderManager.SimulateNewOrderCreationAsync();
+
+                // couriers simulate their activity
+                await CourierManager.SimulateCourierActivityAsync();
+
+                // close orders periodically
+                await OrderManager.PeriodicOrderUpdatesAsync(newTime);
+            });
+
+            try { Thread.Sleep(1000); } catch { }
         }
     }
 

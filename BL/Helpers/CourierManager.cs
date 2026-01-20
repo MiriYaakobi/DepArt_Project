@@ -653,6 +653,8 @@ internal static class CourierManager
     /// <exception cref="BO.BlAlreadyExistsException"></exception>
     internal static void CreateCourier(BO.Courier courier)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // Validate input by calling the helper method
         ValidatePassword(courier.Password!);
         ValidateCourierData(courier);
@@ -773,6 +775,8 @@ internal static class CourierManager
     /// <exception cref="Exception"></exception>
     internal static void UpdateCourier(BO.Courier courier)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         // Retrieve existing courier or throw if not found
         DO.Courier existingCourier = GetExistingCourier(courierId: courier.Id);
 
@@ -816,6 +820,8 @@ internal static class CourierManager
     /// <exception cref="InvalidOperationException"></exception>
     internal static void DeleteCourier(int courierId)
     {
+        AdminManager.ThrowOnSimulatorIsRunning();
+
         lock (AdminManager.BlMutex)
         {
             // check for existing deliveries
@@ -924,147 +930,225 @@ internal static class CourierManager
     /// SIMULATION: Simulates courier activity (picking orders, delivering, cancellation).
     /// Called once per second by the simulator thread.
     /// </summary>
+    //internal static async Task SimulateCourierActivityAsync()
+    //{
+    //    // Check Mutex to prevent overlapping executions
+    //    if (s_simulationMutex.CheckAndSetInProgress())
+    //        return;
+
+    //    try
+    //    {
+    //        List<DO.Courier> activeCouriers;
+    //        double speedFoot, speedBike, speedMoto, speedCar;
+
+    //        // Fetch active couriers and config under lock, convert to List immediately
+    //        lock (AdminManager.BlMutex)
+    //        {
+    //            activeCouriers = s_dal.Courier.ReadAll(c => c.IsActive).ToList();
+
+    //            speedFoot = s_dal.Config.AverageByFootSpeedKmH;
+    //            speedBike = s_dal.Config.AverageBicycleSpeedKmH;
+    //            speedMoto = s_dal.Config.AverageMotorcycleSpeedKmH;
+    //            speedCar = s_dal.Config.AverageVehicleSpeedKmH;
+    //        }
+
+    //        // Safety check for zero speed
+    //        if (speedFoot <= 0) 
+    //            speedFoot = 5;
+
+    //        if (speedBike <= 0) 
+    //            speedBike = 20;
+
+    //        if (speedMoto <= 0) 
+    //            speedMoto = 60;
+
+    //        if (speedCar <= 0) 
+    //            speedCar = 50;
+
+    //        // 3. Iterate over each active courier
+    //        foreach (var courier in activeCouriers)
+    //        {
+    //            // Check if courier has an open delivery
+    //            DO.Delivery? openDelivery = FindOpenDeliveryForCourier(courier.Id); // Has internal lock
+
+    //            if (openDelivery == null)
+    //            {
+    //                // 15% probability to check availability (to avoid heavy queries every tick)
+    //                if (s_rand.NextDouble() < 0.15)
+    //                {
+    //                    // Check if there are available orders for this courier
+    //                    // This calls DeliveryManager which calculates distances (heavy operation)
+    //                    var potentialOrders = DeliveryManager.GetAvailableOpenOrders(courier.Id).ToList(); // Has internal locks
+
+    //                    if (potentialOrders.Any())
+    //                    {
+    //                        // 50% probability to actually pick an order
+    //                        if (s_rand.NextDouble() < 0.5)
+    //                        {
+    //                            // Pick a random order from the list
+    //                            var selectedOrder = potentialOrders[s_rand.Next(potentialOrders.Count)];
+
+    //                            try
+    //                            {
+    //                                // Fetch the actual order to get real coordinates
+    //                                // This ensures the distance calculation is accurate based on customer address
+    //                                DO.Order orderData = OrderManager.GetExistingOrder(selectedOrder.OrderId);
+
+    //                                // Assign the order (Create Delivery) using REAL coordinates
+    //                                await DeliveryManager.CreateNewDeliveryForOrderAsync(
+    //                                    selectedOrder.OrderId,
+    //                                    courier.Id,
+    //                                    orderData.Latitude,
+    //                                    orderData.Longitude,
+    //                                    (BO.DeliveryType)courier.TypeOfDelivery
+    //                                );
+    //                            }
+    //                            catch
+    //                            {
+    //                                // Ignore errors during simulation
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //            else
+    //            {
+    //                // Determine speed based on vehicle type
+    //                double speed = courier.TypeOfDelivery switch
+    //                {
+    //                    DO.DeliveryType.ByFoot => speedFoot,
+    //                    DO.DeliveryType.Bicycle => speedBike,
+    //                    DO.DeliveryType.Motorcycle => speedMoto,
+    //                    _ => speedCar
+    //                };
+
+    //                // Calculate distance and time
+    //                double distance = openDelivery.ActualDistance ?? 0.1;
+    //                if (distance <= 0) distance = 0.1;
+
+    //                double hoursRequired = distance / speed;
+    //                TimeSpan timeRequired = TimeSpan.FromHours(hoursRequired);
+
+    //                // Add random time factor (e.g., +/- 10%) to make it realistic
+    //                // logic: "operate discretion regarding 'enough time'"
+    //                double randomFactor = 0.9 + (s_rand.NextDouble() * 0.2);
+    //                TimeSpan randomizedTimeRequired = timeRequired * randomFactor;
+
+    //                DateTime arrivalTime = openDelivery.DeliveryStartTime.Add(randomizedTimeRequired);
+    //                DateTime currentClock = AdminManager.Now;
+
+    //                // Enough time has passed -> Finish Delivery
+    //                if (currentClock >= arrivalTime)
+    //                {
+    //                    try
+    //                    {
+    //                        // Mark as delivered
+    //                        DeliveryManager.CompleteDeliveryUpdate(courier.Id, openDelivery.Id, BO.OrderEndStatus.Delivered);
+    //                    }
+    //                    catch { }
+    //                }
+    //                else
+    //                {
+    //                    // Not finished yet, Chance for Manager Cancellation
+    //                    // 10% probability
+    //                    if (s_rand.NextDouble() < 0.10)
+    //                    {
+    //                        try
+    //                        {
+    //                            // Manager cancels the order
+    //                            OrderManager.CancelOrder(openDelivery.OrderId);
+    //                        }
+    //                        catch { }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //    catch
+    //    {
+    //        // Ensure simulator doesn't crash on errors
+    //    }
+    //    finally
+    //    {
+    //        // Always release the mutex
+    //        s_simulationMutex.UnsetInProgress();
+    //    }
+    //}
+    /// <summary>
+    /// סימולציה: השליחים "מתעוררים" ובודקים אם יש עבודה.
+    /// הפונקציה נקראת פעם בשנייה (שמייצגת זמן סימולציה ארוך).
+    /// </summary>
     internal static async Task SimulateCourierActivityAsync()
     {
-        // Check Mutex to prevent overlapping executions
+        // בדיקת מניעה הדדית
         if (s_simulationMutex.CheckAndSetInProgress())
             return;
 
         try
         {
             List<DO.Courier> activeCouriers;
-            double speedFoot, speedBike, speedMoto, speedCar;
 
-            // Fetch active couriers and config under lock, convert to List immediately
+            // שליפת כל השליחים הפעילים
             lock (AdminManager.BlMutex)
             {
                 activeCouriers = s_dal.Courier.ReadAll(c => c.IsActive).ToList();
-
-                speedFoot = s_dal.Config.AverageByFootSpeedKmH;
-                speedBike = s_dal.Config.AverageBicycleSpeedKmH;
-                speedMoto = s_dal.Config.AverageMotorcycleSpeedKmH;
-                speedCar = s_dal.Config.AverageVehicleSpeedKmH;
             }
 
-            // Safety check for zero speed
-            if (speedFoot <= 0) 
-                speedFoot = 5;
-
-            if (speedBike <= 0) 
-                speedBike = 20;
-
-            if (speedMoto <= 0) 
-                speedMoto = 60;
-
-            if (speedCar <= 0) 
-                speedCar = 50;
-
-            // 3. Iterate over each active courier
+            // עוברים שליח-שליח
             foreach (var courier in activeCouriers)
             {
-                // Check if courier has an open delivery
-                DO.Delivery? openDelivery = FindOpenDeliveryForCourier(courier.Id); // Has internal lock
+                // 1. האם השליח הזה עסוק כבר?
+                // נשתמש בפונקציית העזר הקיימת בקובץ הזה
+                DO.Delivery? openDelivery = FindOpenDeliveryForCourier(courier.Id);
 
-                if (openDelivery == null)
+                if (openDelivery != null)
                 {
-                    // 15% probability to check availability (to avoid heavy queries every tick)
-                    if (s_rand.NextDouble() < 0.15)
+                    // השליח עסוק - הוא לא יכול לקחת הזמנה חדשה.
+                    // (כאן אפשר להוסיף לוגיקה שהוא "מתקדם" בדרך, אבל חישוב הזמן נעשה ב-OrderManager)
+                    continue;
+                }
+
+                // 2. השליח פנוי! בוא נבדוק אם יש לו כוח לחפש עבודה (הסתברות קטנה כדי לא להעמיס)
+                // נניח שיש סיכוי של 30% בכל פעימה שהוא יפתח את האפליקציה
+                if (s_rand.NextDouble() > 0.3) continue;
+
+                try
+                {
+                    // 3. חיפוש הזמנות פתוחות שמתאימות לשליח (לפי מרחק וסוג)
+                    // הפונקציה הזו נמצאת ב-DeliveryManager ומחזירה הזמנות מסוננות
+                    // אנו מריצים ב-Task.Run כי זה חישוב כבד (מרחקים)
+                    var potentialOrders = await Task.Run(() =>
+                        DeliveryManager.GetAvailableOpenOrders(courier.Id).ToList());
+
+                    if (potentialOrders.Any())
                     {
-                        // Check if there are available orders for this courier
-                        // This calls DeliveryManager which calculates distances (heavy operation)
-                        var potentialOrders = DeliveryManager.GetAvailableOpenOrders(courier.Id).ToList(); // Has internal locks
+                        // 4. השליח בוחר הזמנה
+                        // אפשר לבחור את הכי רווחית / הכי קרובה, או רנדומלית.
+                        // לצורך הסימולציה, נבחר רנדומלית כדי לפזר את העומס
+                        var selectedOrder = potentialOrders[s_rand.Next(potentialOrders.Count)];
 
-                        if (potentialOrders.Any())
-                        {
-                            // 50% probability to actually pick an order
-                            if (s_rand.NextDouble() < 0.5)
-                            {
-                                // Pick a random order from the list
-                                var selectedOrder = potentialOrders[s_rand.Next(potentialOrders.Count)];
+                        // שליפת המידע המלא של ההזמנה כדי לקבל קואורדינטות מדויקות
+                        DO.Order fullOrderData = OrderManager.GetExistingOrder(selectedOrder.OrderId);
 
-                                try
-                                {
-                                    // Fetch the actual order to get real coordinates
-                                    // This ensures the distance calculation is accurate based on customer address
-                                    DO.Order orderData = OrderManager.GetExistingOrder(selectedOrder.OrderId);
-
-                                    // Assign the order (Create Delivery) using REAL coordinates
-                                    await DeliveryManager.CreateNewDeliveryForOrderAsync(
-                                        selectedOrder.OrderId,
-                                        courier.Id,
-                                        orderData.Latitude,
-                                        orderData.Longitude,
-                                        (BO.DeliveryType)courier.TypeOfDelivery
-                                    );
-                                }
-                                catch
-                                {
-                                    // Ignore errors during simulation
-                                }
-                            }
-                        }
+                        // 5. יצירת המשלוח (השליח לוקח את ההזמנה)
+                        await DeliveryManager.CreateNewDeliveryForOrderAsync(
+                            selectedOrder.OrderId,
+                            courier.Id,
+                            fullOrderData.Latitude,
+                            fullOrderData.Longitude,
+                            (BO.DeliveryType)courier.TypeOfDelivery
+                        );
                     }
                 }
-                else
+                catch
                 {
-                    // Determine speed based on vehicle type
-                    double speed = courier.TypeOfDelivery switch
-                    {
-                        DO.DeliveryType.ByFoot => speedFoot,
-                        DO.DeliveryType.Bicycle => speedBike,
-                        DO.DeliveryType.Motorcycle => speedMoto,
-                        _ => speedCar
-                    };
-
-                    // Calculate distance and time
-                    double distance = openDelivery.ActualDistance ?? 0.1;
-                    if (distance <= 0) distance = 0.1;
-
-                    double hoursRequired = distance / speed;
-                    TimeSpan timeRequired = TimeSpan.FromHours(hoursRequired);
-
-                    // Add random time factor (e.g., +/- 10%) to make it realistic
-                    // logic: "operate discretion regarding 'enough time'"
-                    double randomFactor = 0.9 + (s_rand.NextDouble() * 0.2);
-                    TimeSpan randomizedTimeRequired = timeRequired * randomFactor;
-
-                    DateTime arrivalTime = openDelivery.DeliveryStartTime.Add(randomizedTimeRequired);
-                    DateTime currentClock = AdminManager.Now;
-
-                    // Enough time has passed -> Finish Delivery
-                    if (currentClock >= arrivalTime)
-                    {
-                        try
-                        {
-                            // Mark as delivered
-                            DeliveryManager.CompleteDeliveryUpdate(courier.Id, openDelivery.Id, BO.OrderEndStatus.Delivered);
-                        }
-                        catch { }
-                    }
-                    else
-                    {
-                        // Not finished yet, Chance for Manager Cancellation
-                        // 10% probability
-                        if (s_rand.NextDouble() < 0.10)
-                        {
-                            try
-                            {
-                                // Manager cancels the order
-                                OrderManager.CancelOrder(openDelivery.OrderId);
-                            }
-                            catch { }
-                        }
-                    }
+                    // אם הייתה שגיאה (למשל מישהו אחר חטף את ההזמנה בשנייה האחרונה), לא נורא, ננסה בפעם הבאה
+                    continue;
                 }
             }
-        }
-        catch
-        {
-            // Ensure simulator doesn't crash on errors
         }
         finally
         {
-            // Always release the mutex
             s_simulationMutex.UnsetInProgress();
         }
     }

@@ -34,16 +34,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _isSimulatorRunning = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulatorButtonContent)); //update button text
             OnPropertyChanged(nameof(IsSimulatorNotRunning));  //update button enabled state
         }
     }
 
     //helper property to bind button enabled state
     public bool IsSimulatorNotRunning => !IsSimulatorRunning;
-
-    // text for simulator button
-    public string SimulatorButtonContent => IsSimulatorRunning ? "Stop" : "Start";
 
     //property changed implementation
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
