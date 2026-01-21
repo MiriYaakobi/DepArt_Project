@@ -279,7 +279,8 @@
                                                 <TextBox Text="{Binding SimulatorInterval}" IsEnabled="{Binding IsSimulatorNotRunning}"
                                                          Background="Transparent" BorderThickness="0"
                                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                                                         FontSize="18" FontWeight="Bold" Foreground="White" CaretBrush="White"/>
+                                                         FontSize="18" FontWeight="Bold" Foreground="White" CaretBrush="White"
+                                                         PreviewTextInput="NumberValidationTextBox" MaxLength="5"/>
                                             </Border>
                                         </StackPanel>
 
