@@ -1,7 +1,9 @@
 ﻿using PL.Helpers;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace PL;
 
@@ -651,6 +653,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         DashboardVisibility = Visibility.Collapsed;
         ContentVisibility = Visibility.Visible;
+    }
+
+    /// <summary>
+    /// validates that the input text for a textbox contains only numeric characters.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+    {
+        // regex to allow only numeric input
+        Regex regex = new Regex("[^0-9]+");
+        e.Handled = regex.IsMatch(e.Text);
     }
 
     //clock forwarding buttons handlers
