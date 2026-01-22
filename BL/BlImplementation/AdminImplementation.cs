@@ -95,17 +95,17 @@ internal class AdminImplementation : IAdmin
     /// Starts the simulator with the specified time interval.
     /// </summary>
     /// <param name="interval">Simulation speed (seconds per logical minute)</param>
-    public void StartSimulator(int interval)  // stage 7
+    public void StartSimulator(int interval) 
     {
-        // בדיקה שהסימולטור לא רץ כבר (אם כן - זורק שגיאה)
+        // check if the simulator is already running
         AdminManager.ThrowOnSimulatorIsRunning();
 
-        // הפעלת הסימולטור
+        // Start the simulator
         AdminManager.Start(interval);
     }
 
     /// <summary>
     /// Stops the simulator.
     /// </summary>
-    public void StopSimulator() => AdminManager.Stop(); // stage 7
+    public void StopSimulator() => AdminManager.Stop(); 
 }

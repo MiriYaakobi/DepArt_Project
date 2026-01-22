@@ -106,18 +106,6 @@ static class XMLTools
         string xmlFilePath = s_xmlDir + xmlFileName;
         try
         {
-            //if (File.Exists(xmlFilePath))
-            //{
-            //    XElement root;
-            //    using (FileStream fs = new FileStream(xmlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            //    {
-            //        root = XElement.Load(fs);
-            //    }
-            //    return root;
-            //}
-            //XElement rootElem = new(xmlFileName);
-            //rootElem.Save(xmlFilePath);
-            //return rootElem;
             lock (s_fileLock)
             {
                 return RetryOnIOException(() =>

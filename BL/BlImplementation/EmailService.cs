@@ -55,8 +55,6 @@ namespace BlImplementation
                 }
                 catch (Exception ex)
                 {
-                    // בגלל שזה רץ ברקע, אי אפשר לזרוק שגיאה למסך (המשתמש כבר המשיך הלאה)
-                    // לכן רק נכתוב לקונסול למקרה שנצטרך לבדוק בעתיד
                     Console.WriteLine("Background Email Failed: " + ex.Message);
                 }
             });
