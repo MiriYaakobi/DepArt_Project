@@ -2,7 +2,7 @@
 using DalApi;
 using System.Diagnostics;
 
-public class DalXml : IDal
+sealed internal class DalXml : IDal
 {
     /// <summary>
     /// Private constructor to prevent instantiation.

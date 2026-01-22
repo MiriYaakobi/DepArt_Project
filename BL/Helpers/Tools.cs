@@ -353,12 +353,12 @@ internal static class Tools
             string encodedAddress = HttpUtility.UrlEncode(address);
             string apiUrl = $"https://us1.locationiq.com/v1/search.php?key={effectiveKey}&q={encodedAddress}&format=json";
 
-            // שינוי 1: שימוש ב-await במקום .Result
+            // asynchronous web request
             HttpResponseMessage response = await s_httpClient.GetAsync(apiUrl);
 
             if (response.IsSuccessStatusCode)
             {
-                // שינוי 2: קריאה אסינכרונית לתוכן
+                // asynchronous read of the content
                 string resultJson = await response.Content.ReadAsStringAsync();
 
                 using (JsonDocument doc = JsonDocument.Parse(resultJson))
@@ -376,7 +376,7 @@ internal static class Tools
                     }
                 }
             }
-            // במקרה של כישלון - נחזיר null (במקום לזרוק שגיאה שעוצרת הכל)
+            // If the status code was not successful
             return null;
         }
         catch
@@ -391,17 +391,17 @@ internal static class Tools
     internal static async Task<(double ActualDistance, TimeSpan EstimatedTime)?> GetActualDistanceAndEstimatedTimeAsync(
           double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
     {
-        // 1. יצירת מפתח ייחודי לבקשה (סוג משלוח + קואורדינטות)
+        // create a unique cache key based on input parameters
         string cacheKey = $"{shippingType}|{startLat}|{startLon}|{endLat}|{endLon}";
 
-        // 2. בדיקה האם התוצאה כבר קיימת בזיכרון (Cache)
+        // Check if the result already exists in memory (Cache)
         if (s_routeCache.TryGetValue(cacheKey, out var cachedResult))
         {
-            // איזה כיף! חסכנו פנייה לרשת. נחזיר את מה ששמרנו פעם קודמת.
+            // We saved a network request. We'll return what we saved last time.
             return cachedResult;
         }
 
-        // --- אם הגענו לכאן, התוצאה לא בזיכרון. נצטרך לפנות לאינטרנט ---
+        // If we reached here, the result is not in memory. We need to query the internet 
 
         string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
         string profile = shippingType switch
@@ -444,7 +444,7 @@ internal static class Tools
 
                             var result = (actualDistanceKm, estimatedTime);
 
-                            // 3. שמירת התוצאה בזיכרון לפעם הבאה!
+                            // Store the result in the cache for future requests
                             s_routeCache.TryAdd(cacheKey, result);
 
                             return result;

@@ -14,7 +14,7 @@ public interface IAdmin
     void ForwardClock(BO.TimeUnit unit);
     BO.Config GetConfig();
     void SetConfig(BO.Config config);
-    bool ValidateLogin(int id, string password); //
+    bool ValidateLogin(int id, string password); 
     void AddConfigObserver(Action configObserver);
     void RemoveConfigObserver(Action configObserver);
     void AddClockObserver(Action clockObserver);

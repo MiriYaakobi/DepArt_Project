@@ -1,7 +1,8 @@
-﻿namespace BlImplementation;
-using BlApi;
+﻿using BlApi;
 using Helpers;
 using System;
+
+namespace BlImplementation;
 
 /// <summary>
 /// a business logic implementation for order-related operations.
@@ -434,10 +435,6 @@ internal class OrderImplementation : IOrder
     public void RemoveObserver(int id, Action observer) =>
         OrderManager.Observers.RemoveObserver(id, observer);
 
-    // ----------------------------------------------------------------------
-    // גרסאות אסינכרוניות (שלב 7)
-    // ----------------------------------------------------------------------
-
     /// <summary>
     /// ASYNC version: creates a new order in the system.
     /// </summary>
@@ -447,7 +444,7 @@ internal class OrderImplementation : IOrder
 
         try
         {
-            // שימוש בפונקציה האסינכרונית מהמנהל
+            // OrderManager.CreateOrderAsync handles:
             await OrderManager.CreateOrderAsync(boOrder);
         }
         catch (ArgumentException ex)
@@ -467,7 +464,7 @@ internal class OrderImplementation : IOrder
     {
         try
         {
-            // בדיקת הרשאות (נשארת סינכרונית כי היא עובדת מול מסד הנתונים בלבד)
+            // check authorization first
             OrderManager.AssertReadAuthorization(requestingUserId, orderId);
         }
         catch (BO.BlDoesNotExistException) { throw; }
@@ -479,7 +476,7 @@ internal class OrderImplementation : IOrder
 
         try
         {
-            // הקריאה הכבדה (חישוב זמנים) מתבצעת באופן אסינכרוני
+            // read the order details asynchronously
             return await OrderManager.ReadOrderAsync(orderId);
         }
         catch (BO.BlDoesNotExistException) { throw; }
@@ -492,7 +489,7 @@ internal class OrderImplementation : IOrder
     {
         AdminManager.ThrowOnSimulatorIsRunning();
 
-        // בדיקות מקדימות (נשארות סינכרוניות)
+        // access control: only Admin or the courier himself can choose an order
         AdminManager.AssertAdminOrSelf(requestingUserId, courierId);
         BO.Order boOrder = OrderManager.ReadOrder(orderId);
 
@@ -503,10 +500,10 @@ internal class OrderImplementation : IOrder
         if (!boCourier.IsActive)
             throw new BO.BlInvalidOperationException($"Courier {courierId} is inactive.");
 
-        // הפעולה הכבדה (יצירת משלוח וחישוב מסלול) מתבצעת אסינכרונית
+        // call to DeliveryManager to create the delivery record asynchronously
         await DeliveryManager.CreateNewDeliveryForOrderAsync(orderId, courierId, boOrder.Latitude, boOrder.Longitude, boCourier.TypeOfDelivery);
 
-        // שליחת מייל (נשארת זהה למקור)
+        // send email notification
         try
         {
             string courierEmail = "depart.ilv@gmail.com";
@@ -529,7 +526,7 @@ internal class OrderImplementation : IOrder
         }
         catch
         {
-            // התעלמות מכישלון בשליחת מייל
+            // Ignore email sending failures
         }
     }
 }
