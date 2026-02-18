@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Helpers;
+using System;
 using System.Net;
 using System.Net.Mail;
 
@@ -10,9 +11,6 @@ namespace BlImplementation
     /// </summary>
     internal static class EmailService
     {
-        private const string SenderEmail = "depart.ilv@gmail.com";
-        private static string SenderPassword = "srmp xvma gyau ftpx";/*System.IO.File.ReadAllText(@"C:\Users\1\source\repos\secrets.txt");*/
-
         /// <summary>
         /// sends an email notification asynchronously.
         /// </summary>
@@ -34,14 +32,14 @@ namespace BlImplementation
                     var smtpClient = new SmtpClient("smtp.gmail.com")
                     {
                         Port = 587,
-                        Credentials = new NetworkCredential(SenderEmail, SenderPassword),
+                        Credentials = new NetworkCredential(Secrets.ServiceEmail, Secrets.ServicePassword),
                         EnableSsl = true,
                     };
 
                     // create the email message
                     var mailMessage = new MailMessage
                     {
-                        From = new MailAddress(SenderEmail),
+                        From = new MailAddress(Secrets.ServiceEmail),
                         Subject = subject,
                         Body = body,
                         IsBodyHtml = false,

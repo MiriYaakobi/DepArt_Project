@@ -58,8 +58,8 @@ internal class OrderImplementation : IOrder
 
             if (courierToNotify != null)
             {
-                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "depart.ilv@gmail.com"; // use courier email if available
-                string emailToSend = "depart.ilv@gmail.com"; // for testing purposes, send to our company email
+                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : Secrets.ServiceEmail; // use courier email if available
+                string emailToSend = Secrets.ServiceEmail; // for testing purposes, send to our company email
 
                  EmailService.SendNotification(
                      emailToSend,
@@ -117,8 +117,8 @@ internal class OrderImplementation : IOrder
 
         try
         {
-            //string courierEmail = !string.IsNullOrEmpty(boCourier.Email) ? boCourier.Email : "depart.ilv@gmail.com"; // use courier email if available
-            string courierEmail = "depart.ilv@gmail.com"; // for testing purposes, send to our company email
+            //string courierEmail = !string.IsNullOrEmpty(boCourier.Email) ? boCourier.Email : Secrets.ServiceEmail; // use courier email if available
+            string courierEmail = Secrets.ServiceEmail; // for testing purposes, send to our company email
 
             string subject = $"New Delivery Assigned! Order #{orderId}";
             string body = $@"Hello {boCourier.Name},
@@ -399,8 +399,8 @@ internal class OrderImplementation : IOrder
 
             if (courierToNotify != null)
             {
-                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : "depart.ilv@gmail.com"; // use courier email if available
-                string emailToSend = "depart.ilv@gmail.com"; // for testing purposes, send our company email
+                //string emailToSend = !string.IsNullOrEmpty(courierToNotify.Email) ? courierToNotify.Email : Secrets.ServiceEmail; // use courier email if available
+                string emailToSend = Secrets.ServiceEmail; // for testing purposes, send our company email
 
                 EmailService.SendNotification(
                      emailToSend,
@@ -506,7 +506,7 @@ internal class OrderImplementation : IOrder
         // send email notification
         try
         {
-            string courierEmail = "depart.ilv@gmail.com";
+            string courierEmail = Secrets.ServiceEmail;
             string subject = $"New Delivery Assigned! Order #{orderId}";
             string body = $@"Hello {boCourier.Name},
 

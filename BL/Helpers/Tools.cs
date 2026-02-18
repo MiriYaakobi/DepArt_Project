@@ -23,9 +23,6 @@ internal static class Tools
     // Static HttpClient instance for making HTTP requests
     private static readonly HttpClient s_httpClient = new HttpClient();
 
-    // LocationIQ API key for geocoding and routing services
-    private const string apiKey = "pk.b0ca8983fc24d5c07a7173ce946693f3";
-
     /// <summary>
     /// generates a string representation of an object's public properties and their values using reflection.
     /// When writing this function, we used AI to ensure that the logic and sorting order were correct.
@@ -140,7 +137,7 @@ internal static class Tools
             return null;
 
         // Use default API key if none provided
-        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+        string effectiveKey = Secrets.LocationIqApiKey;
 
         try
         {
@@ -214,7 +211,7 @@ internal static class Tools
     internal static (double ActualDistance, TimeSpan EstimatedTime)? GetActualDistanceAndEstimatedTimeSync(
           double startLat, double startLon, double endLat, double endLon, BO.DeliveryType shippingType)
     {
-        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+        string effectiveKey = Secrets.LocationIqApiKey;
 
         // Determine the travel profile for the API based on the shipping type
         string profile = shippingType switch
@@ -346,7 +343,7 @@ internal static class Tools
         if (string.IsNullOrWhiteSpace(address))
             return null;
 
-        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+        string effectiveKey = Secrets.LocationIqApiKey;
 
         try
         {
@@ -403,7 +400,8 @@ internal static class Tools
 
         // If we reached here, the result is not in memory. We need to query the internet 
 
-        string effectiveKey = string.IsNullOrWhiteSpace(apiKey) ? "pk.b0ca8983fc24d5c07a7173ce946693f3" : apiKey;
+        string effectiveKey = Secrets.LocationIqApiKey;
+        
         string profile = shippingType switch
         {
             BO.DeliveryType.Car or BO.DeliveryType.Motorcycle => "driving",

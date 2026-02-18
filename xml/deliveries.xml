@@ -2,331 +2,351 @@
 <ArrayOfDelivery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Delivery>
     <Id>1000</Id>
-    <OrderId>1001</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-16T05:13:20.7199406+02:00</DeliveryStartTime>
-    <ActualDistance>54.22822360139584</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-16T06:16:20.7199406+02:00</DeliveryEndTime>
+    <OrderId>1023</OrderId>
+    <CourierId>938758704</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-12T19:55:24.7198426+02:00</DeliveryStartTime>
+    <ActualDistance>11.45363439676475</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-12T20:26:24.7198426+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1001</Id>
-    <OrderId>1021</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-17T23:17:21.1934378+02:00</DeliveryStartTime>
-    <ActualDistance>54.22822360139584</ActualDistance>
+    <OrderId>1022</OrderId>
+    <CourierId>525351896</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-14T23:37:24.694863+02:00</DeliveryStartTime>
+    <ActualDistance>12.901354749496434</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-18T00:25:21.1934378+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-15T01:46:24.694863+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1002</Id>
     <OrderId>1017</OrderId>
-    <CourierId>800044461</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-20T17:32:21.089344+02:00</DeliveryStartTime>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-17T06:46:24.5726006+02:00</DeliveryStartTime>
     <ActualDistance>30.820568060951608</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-20T18:59:21.089344+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-17T08:42:24.5726006+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1003</Id>
-    <OrderId>1039</OrderId>
-    <CourierId>641988547</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-17T07:19:21.6549259+02:00</DeliveryStartTime>
-    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderId>1046</OrderId>
+    <CourierId>193515788</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-17T08:56:25.2379619+02:00</DeliveryStartTime>
+    <ActualDistance>29.051187058010573</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-17T09:33:21.6549259+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-17T11:12:25.2379619+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1004</Id>
-    <OrderId>1025</OrderId>
-    <CourierId>641988547</CourierId>
+    <OrderId>1027</OrderId>
+    <CourierId>525351896</CourierId>
     <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-16T16:22:21.2843458+02:00</DeliveryStartTime>
-    <ActualDistance>4.999129535067809</ActualDistance>
+    <DeliveryStartTime>2026-02-13T18:02:24.8066294+02:00</DeliveryStartTime>
+    <ActualDistance>30.820568060951608</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-16T18:54:21.2843458+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-13T20:58:24.8066294+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1005</Id>
-    <OrderId>1009</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:20.172625+02:00</DeliveryStartTime>
-    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderId>1030</OrderId>
+    <CourierId>636539042</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-15T07:52:24.8776444+02:00</DeliveryStartTime>
+    <ActualDistance>0.8624720804820074</ActualDistance>
     <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T16:33:20.172625+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-15T09:03:24.8776444+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1006</Id>
-    <OrderId>1010</OrderId>
-    <CourierId>651192396</CourierId>
+    <OrderId>1042</OrderId>
+    <CourierId>525351896</CourierId>
     <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-18T00:35:20.934421+02:00</DeliveryStartTime>
-    <ActualDistance>0.8624720804820074</ActualDistance>
+    <DeliveryStartTime>2026-02-11T04:55:25.147651+02:00</DeliveryStartTime>
+    <ActualDistance>12.901354749496434</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-18T01:28:20.934421+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-11T06:14:25.147651+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1007</Id>
-    <OrderId>1027</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1029</OrderId>
+    <CourierId>193515788</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-09T23:09:21.3392417+02:00</DeliveryStartTime>
-    <ActualDistance>30.820568060951608</ActualDistance>
+    <DeliveryStartTime>2026-02-17T02:02:24.8553122+02:00</DeliveryStartTime>
+    <ActualDistance>19.239867956127664</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-09T23:32:21.3392417+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-17T04:55:24.8553122+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1008</Id>
-    <OrderId>1030</OrderId>
-    <CourierId>972254514</CourierId>
+    <OrderId>1015</OrderId>
+    <CourierId>636539042</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-14T10:29:21.4164637+02:00</DeliveryStartTime>
-    <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-14T10:59:21.4164637+02:00</DeliveryEndTime>
+    <DeliveryStartTime>2026-02-18T13:42:23.673348+02:00</DeliveryStartTime>
+    <ActualDistance>4.999129535067809</ActualDistance>
+    <OrderClosedStatus>Refused</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T14:02:23.673348+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1009</Id>
-    <OrderId>1005</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-20T22:04:20.8164778+02:00</DeliveryStartTime>
+    <OrderId>1035</OrderId>
+    <CourierId>212549665</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T07:40:24.9930667+02:00</DeliveryStartTime>
     <ActualDistance>4.999129535067809</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T00:55:20.8164778+02:00</DeliveryEndTime>
+    <OrderClosedStatus>Refused</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T08:39:24.9930667+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1010</Id>
-    <OrderId>1000</OrderId>
-    <CourierId>968115108</CourierId>
+    <OrderId>1026</OrderId>
+    <CourierId>938758704</CourierId>
     <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-17T10:02:20.7145717+02:00</DeliveryStartTime>
-    <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-17T10:36:20.7145717+02:00</DeliveryEndTime>
+    <DeliveryStartTime>2026-02-09T14:34:24.7879035+02:00</DeliveryStartTime>
+    <ActualDistance>29.051187058010573</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-09T15:16:24.7879035+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1011</Id>
-    <OrderId>1002</OrderId>
-    <CourierId>347268675</CourierId>
-    <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T01:46:20.7443907+02:00</DeliveryStartTime>
-    <ActualDistance>12.901354749496434</ActualDistance>
+    <OrderId>1016</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-10T07:23:24.550173+02:00</DeliveryStartTime>
+    <ActualDistance>29.051187058010573</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T02:12:20.7443907+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-10T09:59:24.550173+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1012</Id>
-    <OrderId>1036</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-20T01:09:21.577844+02:00</DeliveryStartTime>
-    <ActualDistance>29.051187058010573</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-20T02:29:21.577844+02:00</DeliveryEndTime>
+    <OrderId>1012</OrderId>
+    <CourierId>938758704</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T00:58:24.458983+02:00</DeliveryStartTime>
+    <ActualDistance>12.901354749496434</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T02:00:24.458983+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1013</Id>
-    <OrderId>1029</OrderId>
-    <CourierId>347268675</CourierId>
+    <OrderId>1006</OrderId>
+    <CourierId>938758704</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-19T15:15:21.3922877+02:00</DeliveryStartTime>
-    <ActualDistance>19.239867956127664</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-19T16:01:21.3922877+02:00</DeliveryEndTime>
+    <DeliveryStartTime>2026-02-18T13:42:23.673348+02:00</DeliveryStartTime>
+    <ActualDistance>29.051187058010573</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T14:26:23.673348+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1014</Id>
-    <OrderId>1022</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1047</OrderId>
+    <CourierId>525351896</CourierId>
     <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-20T13:49:21.2203515+02:00</DeliveryStartTime>
-    <ActualDistance>12.901354749496434</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-20T16:37:21.2203515+02:00</DeliveryEndTime>
+    <DeliveryStartTime>2026-02-15T02:08:25.2629117+02:00</DeliveryStartTime>
+    <ActualDistance>30.820568060951608</ActualDistance>
+    <OrderClosedStatus>Refused</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-15T03:46:25.2629117+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1015</Id>
-    <OrderId>1031</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1010</OrderId>
+    <CourierId>408029395</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-12T11:15:21.4418153+02:00</DeliveryStartTime>
-    <ActualDistance>54.22822360139584</ActualDistance>
+    <DeliveryStartTime>2026-02-11T15:49:24.4183419+02:00</DeliveryStartTime>
+    <ActualDistance>0.8624720804820074</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-12T11:57:21.4418153+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-11T17:17:24.4183419+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1016</Id>
-    <OrderId>1047</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T07:33:21.8558468+02:00</DeliveryStartTime>
-    <ActualDistance>30.820568060951608</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T09:26:21.8558468+02:00</DeliveryEndTime>
+    <OrderId>1009</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-17T14:46:24.3916151+02:00</DeliveryStartTime>
+    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-17T15:53:24.3916151+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1017</Id>
-    <OrderId>1046</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T10:28:21.8332053+02:00</DeliveryStartTime>
+    <OrderId>1036</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-16T15:52:25.0134168+02:00</DeliveryStartTime>
     <ActualDistance>29.051187058010573</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T12:15:21.8332053+02:00</DeliveryEndTime>
+    <OrderClosedStatus>Refused</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-16T17:28:25.0134168+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1018</Id>
-    <OrderId>1011</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1032</OrderId>
+    <CourierId>525351896</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T13:24:20.9549523+02:00</DeliveryStartTime>
-    <ActualDistance>54.22822360139584</ActualDistance>
+    <DeliveryStartTime>2026-02-17T09:33:24.9227186+02:00</DeliveryStartTime>
+    <ActualDistance>12.901354749496434</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T15:28:20.9549523+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-17T11:57:24.9227186+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1019</Id>
-    <OrderId>1006</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1013</OrderId>
+    <CourierId>134424911</CourierId>
     <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T04:05:20.8404409+02:00</DeliveryStartTime>
-    <ActualDistance>29.051187058010573</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T04:50:20.8404409+02:00</DeliveryEndTime>
+    <DeliveryStartTime>2026-02-14T08:18:24.4837895+02:00</DeliveryStartTime>
+    <ActualDistance>11.45363439676475</ActualDistance>
+    <OrderClosedStatus>Refused</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-14T08:59:24.4837895+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1020</Id>
-    <OrderId>1003</OrderId>
-    <CourierId>588690342</CourierId>
-    <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-19T17:54:20.7697392+02:00</DeliveryStartTime>
-    <ActualDistance>11.45363439676475</ActualDistance>
+    <OrderId>1040</OrderId>
+    <CourierId>404966730</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-17T22:27:25.1034998+02:00</DeliveryStartTime>
+    <ActualDistance>0.8624720804820074</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-19T20:02:20.7697392+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-18T01:13:25.1034998+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1021</Id>
-    <OrderId>1019</OrderId>
-    <CourierId>347268675</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-18T10:50:21.1405452+02:00</DeliveryStartTime>
-    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderId>1000</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-11T17:40:24.2016527+02:00</DeliveryStartTime>
+    <ActualDistance>0.8624720804820074</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-18T13:47:21.1405452+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-11T18:02:24.2016527+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1022</Id>
-    <OrderId>1007</OrderId>
-    <CourierId>800044461</CourierId>
+    <OrderId>1033</OrderId>
+    <CourierId>193515788</CourierId>
     <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:20.172625+02:00</DeliveryStartTime>
-    <ActualDistance>30.820568060951608</ActualDistance>
+    <DeliveryStartTime>2026-02-15T21:58:24.9437319+02:00</DeliveryStartTime>
+    <ActualDistance>11.45363439676475</ActualDistance>
     <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-21T15:58:20.172625+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-15T23:41:24.9437319+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1023</Id>
-    <OrderId>1041</OrderId>
-    <CourierId>591552457</CourierId>
+    <OrderId>1002</OrderId>
+    <CourierId>193515788</CourierId>
     <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-11T15:04:21.7036772+02:00</DeliveryStartTime>
-    <ActualDistance>54.22822360139584</ActualDistance>
+    <DeliveryStartTime>2026-02-14T04:14:24.2356003+02:00</DeliveryStartTime>
+    <ActualDistance>12.901354749496434</ActualDistance>
     <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-11T16:25:21.7036772+02:00</DeliveryEndTime>
+    <DeliveryEndTime>2026-02-14T05:58:24.2356003+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
-    <Id>1024</Id>
-    <OrderId>1032</OrderId>
-    <CourierId>641988547</CourierId>
+    <Id>1029</Id>
+    <OrderId>1025</OrderId>
+    <CourierId>636539042</CourierId>
     <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-15T08:20:21.4698297+02:00</DeliveryStartTime>
-    <ActualDistance>12.901354749496434</ActualDistance>
-    <OrderClosedStatus>Refused</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-15T08:46:21.4698297+02:00</DeliveryEndTime>
-  </Delivery>
-  <Delivery>
-    <Id>1025</Id>
-    <OrderId>1012</OrderId>
-    <CourierId>347268675</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-15T16:50:20.9755856+02:00</DeliveryStartTime>
-    <ActualDistance>12.901354749496434</ActualDistance>
-    <OrderClosedStatus>Delivered</OrderClosedStatus>
-    <DeliveryEndTime>2026-01-15T18:16:20.9755856+02:00</DeliveryEndTime>
-  </Delivery>
-  <Delivery>
-    <Id>1026</Id>
-    <OrderId>1045</OrderId>
-    <CourierId>432539086</CourierId>
-    <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-18T21:31:21.8095153+02:00</DeliveryStartTime>
-    <ActualDistance>4.999129535067809</ActualDistance>
+    <DeliveryStartTime>2026-02-18T13:43:25.995175+02:00</DeliveryStartTime>
+    <ActualDistance>5.9571000000000005</ActualDistance>
     <OrderClosedStatus xsi:nil="true" />
     <DeliveryEndTime xsi:nil="true" />
   </Delivery>
   <Delivery>
     <Id>1027</Id>
-    <OrderId>1023</OrderId>
-    <CourierId>347268675</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:40:21.2423002+02:00</DeliveryStartTime>
+    <OrderId>1003</OrderId>
+    <CourierId>193515788</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-17T18:23:24.2630758+02:00</DeliveryStartTime>
     <ActualDistance>11.45363439676475</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T13:43:25.995175+02:00</DeliveryEndTime>
+  </Delivery>
+  <Delivery>
+    <Id>1025</Id>
+    <OrderId>1005</OrderId>
+    <CourierId>212549665</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T09:04:24.3094603+02:00</DeliveryStartTime>
+    <ActualDistance>4.999129535067809</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T13:43:25.995175+02:00</DeliveryEndTime>
+  </Delivery>
+  <Delivery>
+    <Id>1030</Id>
+    <OrderId>1007</OrderId>
+    <CourierId>938758704</CourierId>
+    <TypeOfOrder>SameDay</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T13:43:25.995175+02:00</DeliveryStartTime>
+    <ActualDistance>30.820568060951608</ActualDistance>
+    <OrderClosedStatus xsi:nil="true" />
+    <DeliveryEndTime xsi:nil="true" />
+  </Delivery>
+  <Delivery>
+    <Id>1026</Id>
+    <OrderId>1019</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T13:08:24.6225972+02:00</DeliveryStartTime>
+    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T13:43:25.995175+02:00</DeliveryEndTime>
+  </Delivery>
+  <Delivery>
+    <Id>1031</Id>
+    <OrderId>1045</OrderId>
+    <CourierId>542554224</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T13:44:25.995175+02:00</DeliveryStartTime>
+    <ActualDistance>5.9571000000000005</ActualDistance>
     <OrderClosedStatus xsi:nil="true" />
     <DeliveryEndTime xsi:nil="true" />
   </Delivery>
   <Delivery>
     <Id>1028</Id>
-    <OrderId>1033</OrderId>
-    <CourierId>588690342</CourierId>
-    <TypeOfOrder>SameDay</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:20.172625+02:00</DeliveryStartTime>
-    <ActualDistance>11.45363439676475</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
-  </Delivery>
-  <Delivery>
-    <Id>1029</Id>
     <OrderId>1020</OrderId>
-    <CourierId>245747033</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-10T03:15:21.1662737+02:00</DeliveryStartTime>
+    <CourierId>404966730</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T04:22:24.6450525+02:00</DeliveryStartTime>
     <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
-  </Delivery>
-  <Delivery>
-    <Id>1030</Id>
-    <OrderId>1026</OrderId>
-    <CourierId>591552457</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:22.8097201+02:00</DeliveryStartTime>
-    <ActualDistance>33.950199999999995</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
-  </Delivery>
-  <Delivery>
-    <Id>1031</Id>
-    <OrderId>1040</OrderId>
-    <CourierId>529387405</CourierId>
-    <TypeOfOrder>Express</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:22.8097201+02:00</DeliveryStartTime>
-    <ActualDistance>0.8624720804820074</ActualDistance>
-    <OrderClosedStatus xsi:nil="true" />
-    <DeliveryEndTime xsi:nil="true" />
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T13:44:25.995175+02:00</DeliveryEndTime>
   </Delivery>
   <Delivery>
     <Id>1032</Id>
-    <OrderId>1013</OrderId>
-    <CourierId>968115108</CourierId>
+    <OrderId>1043</OrderId>
+    <CourierId>193515788</CourierId>
     <TypeOfOrder>Regular</TypeOfOrder>
-    <DeliveryStartTime>2026-01-21T15:46:22.8097201+02:00</DeliveryStartTime>
+    <DeliveryStartTime>2026-02-18T13:44:25.995175+02:00</DeliveryStartTime>
     <ActualDistance>14.3928</ActualDistance>
+    <OrderClosedStatus xsi:nil="true" />
+    <DeliveryEndTime xsi:nil="true" />
+  </Delivery>
+  <Delivery>
+    <Id>1024</Id>
+    <OrderId>1039</OrderId>
+    <CourierId>525351896</CourierId>
+    <TypeOfOrder>Express</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T06:45:25.0790808+02:00</DeliveryStartTime>
+    <ActualDistance>19.239867956127664</ActualDistance>
+    <OrderClosedStatus>Delivered</OrderClosedStatus>
+    <DeliveryEndTime>2026-02-18T13:44:25.995175+02:00</DeliveryEndTime>
+  </Delivery>
+  <Delivery>
+    <Id>1033</Id>
+    <OrderId>1049</OrderId>
+    <CourierId>525351896</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T13:45:25.995175+02:00</DeliveryStartTime>
+    <ActualDistance>22.3138</ActualDistance>
+    <OrderClosedStatus xsi:nil="true" />
+    <DeliveryEndTime xsi:nil="true" />
+  </Delivery>
+  <Delivery>
+    <Id>1034</Id>
+    <OrderId>1037</OrderId>
+    <CourierId>134424911</CourierId>
+    <TypeOfOrder>Regular</TypeOfOrder>
+    <DeliveryStartTime>2026-02-18T13:47:25.995175+02:00</DeliveryStartTime>
+    <ActualDistance>34.8336</ActualDistance>
     <OrderClosedStatus xsi:nil="true" />
     <DeliveryEndTime xsi:nil="true" />
   </Delivery>
