@@ -31,23 +31,57 @@ The system utilizes a **smart algorithm** to match the optimal courier to the pa
 
 ---
 
-## ⚙️ Installation & Configuration
+## ✨ Key Features & Highlights
+* **The "God Mode" Simulator:** Experience the system in action! The simulator runs on a separate thread (**Multi-Threading**), creating a lifelike environment where time moves faster, and orders are dispatched automatically based on courier availability.
+* **Vehicle Logic:** The system calculates delivery times based on the courier's transport mode (Car vs. Bicycle).
+* **Real-Time Email Notifications:** Unlike standard apps, DepArt integrates with **SMTP servers** to send automatic email confirmations when a parcel is delivered or when a critical alert is triggered.
+* **Safe-Delete Logic:** You cannot delete a courier who is currently carrying a Mona Lisa! 🖼️
+* **Smart Grouping:** Advanced filtering of orders by status and area using `CollectionViewSource`.
+
+---
+
+## 💻 Tech Stack
+* **Language:** C#
+* **Framework:** .NET 8.0
+* **UI:** Windows Presentation Foundation (WPF)
+* **Architecture:** 3-Tier Layered Architecture, MVVM & Commands
+* **Data:** XML Serialization, LINQ
+
+---
+
+## 🏗️ Architecture
+The system follows a strict **3-Tier Layered Architecture** to ensure separation of concerns:
+* **PL (Presentation Layer):** A responsive UI built with WPF and MVVM that reacts to data changes instantly.
+* **BL (Business Logic):** Manages the core operations, smart algorithms, and the background simulator threads.
+* **DAL (Data Access Layer):** Handles data persistence using XML Serialization and the Factory pattern.
+
+*(The layers communicate strictly downwards: PL -> BL -> DAL).*
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+* Visual Studio 2022 (or newer)
+* .NET 8.0 SDK
+
+### Installation & Configuration
 
 > ⚠️ **Security Notice:** This project uses external services (LocationIQ & Gmail SMTP).
 > For security reasons, the API keys are **not** included in the repository. Follow the steps below to configure your local environment.
 
-### 1. Clone the Repository
+1. Clone the Repository:
 ```bash
-git clone https://github.com/MiriYaakobi/DepArt_Project
+git clone https://github.com/MiriYaakobi/DepArt_Project.git
+cd DepArt_Project
 ```
 
-### 2. Configure the "Secrets"
+2. Configure the "Secrets":
 We use a secure method to handle API keys and Passwords without exposing them to Git.
-
-1.  Navigate to `BL` -> `Helpers`.
-2.  Locate the file: `Secrets.Template.cs`.
-3.  **Create a copy** of this file and rename it to `Secrets.cs`.
-4.  Update the fields with your own credentials:
+* Navigate to `BL` -> `Helpers`.
+* Locate the file: `Secrets.Template.cs`.
+* **Create a copy** of this file and rename it to `Secrets.cs`.
+* Update the fields with your own credentials:
 
 ```csharp
 internal static class Secrets
@@ -61,12 +95,12 @@ internal static class Secrets
 }
 ```
 
-### 3. Run the System
-Set **PL** as your startup project and hit **F5**!
+3. Run the System:
+* Set **PL** as your startup project in Visual Studio and hit **F5**!
 
 ---
 
-## 🔑 How to Log In
+## 🔑 How to Log In (API / Usage)
 
 The system comes pre-loaded with data so you can start testing immediately.
 
@@ -76,30 +110,29 @@ The system comes pre-loaded with data so you can start testing immediately.
 
 ### 🚚 Courier Access (Field)
 To test the courier interface:
-1.  Log in as a **Manager** first.
-2.  Go to the **"Couriers"** tab and click **Add Courier**.
-3.  Create a new courier profile.
-4.  Log in using the **ID** and **Password** you just created.
+1. Log in as a **Manager** first.
+2. Go to the **"Couriers"** tab and click **Add Courier**.
+3. Create a new courier profile.
+4. Log in using the **ID** and **Password** you just created.
 
 ---
 
-## ✨ Key Features & Highlights
+## 📂 Project Structure
+```text
+DepArt_Project/
+├── DAL/          # Data Access Layer (XML data, Data sources)
+├── BL/           # Business Logic (Managers, Entities, Simulator)
+├── BL/Helpers/   # Secrets and configuration files
+├── PL/           # Presentation Layer (WPF Windows, ViewModels)
+└── Images/       # Assets and Demo media
+```
 
-### 🕹️ The "God Mode" Simulator
-Experience the system in action! The simulator runs on a separate thread (**Multi-Threading**), creating a lifelike environment where:
-* Time moves faster (simulated clock).
-* Orders are dispatched automatically based on courier availability.
-* **Vehicle Logic:** The system calculates delivery times based on the courier's transport mode (Car vs. Bicycle).
+---
 
-### 📧 Real-Time Email Notifications
-Unlike standard apps, DepArt integrates with **SMTP servers**.
-The system sends automatic email confirmations when a parcel is delivered or when a critical alert is triggered.
+## 🧠 What We Learned
+Building this system taught us the critical importance of **structured software engineering** - progressing through clear, logical development stages from initial data modeling to the final UI integration. 
 
-### 🛡️ Robust Architecture
-* **3-Tier Layered Architecture:** Strict separation between UI (PL), Logic (BL), and Data (DAL).
-* **MVVM & Commands:** A responsive UI that reacts to data changes instantly.
-* **Safe-Delete Logic:** You cannot delete a courier who is currently carrying a Mona Lisa! 🖼️
-* **Smart Grouping:** Advanced filtering of orders by status and area using `CollectionViewSource`.
+Our most significant technical challenge was the "God Mode" Simulator. We learned how to effectively manage **Background Threads** for real-time delivery simulations and safely synchronize them with the main UI thread using the **WPF Dispatcher**. This hands-on experience highlighted the vital role of asynchronous programming in keeping the UI fully responsive while enforcing strict state-validation rules in the background.
 
 ---
 
