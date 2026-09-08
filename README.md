@@ -38,7 +38,7 @@ The system utilizes a **smart algorithm** to match the optimal courier to the pa
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/Miri-User/DepArt.git](https://github.com/Miri-User/DepArt.git)
+git clone https://github.com/MiriYaakobi/DepArt_Project
 ```
 
 ### 2. Configure the "Secrets"
