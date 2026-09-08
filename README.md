@@ -146,7 +146,7 @@ Our most significant technical challenge was the "God Mode" Simulator. We learne
 
 <br>
 
-**Odelia**
+**Odelya**
 <br>
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/odelyagil/) [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/OdelyaGil)
 
